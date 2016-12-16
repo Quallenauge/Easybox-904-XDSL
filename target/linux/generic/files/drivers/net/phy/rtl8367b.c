@@ -43,7 +43,7 @@
 #define RTL8367B_TA_CTRL_REG			0x0500 /*GOOD*/
 #define   RTL8367B_TA_CTRL_SPA_SHIFT		8
 #define   RTL8367B_TA_CTRL_SPA_MASK		0x7
-#define   RTL8367B_TA_CTRL_METHOD		BIT(4)/*GOOD*/
+#define   RTL8367B_TA_CTRL_METHOD		BIT(4) /*GOOD*/
 #define   RTL8367B_TA_CTRL_CMD_SHIFT		3
 #define   RTL8367B_TA_CTRL_CMD_READ		0
 #define   RTL8367B_TA_CTRL_CMD_WRITE		1
@@ -59,12 +59,12 @@
 		((RTL8367B_TA_CTRL_CMD_WRITE << RTL8367B_TA_CTRL_CMD_SHIFT) | \
 		 RTL8367B_TA_CTRL_TABLE_CVLAN)
 
-#define RTL8367B_TA_ADDR_REG			0x0501/*GOOD*/
-#define   RTL8367B_TA_ADDR_MASK			0x3fff/*GOOD*/
+#define RTL8367B_TA_ADDR_REG			0x0501 /*GOOD*/
+#define   RTL8367B_TA_ADDR_MASK			0x3fff /*GOOD*/
 
-#define RTL8367B_TA_LUT_REG			0x0502/*GOOD*/
+#define RTL8367B_TA_LUT_REG			0x0502 /*GOOD*/
 
-#define RTL8367B_TA_WRDATA_REG(_x)		(0x0510 + (_x))/*GOOD*/
+#define RTL8367B_TA_WRDATA_REG(_x)		(0x0510 + (_x)) /*GOOD*/
 #define   RTL8367B_TA_VLAN_NUM_WORDS		2
 #define   RTL8367B_TA_VLAN_VID_MASK		RTL8367B_VID_MASK
 #define   RTL8367B_TA_VLAN0_MEMBER_SHIFT	0
@@ -74,7 +74,7 @@
 #define   RTL8367B_TA_VLAN1_FID_SHIFT		0
 #define   RTL8367B_TA_VLAN1_FID_MASK		RTL8367B_FID_MASK
 
-#define RTL8367B_TA_RDDATA_REG(_x)		(0x0520 + (_x))/*GOOD*/
+#define RTL8367B_TA_RDDATA_REG(_x)		(0x0520 + (_x)) /*GOOD*/
 
 #define RTL8367B_VLAN_PVID_CTRL_REG(_p)		(0x0700 + (_p) / 2) /*GOOD*/
 #define RTL8367B_VLAN_PVID_CTRL_MASK		0x1f /*GOOD*/
@@ -82,12 +82,12 @@
 
 #define RTL8367B_VLAN_MC_BASE(_x)		(0x0728 + (_x) * 4) /*GOOD*/
 #define   RTL8367B_VLAN_MC_NUM_WORDS		4 /*GOOD*/
-#define   RTL8367B_VLAN_MC0_MEMBER_SHIFT	0/*GOOD*/
-#define   RTL8367B_VLAN_MC0_MEMBER_MASK		RTL8367B_MEMBER_MASK/*GOOD*/
-#define   RTL8367B_VLAN_MC1_FID_SHIFT		0/*GOOD*/
-#define   RTL8367B_VLAN_MC1_FID_MASK		RTL8367B_FID_MASK/*GOOD*/
-#define   RTL8367B_VLAN_MC3_EVID_SHIFT		0/*GOOD*/
-#define   RTL8367B_VLAN_MC3_EVID_MASK		RTL8367B_VID_MASK/*GOOD*/
+#define   RTL8367B_VLAN_MC0_MEMBER_SHIFT	0 /*GOOD*/
+#define   RTL8367B_VLAN_MC0_MEMBER_MASK		RTL8367B_MEMBER_MASK /*GOOD*/
+#define   RTL8367B_VLAN_MC1_FID_SHIFT		0 /*GOOD*/
+#define   RTL8367B_VLAN_MC1_FID_MASK		RTL8367B_FID_MASK /*GOOD*/
+#define   RTL8367B_VLAN_MC3_EVID_SHIFT		0 /*GOOD*/
+#define   RTL8367B_VLAN_MC3_EVID_MASK		RTL8367B_VID_MASK /*GOOD*/
 
 #define RTL8367B_VLAN_CTRL_REG			0x07a8 /*GOOD*/
 #define   RTL8367B_VLAN_CTRL_ENABLE		BIT(0)
@@ -108,8 +108,8 @@
 #define   RTL8367B_MIB_CTRL0_RESET_MASK		BIT(1) /*GOOD*/
 #define   RTL8367B_MIB_CTRL0_BUSY_MASK		BIT(0) /*GOOD*/
 
-#define RTL8367B_SWC0_REG			0x1200/*GOOD*/
-#define   RTL8367B_SWC0_MAX_LENGTH_SHIFT	13/*GOOD*/
+#define RTL8367B_SWC0_REG			0x1200 /*GOOD*/
+#define   RTL8367B_SWC0_MAX_LENGTH_SHIFT	13 /*GOOD*/
 #define   RTL8367B_SWC0_MAX_LENGTH(_x)		((_x) << 13) /*GOOD*/
 #define   RTL8367B_SWC0_MAX_LENGTH_MASK		RTL8367B_SWC0_MAX_LENGTH(0x3)
 #define   RTL8367B_SWC0_MAX_LENGTH_1522		RTL8367B_SWC0_MAX_LENGTH(0)
@@ -117,17 +117,17 @@
 #define   RTL8367B_SWC0_MAX_LENGTH_1552		RTL8367B_SWC0_MAX_LENGTH(2)
 #define   RTL8367B_SWC0_MAX_LENGTH_16000	RTL8367B_SWC0_MAX_LENGTH(3)
 
-#define RTL8367B_CHIP_NUMBER_REG		0x1300/*GOOD*/
+#define RTL8367B_CHIP_NUMBER_REG		0x1300 /*GOOD*/
 
-#define RTL8367B_CHIP_VER_REG			0x1301/*GOOD*/
-#define   RTL8367B_CHIP_VER_RLVID_SHIFT		12/*GOOD*/
-#define   RTL8367B_CHIP_VER_RLVID_MASK		0xf/*GOOD*/
-#define   RTL8367B_CHIP_VER_MCID_SHIFT		8/*GOOD*/
-#define   RTL8367B_CHIP_VER_MCID_MASK		0xf/*GOOD*/
-#define   RTL8367B_CHIP_VER_BOID_SHIFT		4/*GOOD*/
-#define   RTL8367B_CHIP_VER_BOID_MASK		0xf/*GOOD*/
-#define   RTL8367B_CHIP_VER_AFE_SHIFT		0/*GOOD*/
-#define   RTL8367B_CHIP_VER_AFE_MASK		0x1/*GOOD*/
+#define RTL8367B_CHIP_VER_REG			0x1301 /*GOOD*/
+#define   RTL8367B_CHIP_VER_RLVID_SHIFT		12 /*GOOD*/
+#define   RTL8367B_CHIP_VER_RLVID_MASK		0xf /*GOOD*/
+#define   RTL8367B_CHIP_VER_MCID_SHIFT		8 /*GOOD*/
+#define   RTL8367B_CHIP_VER_MCID_MASK		0xf /*GOOD*/
+#define   RTL8367B_CHIP_VER_BOID_SHIFT		4 /*GOOD*/
+#define   RTL8367B_CHIP_VER_BOID_MASK		0xf /*GOOD*/
+#define   RTL8367B_CHIP_VER_AFE_SHIFT		0 /*GOOD*/
+#define   RTL8367B_CHIP_VER_AFE_MASK		0x1 /*GOOD*/
 
 #define RTL8367B_CHIP_MODE_REG			0x1302
 #define   RTL8367B_CHIP_MODE_MASK		0x7
@@ -169,18 +169,18 @@
 
 #define RTL8367B_PORT_STATUS_REG(_p)		(0x1352 + (_p)) /*GOOD*/
 #define   RTL8367B_PORT_STATUS_EN_1000_SPI	BIT(11) /*GOOD*/
-#define   RTL8367B_PORT_STATUS_EN_100_SPI	BIT(10)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_NWAY_FAULT	BIT(9)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_LINK_MASTER	BIT(8)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_NWAY		BIT(7)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_TXPAUSE		BIT(6)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_RXPAUSE		BIT(5)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_LINK		BIT(4)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_DUPLEX		BIT(2)/*GOOD*/
-#define   RTL8367B_PORT_STATUS_SPEED_MASK	0x0003/*GOOD*/
-#define   RTL8367B_PORT_STATUS_SPEED_10		0/*GOOD*/
-#define   RTL8367B_PORT_STATUS_SPEED_100	1/*GOOD*/
-#define   RTL8367B_PORT_STATUS_SPEED_1000	2/*GOOD*/
+#define   RTL8367B_PORT_STATUS_EN_100_SPI	BIT(10) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_NWAY_FAULT	BIT(9) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_LINK_MASTER	BIT(8) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_NWAY		BIT(7) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_TXPAUSE		BIT(6) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_RXPAUSE		BIT(5) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_LINK		BIT(4) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_DUPLEX		BIT(2) /*GOOD*/
+#define   RTL8367B_PORT_STATUS_SPEED_MASK	0x0003 /*GOOD*/
+#define   RTL8367B_PORT_STATUS_SPEED_10		0 /*GOOD*/
+#define   RTL8367B_PORT_STATUS_SPEED_100	1 /*GOOD*/
+#define   RTL8367B_PORT_STATUS_SPEED_1000	2 /*GOOD*/
 
 #define RTL8367B_RTL_MAGIC_ID_REG		0x13c2
 #define   RTL8367B_RTL_MAGIC_ID_VAL		0x0249
@@ -578,8 +578,8 @@ static const struct rtl8367b_initval rtl8367r_vb_initvals_1[] = {
 };
 
 static int rtl8367b_write_initvals(struct rtl8366_smi *smi,
-				  const struct rtl8367b_initval *initvals,
-				  int count)
+				   const struct rtl8367b_initval *initvals,
+				   int count)
 {
 	int err;
 	int i;
@@ -591,7 +591,7 @@ static int rtl8367b_write_initvals(struct rtl8366_smi *smi,
 }
 
 static int rtl8367b_read_phy_reg(struct rtl8366_smi *smi,
-				u32 phy_addr, u32 phy_reg, u32 *val)
+				 u32 phy_addr, u32 phy_reg, u32 *val)
 {
 	int timeout;
 	u32 data;
@@ -638,7 +638,7 @@ static int rtl8367b_read_phy_reg(struct rtl8366_smi *smi,
 }
 
 static int rtl8367b_write_phy_reg(struct rtl8366_smi *smi,
-				 u32 phy_addr, u32 phy_reg, u32 val)
+				  u32 phy_addr, u32 phy_reg, u32 val)
 {
 	int timeout;
 	u32 data;
@@ -821,7 +821,7 @@ static int rtl8367b_extif_set_force(struct rtl8366_smi *smi, int id,
 }
 
 static int rtl8367b_extif_set_rgmii_delay(struct rtl8366_smi *smi, int id,
-					 unsigned txdelay, unsigned rxdelay)
+					  unsigned txdelay, unsigned rxdelay)
 {
 	u32 mask;
 	u32 val;
@@ -1125,7 +1125,7 @@ static int rtl8367b_set_vlan_mc(struct rtl8366_smi *smi, u32 index,
 		  RTL8367B_VLAN_MC1_FID_SHIFT;
 	data[2] = 0;
 	data[3] = (vlanmc->vid & RTL8367B_VLAN_MC3_EVID_MASK) <<
-		   RTL8367B_VLAN_MC3_EVID_SHIFT;
+		  RTL8367B_VLAN_MC3_EVID_SHIFT;
 
 	for (i = 0; i < ARRAY_SIZE(data); i++)
 		REG_WR(smi, RTL8367B_VLAN_MC_BASE(index) + i, data[i]);
@@ -1207,8 +1207,8 @@ static int rtl8367b_sw_reset_mibs(struct switch_dev *dev,
 }
 
 static int rtl8367b_sw_get_port_link(struct switch_dev *dev,
-				    int port,
-				    struct switch_port_link *link)
+				     int port,
+				     struct switch_port_link *link)
 {
 	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
 	u32 data = 0;
@@ -1248,8 +1248,8 @@ static int rtl8367b_sw_get_port_link(struct switch_dev *dev,
 }
 
 static int rtl8367b_sw_get_max_length(struct switch_dev *dev,
-				     const struct switch_attr *attr,
-				     struct switch_val *val)
+				      const struct switch_attr *attr,
+				      struct switch_val *val)
 {
 	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
 	u32 data;
@@ -1262,8 +1262,8 @@ static int rtl8367b_sw_get_max_length(struct switch_dev *dev,
 }
 
 static int rtl8367b_sw_set_max_length(struct switch_dev *dev,
-				     const struct switch_attr *attr,
-				     struct switch_val *val)
+				      const struct switch_attr *attr,
+				      struct switch_val *val)
 {
 	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
 	u32 max_len;
@@ -1521,7 +1521,7 @@ static struct rtl8366_smi_ops rtl8367b_smi_ops = {
 	.enable_port	= rtl8367b_enable_port,
 };
 
-static int  rtl8367b_probe(struct platform_device *pdev)
+static int rtl8367b_probe(struct platform_device *pdev)
 {
 	struct rtl8366_smi *smi;
 	int err;
@@ -1610,4 +1610,3 @@ MODULE_DESCRIPTION("Realtek RTL8367B ethernet switch driver");
 MODULE_AUTHOR("Gabor Juhos <juhosg@openwrt.org>");
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("platform:" RTL8367B_DRIVER_NAME);
-
