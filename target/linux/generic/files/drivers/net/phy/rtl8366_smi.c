@@ -609,8 +609,8 @@ int rtl8366_debugfs_open(struct inode *inode, struct file *file)
 EXPORT_SYMBOL_GPL(rtl8366_debugfs_open);
 
 static ssize_t rtl8366_read_debugfs_vlan_mc(struct file *file,
-					      char __user *user_buf,
-					      size_t count, loff_t *ppos)
+					    char __user *user_buf,
+					    size_t count, loff_t *ppos)
 {
 	struct rtl8366_smi *smi = (struct rtl8366_smi *)file->private_data;
 	int i, len = 0;
@@ -700,8 +700,8 @@ static ssize_t rtl8366_read_debugfs_pvid(struct file *file,
 }
 
 static ssize_t rtl8366_read_debugfs_reg(struct file *file,
-					 char __user *user_buf,
-					 size_t count, loff_t *ppos)
+					char __user *user_buf,
+					size_t count, loff_t *ppos)
 {
 	struct rtl8366_smi *smi = (struct rtl8366_smi *)file->private_data;
 	u32 t, reg = smi->dbg_reg;
@@ -724,8 +724,8 @@ static ssize_t rtl8366_read_debugfs_reg(struct file *file,
 }
 
 static ssize_t rtl8366_write_debugfs_reg(struct file *file,
-					  const char __user *user_buf,
-					  size_t count, loff_t *ppos)
+					 const char __user *user_buf,
+					 size_t count, loff_t *ppos)
 {
 	struct rtl8366_smi *smi = (struct rtl8366_smi *)file->private_data;
 	unsigned long data;
@@ -871,7 +871,7 @@ static void rtl8366_debugfs_init(struct rtl8366_smi *smi)
 	}
 
 	node = debugfs_create_u8("vlan_4k_page", S_IRUGO | S_IWUSR, root,
-				  &smi->dbg_vlan_4k_page);
+				 &smi->dbg_vlan_4k_page);
 	if (!node) {
 		dev_err(smi->parent, "Creating debugfs file '%s' failed\n",
 			"vlan_4k_page");
@@ -1473,7 +1473,6 @@ int rtl8366_smi_probe_plat(struct platform_device *pdev, struct rtl8366_smi *smi
 
 	return 0;
 }
-
 
 struct rtl8366_smi *rtl8366_smi_probe(struct platform_device *pdev)
 {
