@@ -1,0 +1,577 @@
+diff -Naur linux/arch/mips/Kconfig linux.lq_patched/arch/mips/Kconfig
+--- linux/arch/mips/Kconfig	2010-04-16 21:14:43.935891958 +0530
++++ linux.lq_patched/arch/mips/Kconfig	2010-04-16 21:09:03.095891684 +0530
+@@ -671,6 +671,8 @@
+ 		Hikari
+ 	  Say Y here for most Octeon reference boards.
+ 
++source "arch/mips/Kconfig.ifx"
++
+ endchoice
+ 
+ source "arch/mips/alchemy/Kconfig"
+diff -Naur linux/arch/mips/Makefile linux.lq_patched/arch/mips/Makefile
+--- linux/arch/mips/Makefile	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/arch/mips/Makefile	2010-04-16 20:27:35.185891095 +0530
+@@ -335,6 +335,8 @@
+ load-$(CONFIG_MIPS_MALTA)	+= 0xffffffff80100000
+ all-$(CONFIG_MIPS_MALTA)	:= vmlinux.bin
+ 
++-include $(srctree)/arch/mips/Makefile.ifx
++
+ #
+ # MIPS SIM
+ #
+diff -Naur linux/arch/mips/pci/Makefile linux.lq_patched/arch/mips/pci/Makefile
+--- linux/arch/mips/pci/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/arch/mips/pci/Makefile	2010-04-16 20:29:22.074641023 +0530
+@@ -59,3 +59,5 @@
+ ifdef CONFIG_PCI_MSI
+ obj-$(CONFIG_CPU_CAVIUM_OCTEON)	+= msi-octeon.o
+ endif
++
++-include $(srctree)/arch/mips/pci/Makefile.ifx
+diff -Naur linux/crypto/Kconfig linux.lq_patched/crypto/Kconfig
+--- linux/crypto/Kconfig	2010-04-16 21:14:44.075892049 +0530
++++ linux.lq_patched/crypto/Kconfig	2010-04-16 20:29:51.055891061 +0530
+@@ -819,3 +819,5 @@
+ source "drivers/crypto/Kconfig"
+ 
+ endif	# if CRYPTO
++
++source "crypto/Kconfig.ifx"
+diff -Naur linux/crypto/Makefile linux.lq_patched/crypto/Makefile
+--- linux/crypto/Makefile	2010-04-16 21:14:44.075892049 +0530
++++ linux.lq_patched/crypto/Makefile	2010-04-16 20:30:26.684641498 +0530
+@@ -95,3 +95,5 @@
+ #
+ obj-$(CONFIG_XOR_BLOCKS) += xor.o
+ obj-$(CONFIG_ASYNC_CORE) += async_tx/
++
++-include $(srctree)/crypto/Makefile.ifx
+diff -Naur linux/drivers/atm/Kconfig linux.lq_patched/drivers/atm/Kconfig
+--- linux/drivers/atm/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/atm/Kconfig	2010-04-16 20:35:55.944641685 +0530
+@@ -397,4 +397,6 @@
+ 	help
+ 	  Support for the Solos multiport ADSL2+ card.
+ 
++source "drivers/atm/Kconfig.ifx"
++
+ endif # ATM
+diff -Naur linux/drivers/atm/Makefile linux.lq_patched/drivers/atm/Makefile
+--- linux/drivers/atm/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/atm/Makefile	2010-04-16 20:36:14.495891345 +0530
+@@ -33,3 +33,5 @@
+ ifeq ($(CONFIG_ATM_HE_USE_SUNI),y)
+   obj-$(CONFIG_ATM_HE)		+= suni.o
+ endif
++
++-include $(srctree)/drivers/atm/Makefile.ifx
+diff -Naur linux/drivers/char/Kconfig linux.lq_patched/drivers/char/Kconfig
+--- linux/drivers/char/Kconfig	2010-04-16 21:14:44.025890773 +0530
++++ linux.lq_patched/drivers/char/Kconfig	2010-04-16 20:36:43.314641515 +0530
+@@ -1126,5 +1126,7 @@
+ 
+ source "drivers/s390/char/Kconfig"
+ 
++source "drivers/char/Kconfig.ifx"
++
+ endmenu
+ 
+diff -Naur linux/drivers/char/Makefile linux.lq_patched/drivers/char/Makefile
+--- linux/drivers/char/Makefile	2010-04-16 21:14:44.025890773 +0530
++++ linux.lq_patched/drivers/char/Makefile	2010-04-16 20:37:13.614641522 +0530
+@@ -137,3 +137,5 @@
+ 	rm $@.tmp
+ 
+ endif
++
++-include $(srctree)/drivers/char/Makefile.ifx
+diff -Naur linux/drivers/crypto/Kconfig linux.lq_patched/drivers/crypto/Kconfig
+--- linux/drivers/crypto/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/crypto/Kconfig	2010-04-16 20:37:42.134641355 +0530
+@@ -222,4 +222,6 @@
+ 	help
+ 	  This option allows you to have support for AMCC crypto acceleration.
+ 
++source "drivers/crypto/Kconfig.ifx"
++
+ endif # CRYPTO_HW
+diff -Naur linux/drivers/crypto/Makefile linux.lq_patched/drivers/crypto/Makefile
+--- linux/drivers/crypto/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/crypto/Makefile	2010-04-16 20:38:01.004667866 +0530
+@@ -6,3 +6,5 @@
+ obj-$(CONFIG_CRYPTO_DEV_TALITOS) += talitos.o
+ obj-$(CONFIG_CRYPTO_DEV_IXP4XX) += ixp4xx_crypto.o
+ obj-$(CONFIG_CRYPTO_DEV_PPC4XX) += amcc/
++
++-include $(srctree)/drivers/crypto/Makefile.ifx
+diff -Naur linux/drivers/Kconfig linux.lq_patched/drivers/Kconfig
+--- linux/drivers/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/Kconfig	2010-04-16 20:34:23.205891308 +0530
+@@ -94,6 +94,8 @@
+ 
+ source "drivers/infiniband/Kconfig"
+ 
++source "drivers/Kconfig.ifx"
++
+ source "drivers/edac/Kconfig"
+ 
+ source "drivers/rtc/Kconfig"
+diff -Naur linux/drivers/leds/Kconfig linux.lq_patched/drivers/leds/Kconfig
+--- linux/drivers/leds/Kconfig	2010-04-16 21:14:44.005892434 +0530
++++ linux.lq_patched/drivers/leds/Kconfig	2010-04-16 20:38:41.514641537 +0530
+@@ -236,6 +236,8 @@
+ 	  This option enables support for BD2802GU RGB LED driver chips
+ 	  accessed via the I2C bus.
+ 
++source "drivers/leds/Kconfig.ifx"
++
+ comment "LED Triggers"
+ 
+ config LEDS_TRIGGERS
+diff -Naur linux/drivers/leds/Makefile linux.lq_patched/drivers/leds/Makefile
+--- linux/drivers/leds/Makefile	2010-04-16 21:14:44.025890773 +0530
++++ linux.lq_patched/drivers/leds/Makefile	2010-04-16 20:39:12.535891071 +0530
+@@ -42,3 +42,5 @@
+ obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)	+= ledtrig-default-on.o
+ obj-$(CONFIG_LEDS_TRIGGER_MORSE)	+= ledtrig-morse.o
+ obj-$(CONFIG_LEDS_TRIGGER_NETDEV)      += ledtrig-netdev.o
++
++-include $(srctree)/drivers/leds/Makefile.ifx
+diff -Naur linux/drivers/Makefile linux.lq_patched/drivers/Makefile
+--- linux/drivers/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/Makefile	2010-04-16 20:35:21.264642089 +0530
+@@ -111,3 +111,5 @@
+ obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
+ obj-y				+= ieee802154/
++
++-include $(srctree)/drivers/Makefile.ifx
+diff -Naur linux/drivers/mmc/Kconfig linux.lq_patched/drivers/mmc/Kconfig
+--- linux/drivers/mmc/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mmc/Kconfig	2010-04-16 20:39:36.474641483 +0530
+@@ -27,4 +27,6 @@
+ 
+ source "drivers/mmc/host/Kconfig"
+ 
++source "drivers/mmc/Kconfig.ifx"
++
+ endif # MMC
+diff -Naur linux/drivers/mmc/Makefile linux.lq_patched/drivers/mmc/Makefile
+--- linux/drivers/mmc/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mmc/Makefile	2010-04-16 20:39:55.745891182 +0530
+@@ -10,3 +10,4 @@
+ obj-$(CONFIG_MMC)		+= card/
+ obj-$(CONFIG_MMC)		+= host/
+ 
++-include $(srctree)/drivers/mmc/Makefile.ifx
+diff -Naur linux/drivers/mtd/Kconfig linux.lq_patched/drivers/mtd/Kconfig
+--- linux/drivers/mtd/Kconfig	2010-04-16 21:14:43.965894330 +0530
++++ linux.lq_patched/drivers/mtd/Kconfig	2010-04-16 20:40:18.894641571 +0530
+@@ -355,4 +355,6 @@
+ 
+ source "drivers/mtd/ubi/Kconfig"
+ 
++source "drivers/mtd/Kconfig.ifx"
++
+ endif # MTD
+diff -Naur linux/drivers/mtd/Makefile linux.lq_patched/drivers/mtd/Makefile
+--- linux/drivers/mtd/Makefile	2010-04-16 21:14:43.965894330 +0530
++++ linux.lq_patched/drivers/mtd/Makefile	2010-04-16 20:40:38.834641171 +0530
+@@ -33,3 +33,5 @@
+ obj-y		+= chips/ lpddr/ maps/ devices/ nand/ onenand/ tests/
+ 
+ obj-$(CONFIG_MTD_UBI)		+= ubi/
++
++-include $(srctree)/drivers/mtd/Makefile.ifx
+diff -Naur linux/drivers/mtd/maps/Kconfig linux.lq_patched/drivers/mtd/maps/Kconfig
+--- linux/drivers/mtd/maps/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mtd/maps/Kconfig	2010-04-16 20:41:10.414641415 +0530
+@@ -557,4 +557,6 @@
+ 	  To build this as a module select M here, the module will be called
+ 	  vmu-flash.
+ 
++source "drivers/mtd/maps/Kconfig.ifx"
++
+ endmenu
+diff -Naur linux/drivers/mtd/maps/Makefile linux.lq_patched/drivers/mtd/maps/Makefile
+--- linux/drivers/mtd/maps/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mtd/maps/Makefile	2010-04-16 20:41:28.714647534 +0530
+@@ -61,3 +61,5 @@
+ obj-$(CONFIG_MTD_RBTX4939)	+= rbtx4939-flash.o
+ obj-$(CONFIG_MTD_VMU)		+= vmu-flash.o
+ obj-$(CONFIG_MTD_GPIO_ADDR)	+= gpio-addr-flash.o
++
++-include $(srctree)/drivers/mtd/maps/Makefile.ifx
+diff -Naur linux/drivers/mtd/nand/Kconfig linux.lq_patched/drivers/mtd/nand/Kconfig
+--- linux/drivers/mtd/nand/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mtd/nand/Kconfig	2010-04-16 20:43:38.384641326 +0530
+@@ -482,4 +482,6 @@
+ 	  This enables the driver for the NAND Flash on evaluation board based
+ 	  on w90p910.
+ 
++source "drivers/mtd/nand/Kconfig.ifx"
++
+ endif # MTD_NAND
+diff -Naur linux/drivers/mtd/nand/Makefile linux.lq_patched/drivers/mtd/nand/Makefile
+--- linux/drivers/mtd/nand/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/mtd/nand/Makefile	2010-04-16 20:44:15.284641413 +0530
+@@ -44,3 +44,5 @@
+ obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o
+ 
+ nand-objs := nand_base.o nand_bbt.o
++
++-include $(srctree)/drivers/mtd/nand/Makefile.ifx
+diff -Naur linux/drivers/net/Kconfig linux.lq_patched/drivers/net/Kconfig
+--- linux/drivers/net/Kconfig	2010-04-16 21:14:43.975890430 +0530
++++ linux.lq_patched/drivers/net/Kconfig	2010-04-16 20:44:41.615891290 +0530
+@@ -2919,6 +2919,8 @@
+ 	  if you are compiling a kernel for a Xen guest, you almost
+ 	  certainly want to enable this.
+ 
++source "drivers/net/Kconfig.ifx"
++
+ config ISERIES_VETH
+ 	tristate "iSeries Virtual Ethernet driver support"
+ 	depends on PPC_ISERIES
+diff -Naur linux/drivers/net/Makefile linux.lq_patched/drivers/net/Makefile
+--- linux/drivers/net/Makefile	2010-04-16 21:14:43.975890430 +0530
++++ linux.lq_patched/drivers/net/Makefile	2010-04-16 20:45:08.314641249 +0530
+@@ -286,3 +286,5 @@
+ obj-$(CONFIG_SFC) += sfc/
+ 
+ obj-$(CONFIG_WIMAX) += wimax/
++
++-include $(srctree)/drivers/net/Makefile.ifx
+diff -Naur linux/drivers/net/wireless/Kconfig linux.lq_patched/drivers/net/wireless/Kconfig
+--- linux/drivers/net/wireless/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/net/wireless/Kconfig	2010-04-16 20:45:35.885891589 +0530
+@@ -488,5 +488,6 @@
+ source "drivers/net/wireless/orinoco/Kconfig"
+ source "drivers/net/wireless/wl12xx/Kconfig"
+ source "drivers/net/wireless/iwmc3200wifi/Kconfig"
++source "drivers/net/wireless/Kconfig.ifx"
+ 
+ endif # WLAN
+diff -Naur linux/drivers/net/wireless/Makefile linux.lq_patched/drivers/net/wireless/Makefile
+--- linux/drivers/net/wireless/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/net/wireless/Makefile	2010-04-16 20:45:54.724641199 +0530
+@@ -62,3 +62,5 @@
+ obj-$(CONFIG_WL12XX)	+= wl12xx/
+ 
+ obj-$(CONFIG_IWM)	+= iwmc3200wifi/
++
++-include $(srctree)/drivers/net/wireless/Makefile.ifx
+diff -Naur linux/drivers/pci/Kconfig linux.lq_patched/drivers/pci/Kconfig
+--- linux/drivers/pci/Kconfig	2010-04-16 21:14:43.935891958 +0530
++++ linux.lq_patched/drivers/pci/Kconfig	2010-04-16 20:46:24.064641257 +0530
+@@ -75,3 +75,5 @@
+ 	  physical resources.
+ 
+ 	  If unsure, say N.
++
++source "drivers/pci/Kconfig.ifx"
+diff -Naur linux/drivers/pci/Makefile linux.lq_patched/drivers/pci/Makefile
+--- linux/drivers/pci/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/pci/Makefile	2010-04-16 20:46:45.274641442 +0530
+@@ -63,3 +63,5 @@
+ ifeq ($(CONFIG_PCI_DEBUG),y)
+ EXTRA_CFLAGS += -DDEBUG
+ endif
++
++-include $(srctree)/drivers/pci/Makefile.ifx
+diff -Naur linux/drivers/pci/pcie/Kconfig linux.lq_patched/drivers/pci/pcie/Kconfig
+--- linux/drivers/pci/pcie/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/pci/pcie/Kconfig	2010-04-16 20:47:04.475891179 +0530
+@@ -27,6 +27,8 @@
+ 
+ source "drivers/pci/pcie/aer/Kconfig"
+ 
++source "drivers/pci/pcie/Kconfig.ifx"
++
+ #
+ # PCI Express ASPM
+ #
+diff -Naur linux/drivers/pci/pcie/Makefile linux.lq_patched/drivers/pci/pcie/Makefile
+--- linux/drivers/pci/pcie/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/pci/pcie/Makefile	2010-04-16 20:47:46.474641399 +0530
+@@ -11,3 +11,5 @@
+ 
+ # Build PCI Express AER if needed
+ obj-$(CONFIG_PCIEAER)		+= aer/
++
++-include $(srctree)/drivers/pci/pcie/Makefile.ifx
+diff -Naur linux/drivers/serial/Kconfig linux.lq_patched/drivers/serial/Kconfig
+--- linux/drivers/serial/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/serial/Kconfig	2010-04-16 20:48:16.004641710 +0530
+@@ -1477,4 +1477,6 @@
+ 	  If you have enabled the serial port on the bcm63xx CPU
+ 	  you can make it the console by answering Y to this option.
+ 
++source "drivers/serial/Kconfig.ifx"
++
+ endmenu
+diff -Naur linux/drivers/serial/Makefile linux.lq_patched/drivers/serial/Makefile
+--- linux/drivers/serial/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/serial/Makefile	2010-04-16 20:48:31.645891659 +0530
+@@ -81,3 +81,5 @@
+ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
+ obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
+ obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
++
++-include $(srctree)/drivers/serial/Makefile.ifx
+diff -Naur linux/drivers/spi/Kconfig linux.lq_patched/drivers/spi/Kconfig
+--- linux/drivers/spi/Kconfig	2010-04-16 21:14:44.065892907 +0530
++++ linux.lq_patched/drivers/spi/Kconfig	2010-04-16 20:48:57.264641361 +0530
+@@ -224,6 +224,8 @@
+ 	  the inbuilt hardware cannot provide the transfer mode, or
+ 	  where the board is using non hardware connected pins.
+ 
++source "drivers/spi/Kconfig.ifx"
++
+ config SPI_SH_SCI
+ 	tristate "SuperH SCI SPI controller"
+ 	depends on SUPERH
+diff -Naur linux/drivers/spi/Makefile linux.lq_patched/drivers/spi/Makefile
+--- linux/drivers/spi/Makefile	2010-04-16 21:14:44.065892907 +0530
++++ linux.lq_patched/drivers/spi/Makefile	2010-04-16 20:49:21.674941324 +0530
+@@ -46,3 +46,5 @@
+ 
+ # SPI slave drivers (protocol for that link)
+ # 	... add above this line ...
++
++-include $(srctree)/drivers/spi/Makefile.ifx
+diff -Naur linux/drivers/usb/gadget/Kconfig linux.lq_patched/drivers/usb/gadget/Kconfig
+--- linux/drivers/usb/gadget/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/gadget/Kconfig	2010-04-16 20:50:54.485891339 +0530
+@@ -541,8 +541,12 @@
+ # NOTE:  Please keep dummy_hcd LAST so that "real hardware" appears
+ # first and will be selected by default.
+ 
++source "drivers/usb/gadget/Kconfig.ifx"
++
+ endchoice
+ 
++source "drivers/usb/gadget/Kconfig.ifx.opt"
++
+ config USB_GADGET_DUALSPEED
+ 	bool
+ 	depends on USB_GADGET
+diff -Naur linux/drivers/usb/gadget/Makefile linux.lq_patched/drivers/usb/gadget/Makefile
+--- linux/drivers/usb/gadget/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/gadget/Makefile	2010-04-16 20:51:13.094643475 +0530
+@@ -52,3 +52,4 @@
+ obj-$(CONFIG_USB_MIDI_GADGET)	+= g_midi.o
+ obj-$(CONFIG_USB_CDC_COMPOSITE) += g_cdc.o
+ 
++-include $(srctree)/drivers/usb/gadget/Makefile.ifx
+diff -Naur linux/drivers/usb/host/Kconfig linux.lq_patched/drivers/usb/host/Kconfig
+--- linux/drivers/usb/host/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/host/Kconfig	2010-04-16 20:51:33.014641519 +0530
+@@ -381,3 +381,5 @@
+ 
+ 	  To compile this driver a module, choose M here: the module
+ 	  will be called "hwa-hc".
++
++source "drivers/usb/host/Kconfig.ifx"
+diff -Naur linux/drivers/usb/host/Makefile linux.lq_patched/drivers/usb/host/Makefile
+--- linux/drivers/usb/host/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/host/Makefile	2010-04-16 20:51:53.675891479 +0530
+@@ -32,3 +32,5 @@
+ obj-$(CONFIG_USB_R8A66597_HCD)	+= r8a66597-hcd.o
+ obj-$(CONFIG_USB_ISP1760_HCD)	+= isp1760.o
+ obj-$(CONFIG_USB_HWA_HCD)	+= hwa-hc.o
++
++-include $(srctree)/drivers/usb/host/Makefile.ifx
+diff -Naur linux/drivers/usb/Kconfig linux.lq_patched/drivers/usb/Kconfig
+--- linux/drivers/usb/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/Kconfig	2010-04-16 20:49:49.605891258 +0530
+@@ -157,4 +157,6 @@
+ 
+ source "drivers/usb/otg/Kconfig"
+ 
++source "drivers/usb/Kconfig.ifx"
++
+ endif # USB_SUPPORT
+diff -Naur linux/drivers/usb/Makefile linux.lq_patched/drivers/usb/Makefile
+--- linux/drivers/usb/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/drivers/usb/Makefile	2010-04-16 20:50:07.545891596 +0530
+@@ -44,3 +44,5 @@
+ 
+ obj-$(CONFIG_USB_ATM)		+= atm/
+ obj-$(CONFIG_USB_SPEEDTOUCH)	+= atm/
++
++-include $(srctree)/drivers/usb/Makefile.ifx
+diff -Naur linux/net/atm/Kconfig linux.lq_patched/net/atm/Kconfig
+--- linux/net/atm/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/atm/Kconfig	2010-04-16 20:53:12.675891364 +0530
+@@ -71,3 +71,5 @@
+ 	  This is an experimental mechanism for users who need to terminate a
+ 	  large number of IP-only vcc's.  Do not enable this unless you are sure
+ 	  you know what you are doing.
++
++source "net/atm/Kconfig.ifx"
+diff -Naur linux/net/atm/Makefile linux.lq_patched/net/atm/Makefile
+--- linux/net/atm/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/atm/Makefile	2010-04-16 21:09:38.024641666 +0530
+@@ -13,3 +13,5 @@
+ obj-$(CONFIG_ATM_LANE) += lec.o
+ obj-$(CONFIG_ATM_MPOA) += mpoa.o
+ obj-$(CONFIG_PPPOATM) += pppoatm.o
++
++-include $(srctree)/net/atm/Makefile.ifx
+diff -Naur linux/net/ieee802154/Kconfig linux.lq_patched/net/ieee802154/Kconfig
+--- linux/net/ieee802154/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ieee802154/Kconfig	2010-04-16 20:53:51.565891713 +0530
+@@ -10,3 +10,5 @@
+ 
+ 	  Say Y here to compile LR-WPAN support into the kernel or say M to
+ 	  compile it as modules.
++
++#source "net/ieee802154/Kconfig.ifx"
+diff -Naur linux/net/ieee802154/Makefile linux.lq_patched/net/ieee802154/Makefile
+--- linux/net/ieee802154/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ieee802154/Makefile	2010-04-16 20:54:13.194641702 +0530
+@@ -3,3 +3,5 @@
+ af_802154-y		:= af_ieee802154.o raw.o dgram.o
+ 
+ ccflags-y += -Wall -DDEBUG
++
++-include $(srctree)/net/ieee802154/Makefile.ifx
+diff -Naur linux/net/ipv4/Kconfig linux.lq_patched/net/ipv4/Kconfig
+--- linux/net/ipv4/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv4/Kconfig	2010-04-16 20:54:35.885891409 +0530
+@@ -627,3 +627,4 @@
+ 
+ 	  If unsure, say N.
+ 
++source "net/ipv4/Kconfig.ifx"
+diff -Naur linux/net/ipv4/Makefile linux.lq_patched/net/ipv4/Makefile
+--- linux/net/ipv4/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv4/Makefile	2010-04-16 20:54:52.355891460 +0530
+@@ -52,3 +52,5 @@
+ 
+ obj-$(CONFIG_XFRM) += xfrm4_policy.o xfrm4_state.o xfrm4_input.o \
+ 		      xfrm4_output.o
++
++-include $(srctree)/net/ipv4/Makefile.ifx
+diff -Naur linux/net/ipv4/netfilter/Kconfig linux.lq_patched/net/ipv4/netfilter/Kconfig
+--- linux/net/ipv4/netfilter/Kconfig	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/ipv4/netfilter/Kconfig	2010-04-16 20:55:08.714641375 +0530
+@@ -393,5 +393,7 @@
+ 
+ endif # IP_NF_ARPTABLES
+ 
++source "net/ipv4/netfilter/Kconfig.ifx"
++
+ endmenu
+ 
+diff -Naur linux/net/ipv4/netfilter/Makefile linux.lq_patched/net/ipv4/netfilter/Makefile
+--- linux/net/ipv4/netfilter/Makefile	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/ipv4/netfilter/Makefile	2010-04-16 20:55:24.074641176 +0530
+@@ -72,3 +72,4 @@
+ 
+ obj-$(CONFIG_IP_NF_QUEUE) += ip_queue.o
+ 
++-include $(srctree)/net/ipv4/netfilter/Makefile.ifx
+diff -Naur linux/net/ipv6/Kconfig linux.lq_patched/net/ipv6/Kconfig
+--- linux/net/ipv6/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv6/Kconfig	2010-04-16 20:55:46.944641470 +0530
+@@ -217,4 +217,6 @@
+ 	  Support for IPv6 PIM multicast routing protocol PIM-SMv2.
+ 	  If unsure, say N.
+ 
++source "net/ipv6/Kconfig.ifx"
++
+ endif # IPV6
+diff -Naur linux/net/ipv6/Makefile linux.lq_patched/net/ipv6/Makefile
+--- linux/net/ipv6/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv6/Makefile	2010-04-16 20:56:00.814641190 +0530
+@@ -40,3 +40,5 @@
+ obj-y += addrconf_core.o exthdrs_core.o
+ 
+ obj-$(subst m,y,$(CONFIG_IPV6)) += inet6_hashtables.o
++
++-include $(srctree)/net/ipv6/Makefile.ifx
+diff -Naur linux/net/ipv6/netfilter/Kconfig linux.lq_patched/net/ipv6/netfilter/Kconfig
+--- linux/net/ipv6/netfilter/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv6/netfilter/Kconfig	2010-04-16 20:56:25.955891230 +0530
+@@ -201,6 +201,8 @@
+         
+          If unsure, say N.
+ 
++source "net/ipv6/netfilter/Kconfig.ifx"
++
+ endif # IP6_NF_IPTABLES
+ 
+ endmenu
+diff -Naur linux/net/ipv6/netfilter/Makefile linux.lq_patched/net/ipv6/netfilter/Makefile
+--- linux/net/ipv6/netfilter/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/ipv6/netfilter/Makefile	2010-04-16 20:56:43.345891198 +0530
+@@ -28,3 +28,5 @@
+ # targets
+ obj-$(CONFIG_IP6_NF_TARGET_LOG) += ip6t_LOG.o
+ obj-$(CONFIG_IP6_NF_TARGET_REJECT) += ip6t_REJECT.o
++
++-include $(srctree)/net/ipv6/netfilter/Makefile.ifx
+diff -Naur linux/net/Kconfig linux.lq_patched/net/Kconfig
+--- linux/net/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/Kconfig	2010-04-16 20:52:36.054641303 +0530
+@@ -76,6 +76,7 @@
+ source "net/ipv4/Kconfig"
+ source "net/ipv6/Kconfig"
+ source "net/netlabel/Kconfig"
++source "net/Kconfig.ifx"
+ 
+ endif # if INET
+ 
+diff -Naur linux/net/Makefile linux.lq_patched/net/Makefile
+--- linux/net/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.lq_patched/net/Makefile	2010-04-16 20:52:53.365891275 +0530
+@@ -65,3 +65,5 @@
+ obj-$(CONFIG_SYSCTL)		+= sysctl_net.o
+ endif
+ obj-$(CONFIG_WIMAX)		+= wimax/
++
++-include $(srctree)/net/Makefile.ifx
+diff -Naur linux/net/netfilter/Kconfig linux.lq_patched/net/netfilter/Kconfig
+--- linux/net/netfilter/Kconfig	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/netfilter/Kconfig	2010-04-16 20:57:19.194641527 +0530
+@@ -971,6 +971,8 @@
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+ 
++source "net/netfilter/Kconfig.ifx"
++
+ endif # NETFILTER_XTABLES
+ 
+ endmenu
+diff -Naur linux/net/netfilter/Makefile linux.lq_patched/net/netfilter/Makefile
+--- linux/net/netfilter/Makefile	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/netfilter/Makefile	2010-04-16 20:57:38.545891162 +0530
+@@ -100,3 +100,5 @@
+ 
+ # IPVS
+ obj-$(CONFIG_IP_VS) += ipvs/
++
++-include $(srctree)/net/netfilter/Makefile.ifx
+diff -Naur linux/net/sched/Kconfig linux.lq_patched/net/sched/Kconfig
+--- linux/net/sched/Kconfig	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/sched/Kconfig	2010-04-16 20:58:16.864641306 +0530
+@@ -558,3 +558,5 @@
+ 
+ config NET_SCH_FIFO
+ 	bool
++
++source "net/sched/Kconfig.ifx"
+diff -Naur linux/net/sched/Makefile linux.lq_patched/net/sched/Makefile
+--- linux/net/sched/Makefile	2010-04-16 21:14:43.985890793 +0530
++++ linux.lq_patched/net/sched/Makefile	2010-04-16 20:58:47.314641221 +0530
+@@ -47,3 +47,5 @@
+ obj-$(CONFIG_NET_EMATCH_U32)	+= em_u32.o
+ obj-$(CONFIG_NET_EMATCH_META)	+= em_meta.o
+ obj-$(CONFIG_NET_EMATCH_TEXT)	+= em_text.o
++
++-include $(srctree)/net/sched/Makefile.ifx

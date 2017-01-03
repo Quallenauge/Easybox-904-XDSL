@@ -1,0 +1,61 @@
+diff -Naur linux.orig/arch/mips/boot/Makefile linux.new/arch/mips/boot/Makefile
+--- linux.orig/arch/mips/boot/Makefile	2010-04-02 04:29:14.000000000 +0530
++++ linux.new/arch/mips/boot/Makefile	2010-11-09 00:25:49.330626989 +0530
+@@ -27,6 +27,38 @@
+ 
+ all: vmlinux.ecoff vmlinux.srec addinitrd
+ 
++TOPDIR ?= $(srctree)
++
++piggy.gzip: $(CONFIGURE) $(VMLINUX)
++	$(Q)$(OBJCOPY) -O binary -R .note -R .comment -S $(TOPDIR)/vmlinux piggy
++	$(Q)gzip -9 < piggy > piggy.gzip
++
++piggy.bz2: $(CONFIGURE) $(VMLINUX)
++	$(Q)$(OBJCOPY) -O binary -R .note -R .comment -S $(TOPDIR)/vmlinux piggy
++	$(Q)bzip2 -9 < piggy > piggy.bz2
++
++piggy.lzma: $(CONFIGURE) $(VMLINUX)
++	$(Q)$(OBJCOPY) -O binary -R .note -R .comment -S $(TOPDIR)/vmlinux piggy
++	$(Q)lzma e piggy piggy.lzma
++
++uImage.gzip : piggy.gzip
++	$(Q)mkimage -A mips -O linux -T kernel -C gzip -a $(LOADADDR) -e \
++	0x$(shell grep kernel_entry $(TOPDIR)/System.map | awk '{ printf "%s", $$1 }') \
++	-n 'MIPS Linux-$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)' \
++	-d piggy.gzip uImage
++
++uImage.bzip2 : piggy.bz2
++	$(Q)mkimage -A mips -O linux -T kernel -C bzip2 -a $(LOADADDR) -e \
++	0x$(shell grep kernel_entry $(TOPDIR)/System.map | awk '{ printf "%s", $$1 }') \
++	-n 'MIPS Linux-$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)' \
++	-d piggy.bz2 uImage
++
++uImage.lzma : piggy.lzma
++	$(Q)mkimage -A mips -O linux -T kernel -C lzma -a $(LOADADDR) -e \
++	0x$(shell grep kernel_entry $(TOPDIR)/System.map | awk '{ printf "%s", $$1 }') \
++	-n 'MIPS Linux-$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)' \
++	-d piggy.lzma uImage
++
+ vmlinux.ecoff: $(obj)/elf2ecoff $(VMLINUX)
+ 	$(obj)/elf2ecoff $(VMLINUX) vmlinux.ecoff $(E2EFLAGS)
+ 
+diff -Naur linux.orig/arch/mips/Makefile linux.new/arch/mips/Makefile
+--- linux.orig/arch/mips/Makefile	2010-11-09 00:15:36.004616780 +0530
++++ linux.new/arch/mips/Makefile	2010-11-09 00:25:23.574288578 +0530
+@@ -715,6 +715,15 @@
+ vmlinux.srec: $(vmlinux-32)
+ 	+@$(call makeboot,$@)
+ 
++uImage.lzma: $(vmlinux-32)
++	+@$(call makeboot,LOADADDR=$(load-y) $@)
++
++uImage.bzip2: $(vmlinux-32)
++	+@$(call makeboot,LOADADDR=$(load-y) $@)
++
++uImage.gzip: $(vmlinux-32)
++	+@$(call makeboot,LOADADDR=$(load-y) $@)
++
+ CLEAN_FILES += vmlinux.ecoff \
+ 	       vmlinux.srec
+ 

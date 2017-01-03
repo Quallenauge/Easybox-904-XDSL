@@ -1,0 +1,90 @@
+Comments:
+===============================================================
+1. function added to modify the skbuff priority value based on the skbuff nfmark only if qos is compiled in.
+2. the skbuff_mark_prio function is invoked in the routed and bridged traffic, output and forward path.
+
+Index: linux/include/linux/skbuff.h
+===================================================================
+--- linux.orig/include/linux/skbuff.h	2011-01-11 15:42:20.000000000 +0530
++++ linux/include/linux/skbuff.h	2011-01-11 17:22:07.704605315 +0530
+@@ -1813,6 +1813,8 @@
+ 
+ extern struct sk_buff *skb_segment(struct sk_buff *skb, int features);
+ 
++extern int skb_mark_priority(struct sk_buff *skb);
++
+ static inline void *skb_header_pointer(const struct sk_buff *skb, int offset,
+ 				       int len, void *buffer)
+ {
+Index: linux/net/Kconfig
+===================================================================
+--- linux.orig/net/Kconfig	2011-01-11 15:42:20.000000000 +0530
++++ linux/net/Kconfig	2011-01-11 17:21:04.845854757 +0530
+@@ -72,6 +72,11 @@
+ 
+ 	  Short answer: say Y.
+ 
++config IFX_IPQOS
++        bool "IPQOS support"
++        help
++                Infineon IPQOS support
++
+ config LTQ_ADDON
+        bool "LTQ Networking enhancements "
+        depends on LTQ && INET
+Index: linux/net/bridge/br_forward.c
+===================================================================
+--- linux.orig/net/bridge/br_forward.c	2011-01-11 15:42:20.000000000 +0530
++++ linux/net/bridge/br_forward.c	2011-01-11 17:23:49.025854502 +0530
+@@ -62,6 +62,7 @@
+ int br_forward_finish(struct sk_buff *skb)
+ #endif
+ {
++	skb_mark_priority(skb);
+ #if defined(CONFIG_LTQ_NETFILTER_PROCFS) && (defined(CONFIG_BRIDGE_NF_EBTABLES) || defined(CONFIG_BRIDGE_NF_EBTABLES_MODULE))
+        if (!brnf_filter_post_routing_enable)
+                return br_dev_queue_push_xmit(skb);
+Index: linux/net/core/skbuff.c
+===================================================================
+--- linux.orig/net/core/skbuff.c	2011-01-11 15:42:19.000000000 +0530
++++ linux/net/core/skbuff.c	2011-01-11 17:27:02.384605136 +0530
+@@ -2888,6 +2888,27 @@
+ #endif
+ }
+ 
++/*
++ * Function to mark priority based on specific criteria
++ */
++int skb_mark_priority(struct sk_buff *skb)
++{
++        unsigned old_priority=skb->priority;
++#ifdef CONFIG_IFX_IPQOS
++        /*
++         * IPQoS in UGW: added copy of nfmark set in classifier to skb->priority to be used in hardware queues
++         */
++        /* nfmark range = 1-8 if QoS is enabled; priority range = 0-7; else preserve original priority */
++        if (skb->mark)
++                skb->priority = (skb->mark - 1) & 0X07;
++#else
++        /* TODO: Use DSCP for IP, preserve for others */
++
++#endif /* CONFIG_IFX_IPQOS */
++        return (old_priority);
++}
++EXPORT_SYMBOL(skb_mark_priority);
++
+ /**
+  *	skb_to_sgvec - Fill a scatter-gather list from a socket buffer
+  *	@skb: Socket buffer containing the buffers to be mapped
+Index: linux/net/ipv4/ip_output.c
+===================================================================
+--- linux.orig/net/ipv4/ip_output.c	2011-01-11 15:42:20.000000000 +0530
++++ linux/net/ipv4/ip_output.c	2011-01-11 17:24:47.425855434 +0530
+@@ -261,6 +261,7 @@
+ 	if (skb->len > ip_skb_dst_mtu(skb) && !skb_is_gso(skb))
+ 		return ip_fragment(skb, ip_finish_output2);
+ 	else {
++		skb_mark_priority(skb);
+ #ifdef CONFIG_LTQ_NETFILTER_PROCFS
+                if (!sysctl_netfilter_postrouting_enable)
+                        return ip_finish_output2(skb);

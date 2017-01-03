@@ -1,0 +1,28 @@
+--- linux/net/core/skbuff.c	2011-02-14 22:29:39.369912911 +0530
++++ linux_mod/net/core/skbuff.c	2011-02-15 10:21:57.058663556 +0530
+@@ -2899,8 +2899,12 @@
+          * IPQoS in UGW: added copy of nfmark set in classifier to skb->priority to be used in hardware queues
+          */
+         /* nfmark range = 1-8 if QoS is enabled; priority range = 0-7; else preserve original priority */
+-        if (skb->mark)
+-                skb->priority = (skb->mark - 1) & 0X07;
++	unsigned new_mark;
++
++        new_mark = ((skb->mark >> 6) & NFMARK_SHIFT_MASK);
++        if (new_mark)
++                skb->priority = new_mark - 1;
++
+ #else
+         /* TODO: Use DSCP for IP, preserve for others */
+ 
+--- linux/include/linux/skbuff.h	2011-02-14 22:29:39.369912911 +0530
++++ linux_mod/include/linux/skbuff.h	2011-02-15 10:22:48.378662980 +0530
+@@ -47,7 +47,7 @@
+ 	SKB_WITH_OVERHEAD((PAGE_SIZE << (ORDER)) - (X))
+ #define SKB_MAX_HEAD(X)		(SKB_MAX_ORDER((X), 0))
+ #define SKB_MAX_ALLOC		(SKB_MAX_ORDER(0, 2))
+-
++#define NFMARK_SHIFT_MASK 0x0000000f
+ /* A. Checksumming of received packets by device.
+  *
+  *	NONE: device failed to checksum this packet.

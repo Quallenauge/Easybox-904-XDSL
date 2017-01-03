@@ -1,0 +1,56 @@
+diff -Naur linux-2.6.32.32.orig/net/bridge/br_forward.c linux-2.6.32.32/net/bridge/br_forward.c
+--- linux-2.6.32.32.orig/net/bridge/br_forward.c	2011-04-05 16:52:54.000000000 +0530
++++ linux-2.6.32.32/net/bridge/br_forward.c	2011-04-05 16:46:24.000000000 +0530
+@@ -152,8 +152,10 @@
+ #ifdef CONFIG_IFX_IGMP_SNOOPING
+ 				if ((bridge_igmp_snooping || bridge_mld_snooping) && 
+ 				    (eth_hdr(skb)->h_dest[0] & 0x1) && 
+-				    (br_selective_flood(prev, skb) == 0))
++				    (br_selective_flood(prev, skb) == 0)) {
++						prev = p;
+ 						continue;
++				}
+ #endif
+ 
+ 				if ((skb2 = skb_clone(skb, GFP_ATOMIC)) == NULL) {
+diff -Naur linux-2.6.32.32.orig/net/bridge/br_if.c linux-2.6.32.32/net/bridge/br_if.c
+--- linux-2.6.32.32.orig/net/bridge/br_if.c	2011-04-05 16:52:54.000000000 +0530
++++ linux-2.6.32.32/net/bridge/br_if.c	2011-04-05 16:46:24.000000000 +0530
+@@ -131,6 +131,10 @@
+ 	struct net_bridge *br = p->br;
+ 	struct net_device *dev = p->dev;
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_mcast_port_cleanup(p);
++#endif
++
+ 	sysfs_remove_link(br->ifobj, dev->name);
+ 
+ 	dev_set_promiscuity(dev, -1);
+diff -Naur linux-2.6.32.32.orig/net/bridge/br_mcast_snooping.c linux-2.6.32.32/net/bridge/br_mcast_snooping.c
+--- linux-2.6.32.32.orig/net/bridge/br_mcast_snooping.c	2011-04-05 16:52:54.000000000 +0530
++++ linux-2.6.32.32/net/bridge/br_mcast_snooping.c	2011-04-05 20:23:48.000000000 +0530
+@@ -123,6 +123,12 @@
+ 	init_timer(&port->mld_router_timer);
+ }
+ 
++void br_mcast_port_cleanup(struct net_bridge_port *port)
++{
++	del_timer(&port->igmp_router_timer);
++	del_timer(&port->mld_router_timer);
++}
++
+ static void init_ipaddr(ipaddr_t *addr, ptype_t type, void *addrp)
+ {
+     if (addr == NULL)
+diff -Naur linux-2.6.32.32.orig/net/bridge/br_private.h linux-2.6.32.32/net/bridge/br_private.h
+--- linux-2.6.32.32.orig/net/bridge/br_private.h	2011-04-06 13:54:16.000000000 +0530
++++ linux-2.6.32.32/net/bridge/br_private.h	2011-04-06 13:55:49.000000000 +0530
+@@ -324,6 +324,7 @@
+ #ifdef CONFIG_IFX_IGMP_SNOOPING
+ /* br_mcast_snooping.c */
+ extern void br_mcast_port_init(struct net_bridge_port *port);
++extern void br_mcast_port_cleanup(struct net_bridge_port *port);
+ extern int br_mg_del_record(struct net_bridge_port *port, ipaddr_t *gaddr);
+ extern int br_mg_add_entry(struct net_bridge_port *port, ipaddr_t *gaddr, u8 filter, u8 compat, u32 saddr_cnt, ipaddr_t *saddr);
+ extern int br_selective_flood(struct net_bridge_port *p, struct sk_buff *skb);

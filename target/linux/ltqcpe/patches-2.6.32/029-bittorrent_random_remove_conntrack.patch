@@ -1,0 +1,186 @@
+Index: linux/net/netfilter/nf_conntrack_core.c
+===================================================================
+--- linux.orig/net/netfilter/nf_conntrack_core.c	2010-12-02 18:55:02.000000000 +0530
++++ linux/net/netfilter/nf_conntrack_core.c	2010-12-08 17:23:43.625850078 +0530
+@@ -589,6 +589,77 @@
+ 	return dropped;
+ }
+ 
++#define LTQ_IP_CONNTRACK_REPLACEMENT
++
++#undef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
++
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT
++static inline int drop_decision(void)
++{ /*return value: 1-drop currnet nf_conn, 0-not drop current nf_conntrack */
++
++	        /*Later we need to optimize here, like how to keep sip ALG,
++		 * voice RTP and so on */
++	        return 1;
++}
++
++
++//static int FindReplacement( const struct nf_conntrack_tuple *tuple, const struct nf_conntrack_l3proto *protoco)
++static int FindReplacement(void)
++{
++	/* Traverse backwards: gives us oldest, which is roughly LRU */
++        struct list_head *chain;
++	struct nf_conntrack_tuple_hash *h;
++	int dropped = 0, i;
++	static unsigned int hash_next=0 ; //save for next replacement
++	struct nf_conn *ct = NULL, *tmp;
++
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
++        printk(KERN_WARNING "iptables full:ip_conntrack_max(%d)_ip_conntrack_count(%d)_hash_next(%d)\n", nf_conntrack_max, atomic_read(&nf_conntrack_count), hash_next );
++#endif
++        read_lock_bh(&nf_conntrack_lock);
++        for (i=0; i< nf_conntrack_htable_size; i++)  /*control loop times*/ {
++                hash_next =  (hash_next+1) % nf_conntrack_htable_size;
++                chain = &nf_conntrack_hash[ hash_next  ];
++		list_for_each_entry_reverse(h, chain, list) {
++		tmp = nf_ct_tuplehash_to_ctrack(h);		
++                if (drop_decision() && (atomic_read(&tmp->ct_general.use) == 1)) {
++				ct = tmp;
++                                break;
++                }
++	      }
++        }
++
++        read_unlock_bh(&nf_conntrack_lock);
++
++        if (!ct) {
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
++                printk(KERN_WARNING "Not found replacemnet ???\n");
++#endif
++                return dropped;
++        }
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
++        printk(KERN_WARNING "replace ok:%d\n", hash_next);
++#endif
++        if (del_timer(&ct->timeout)) {
++#if defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE)                                                                                 
++                atomic_inc(&g_ppa_force_timeout);                                                                                                     
++#endif
++
++                death_by_timeout((unsigned long)ct);
++
++#if defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE)                                                                                 
++                atomic_dec(&g_ppa_force_timeout);                                                                                                     
++#endif 
++		dropped = 1;
++		NF_CT_STAT_INC(early_drop);	
++        }
++	nf_ct_put(ct);
++        return dropped;
++}
++
++#endif
++
++
+ struct nf_conn *nf_conntrack_alloc(struct net *net,
+ 				   const struct nf_conntrack_tuple *orig,
+ 				   const struct nf_conntrack_tuple *repl,
+@@ -609,6 +680,14 @@
+ 	    unlikely(atomic_read(&net->ct.count) > nf_conntrack_max)) {
+ 		unsigned int hash = hash_conntrack(net, orig);
+ 		if (!early_drop(net, hash)) {
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT
++		if( FindReplacement() )
++		{
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
++			printk(KERN_WARNING "inside nf_conntrack_alloc ok\n");
++#endif
++			goto SUCCESS_REPLACEMENT;
++		}
+ 			atomic_dec(&net->ct.count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING
+@@ -618,6 +697,9 @@
+ 		}
+ 	}
+ 
++#ifdef LTQ_IP_CONNTRACK_REPLACEMENT
++SUCCESS_REPLACEMENT:
++#endif
+ 	/*
+ 	 * Do not use kmem_cache_zalloc(), as this cache uses
+ 	 * SLAB_DESTROY_BY_RCU.
+Index: linux/net/netfilter/nf_conntrack_core.c
+===================================================================
+--- linux.orig/net/netfilter/nf_conntrack_core.c	2010-12-08 18:16:39.000000000 +0530
++++ linux/net/netfilter/nf_conntrack_core.c	2010-12-08 19:54:58.134599943 +0530
+@@ -604,32 +604,35 @@
+ 
+ 
+ //static int FindReplacement( const struct nf_conntrack_tuple *tuple, const struct nf_conntrack_l3proto *protoco)
+-static int FindReplacement(void)
++/* Enhance : need to traverse reverse in the list , right now implementation is
++ * similiar as early_drop*/
++static int FindReplacement(struct net *net)
+ {
+ 	/* Traverse backwards: gives us oldest, which is roughly LRU */
+-        struct list_head *chain;
+ 	struct nf_conntrack_tuple_hash *h;
+ 	int dropped = 0, i;
++	struct hlist_nulls_node *n;
+ 	static unsigned int hash_next=0 ; //save for next replacement
+ 	struct nf_conn *ct = NULL, *tmp;
+ 
+ #ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
+-        printk(KERN_WARNING "iptables full:ip_conntrack_max(%d)_ip_conntrack_count(%d)_hash_next(%d)\n", nf_conntrack_max, atomic_read(&nf_conntrack_count), hash_next );
++        printk(KERN_WARNING "iptables full:ip_conntrack_max(%d)_ip_conntrack_count(%d)_hash_next(%d)\n", nf_conntrack_max, atomic_read(&net->ct.count),hash_next );
+ #endif
+-        read_lock_bh(&nf_conntrack_lock);
+-        for (i=0; i< nf_conntrack_htable_size; i++)  /*control loop times*/ {
+-                hash_next =  (hash_next+1) % nf_conntrack_htable_size;
+-                chain = &nf_conntrack_hash[ hash_next  ];
+-		list_for_each_entry_reverse(h, chain, list) {
+-		tmp = nf_ct_tuplehash_to_ctrack(h);		
+-                if (drop_decision() && (atomic_read(&tmp->ct_general.use) == 1)) {
+-				ct = tmp;
+-                                break;
+-                }
++	rcu_read_lock();
++        
++	for (i=0; i < net->ct.htable_size; i++)  /*control loop times*/ {
++                hash_next =  (hash_next + 1) % net->ct.htable_size;
++		hlist_nulls_for_each_entry_rcu(h, n, &net->ct.hash[hash_next],hnnode)
++		{
++			tmp = nf_ct_tuplehash_to_ctrack(h);		
++                	if (drop_decision() && (atomic_read(&tmp->ct_general.use) == 1)) {
++					ct = tmp;
++                               		 break;
++                	}
+ 	      }
+         }
+ 
+-        read_unlock_bh(&nf_conntrack_lock);
++	rcu_read_unlock();
+ 
+         if (!ct) {
+ #ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
+@@ -651,7 +654,7 @@
+                 atomic_dec(&g_ppa_force_timeout);                                                                                                     
+ #endif 
+ 		dropped = 1;
+-		NF_CT_STAT_INC(early_drop);	
++		NF_CT_STAT_INC_ATOMIC(net, early_drop);
+         }
+ 	nf_ct_put(ct);
+         return dropped;
+@@ -681,13 +684,14 @@
+ 		unsigned int hash = hash_conntrack(net, orig);
+ 		if (!early_drop(net, hash)) {
+ #ifdef LTQ_IP_CONNTRACK_REPLACEMENT
+-		if( FindReplacement() )
++		if( FindReplacement(net) )
+ 		{
+ #ifdef LTQ_IP_CONNTRACK_REPLACEMENT_DEBUG
+ 			printk(KERN_WARNING "inside nf_conntrack_alloc ok\n");
+ #endif
+ 			goto SUCCESS_REPLACEMENT;
+ 		}
++#endif
+ 			atomic_dec(&net->ct.count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING

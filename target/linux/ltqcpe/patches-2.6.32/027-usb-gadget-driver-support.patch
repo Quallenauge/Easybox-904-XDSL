@@ -1,0 +1,2214 @@
+--- linux/drivers/usb/gadget/composite.c	2011-05-09 21:08:36.987125875 +0800
++++ linux.ltq_patched/drivers/usb/gadget/composite.c	2011-03-18 13:40:06.000000000 +0800
+@@ -683,10 +683,17 @@
+ 	struct usb_composite_dev	*cdev = get_gadget_data(gadget);
+ 	struct usb_request		*req = cdev->req;
+ 	int				value = -EOPNOTSUPP;
+-	u16				w_index = le16_to_cpu(ctrl->wIndex);
+-	u8				intf = w_index & 0xFF;
+-	u16				w_value = le16_to_cpu(ctrl->wValue);
+-	u16				w_length = le16_to_cpu(ctrl->wLength);
++	#if defined(__IFX_USB_GADGET__) && defined(__NOSWAPINCTRL__)
++		u16				w_index  = (ctrl->wIndex);
++		u8				intf     = w_index & 0xFF;
++		u16				w_value  = (ctrl->wValue);
++		u16				w_length = (ctrl->wLength);
++	#else
++		u16				w_index  = le16_to_cpu(ctrl->wIndex);
++		u8				intf     = w_index & 0xFF;
++		u16				w_value  = le16_to_cpu(ctrl->wValue);
++		u16				w_length = le16_to_cpu(ctrl->wLength);
++	#endif
+ 	struct usb_function		*f = NULL;
+ 
+ 	/* partial re-init of the response message; the function or the
+@@ -901,7 +908,11 @@
+ 		composite->unbind(cdev);
+ 
+ 	if (cdev->req) {
+-		kfree(cdev->req->buf);
++		#if defined(__IFX_USB_GADGET__)
++			gadget_free_buffer(cdev->req->buf);
++		#else
++			kfree(cdev->req->buf);
++		#endif
+ 		usb_ep_free_request(gadget->ep0, cdev->req);
+ 	}
+ 	kfree(cdev);
+@@ -949,7 +960,11 @@
+ 	cdev->req = usb_ep_alloc_request(gadget->ep0, GFP_KERNEL);
+ 	if (!cdev->req)
+ 		goto fail;
+-	cdev->req->buf = kmalloc(USB_BUFSIZ, GFP_KERNEL);
++	#if defined(__IFX_USB_GADGET__)
++		cdev->req->buf = gadget_alloc_buffer(USB_BUFSIZ);
++	#else
++		cdev->req->buf = kmalloc(USB_BUFSIZ, GFP_KERNEL);
++	#endif
+ 	if (!cdev->req->buf)
+ 		goto fail;
+ 	cdev->req->complete = composite_setup_complete;
+--- linux/drivers/usb/gadget/ether.c	2011-05-09 21:08:37.015108554 +0800
++++ linux.ltq_patched/drivers/usb/gadget/ether.c	2011-05-03 13:16:28.000000000 +0800
+@@ -22,11 +22,44 @@
+ 
+ /* #define VERBOSE_DEBUG */
+ 
++#if defined(CONFIG_USB_GADGET_IFX) || defined(CONFIG_USB_GADGET_IFX_MODULE)
++	#ifndef __IFX_USB_GADGET__
++		#define __IFX_USB_GADGET__
++	#endif
++#endif
++
++#ifndef __IFX_USB_GADGET__
++	#warning "__IFX_USB_GADGET__ Not SET"
++	#define __IFX_USB_GADGET__
++#endif
++
++#ifndef __IFX_USB_GADGET__
++	#undef __NOSWAPINCTRL__
++	#undef __ECM_NO_INTR__
++	#undef __RETAIN_BUF_TX__
++	#undef __RETAIN_BUF_RX__
++	#undef __MAC_ECM_FIX__
++#endif
++
++#ifdef __IFX_USB_GADGET__
++	#undef CONFIG_USB_ETH_EEM
++#endif
++
+ #include <linux/kernel.h>
+ #include <linux/utsname.h>
++#include <linux/netdevice.h>
+ 
+ #include "u_ether.h"
+ 
++#ifdef __IFX_USB_GADGET__
++	#ifndef NET_IP_ALIGN
++		#define NET_IP_ALIGN 2
++	#endif
++	#ifndef RX_EXTRA
++		#define RX_EXTRA	20		/* guard against rx overflows */
++	#endif
++#endif
++
+ 
+ /*
+  * Ethernet gadget driver -- with CDC and non-CDC options
+@@ -96,6 +129,20 @@
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++#ifdef __IFX_USB_GADGET__
++	#if defined(__RETAIN_BUF_TX__)
++		int alloc_size_tx;
++	#endif
++	int alloc_size_rx;
++
++	void soft_reconnect_pcd( struct eth_dev *dev);
++	void soft_reconnect_pcd_net (struct net_device *net);
++	void free_skb(char *funcname,char *desc,struct sk_buff *skb,int dontcare);
++	static void *gadget_alloc_buffer(unsigned _bytes);
++	static void gadget_free_buffer(void *_buf);
++
++#endif
++
+ /*
+  * Kbuild is not very cooperative with respect to linking separately
+  * compiled library objects into one module.  So for now we won't use
+@@ -109,16 +156,56 @@
+ #include "epautoconf.c"
+ 
+ #include "f_ecm.c"
+-#include "f_subset.c"
++#ifndef __IFX_USB_GADGET__
++	#include "f_subset.c"
++#endif
+ #ifdef	CONFIG_USB_ETH_RNDIS
+-#include "f_rndis.c"
+-#include "rndis.c"
++	#include "f_rndis.c"
++	#include "rndis.c"
++#endif
++#ifndef __IFX_USB_GADGET__
++	#include "f_eem.c"
+ #endif
+-#include "f_eem.c"
+ #include "u_ether.c"
+ 
++
++#if defined(__IFX_USB_GADGET__)
++	void soft_reconnect_pcd( struct eth_dev *dev)
++	{
++		usb_gadget_disconnect(dev->gadget);
++		usb_gadget_connect   (dev->gadget);
++	}
++
++	void soft_reconnect_pcd_net (struct net_device *net)
++	{
++		struct eth_dev          *dev = netdev_priv(net);
++		soft_reconnect_pcd(dev);
++	}
++
++	void free_skb(char *funcname,char *desc,struct sk_buff *skb,int dontcare)
++	{
++		if(!skb)
++			return;
++		if(in_irq()&& !dontcare)
++		{
++			printk(KERN_INFO "WARNING: Free SKB in IRQ %s() %s\n",
++				funcname?funcname:"",
++				desc?desc:"");
++		}
++		dev_kfree_skb_any (skb);
++	}
++#endif
++
++
++
+ /*-------------------------------------------------------------------------*/
+ 
++#ifdef __IFX_USB_GADGET__
++	#define IFX_VENDOR_NUM	0x07A6	        /* Infineon */
++	#define IFX_PRODUCT_NUM	0x4610		    /* Ethernet/RNDIS Gadget */
++	#define STRING_SERIALNUMBER		2
++#endif
++
+ /* DO NOT REUSE THESE IDs with a protocol-incompatible driver!!  Ever!!
+  * Instead:  allocate your own, using normal USB-IF procedures.
+  */
+@@ -161,8 +248,15 @@
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+ 
+-	.bcdUSB =		cpu_to_le16 (0x0200),
+-
++	#ifdef __IFX_USB_GADGET__
++		#ifdef CONFIG_USB_GADGET_DUALSPEED
++			.bcdUSB =		cpu_to_le16 (0x0200),
++		#else
++			.bcdUSB =		cpu_to_le16 (0x0110),
++		#endif
++	#else
++		.bcdUSB =		cpu_to_le16 (0x0200),
++	#endif
+ 	.bDeviceClass =		USB_CLASS_COMM,
+ 	.bDeviceSubClass =	0,
+ 	.bDeviceProtocol =	0,
+@@ -172,8 +266,14 @@
+ 	 * we support.  (As does bNumConfigurations.)  These values can
+ 	 * also be overridden by module parameters.
+ 	 */
+-	.idVendor =		cpu_to_le16 (CDC_VENDOR_NUM),
+-	.idProduct =		cpu_to_le16 (CDC_PRODUCT_NUM),
++	#ifdef __IFX_USB_GADGET__
++		.idVendor            = cpu_to_le16 (IFX_VENDOR_NUM),
++		.idProduct           = cpu_to_le16 (IFX_PRODUCT_NUM),
++		.iSerialNumber       = STRING_SERIALNUMBER,
++	#else
++		.idVendor            = cpu_to_le16 (CDC_VENDOR_NUM),
++		.idProduct           = cpu_to_le16 (CDC_PRODUCT_NUM),
++	#endif
+ 	/* .bcdDevice = f(hardware) */
+ 	/* .iManufacturer = DYNAMIC */
+ 	/* .iProduct = DYNAMIC */
+@@ -203,10 +303,14 @@
+ #define STRING_PRODUCT_IDX		1
+ 
+ static char manufacturer[50];
++char serial_number [20];
+ 
+ static struct usb_string strings_dev[] = {
+ 	[STRING_MANUFACTURER_IDX].s = manufacturer,
+ 	[STRING_PRODUCT_IDX].s = PREFIX DRIVER_DESC,
++	#ifdef __IFX_USB_GADGET__
++		[STRING_SERIALNUMBER].s = serial_number,
++	#endif
+ 	{  } /* end of list */
+ };
+ 
+@@ -221,6 +325,7 @@
+ };
+ 
+ static u8 hostaddr[ETH_ALEN];
++static u8 devaddr[ETH_ALEN];
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -251,13 +356,16 @@
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-#ifdef CONFIG_USB_ETH_EEM
+-static int use_eem = 1;
+-#else
+-static int use_eem;
++
++#ifndef __IFX_USB_GADGET__
++	#ifdef CONFIG_USB_ETH_EEM
++		static int use_eem = 1;
++	#else
++		static int use_eem;
++	#endif
++	module_param(use_eem, bool, 0);
++	MODULE_PARM_DESC(use_eem, "use CDC EEM mode");
+ #endif
+-module_param(use_eem, bool, 0);
+-MODULE_PARM_DESC(use_eem, "use CDC EEM mode");
+ 
+ /*
+  * We _always_ have an ECM, CDC Subset, or EEM configuration.
+@@ -271,12 +379,16 @@
+ 		c->bmAttributes |= USB_CONFIG_ATT_WAKEUP;
+ 	}
+ 
+-	if (use_eem)
+-		return eem_bind_config(c);
+-	else if (can_support_ecm(c->cdev->gadget))
++	#ifdef __IFX_USB_GADGET__
+ 		return ecm_bind_config(c, hostaddr);
+-	else
+-		return geth_bind_config(c, hostaddr);
++	#else
++		if (use_eem)
++			return eem_bind_config(c);
++		else if (can_support_ecm(c->cdev->gadget))
++			return ecm_bind_config(c, hostaddr);
++		else
++			return geth_bind_config(c, hostaddr);
++	#endif
+ }
+ 
+ static struct usb_configuration eth_config_driver = {
+@@ -296,35 +408,40 @@
+ 	int			status;
+ 
+ 	/* set up network link layer */
+-	status = gether_setup(cdev->gadget, hostaddr);
++	status = gether_setup(cdev->gadget, hostaddr,devaddr);
+ 	if (status < 0)
+ 		return status;
+ 
+ 	/* set up main config label and device descriptor */
+-	if (use_eem) {
+-		/* EEM */
+-		eth_config_driver.label = "CDC Ethernet (EEM)";
+-		device_desc.idVendor = cpu_to_le16(EEM_VENDOR_NUM);
+-		device_desc.idProduct = cpu_to_le16(EEM_PRODUCT_NUM);
+-	} else if (can_support_ecm(cdev->gadget)) {
+-		/* ECM */
+-		eth_config_driver.label = "CDC Ethernet (ECM)";
+-	} else {
+-		/* CDC Subset */
+-		eth_config_driver.label = "CDC Subset/SAFE";
+-
+-		device_desc.idVendor = cpu_to_le16(SIMPLE_VENDOR_NUM);
+-		device_desc.idProduct = cpu_to_le16(SIMPLE_PRODUCT_NUM);
+-		if (!has_rndis())
+-			device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
+-	}
+-
+-	if (has_rndis()) {
+-		/* RNDIS plus ECM-or-Subset */
+-		device_desc.idVendor = cpu_to_le16(RNDIS_VENDOR_NUM);
+-		device_desc.idProduct = cpu_to_le16(RNDIS_PRODUCT_NUM);
++	#ifdef __IFX_USB_GADGET__
++		eth_config_driver.label = "Lantiq Ether(ECM/RNDIS)";
+ 		device_desc.bNumConfigurations = 2;
+-	}
++	#else
++		if (use_eem) {
++			/* EEM */
++			eth_config_driver.label = "CDC Ethernet (EEM)";
++			device_desc.idVendor = cpu_to_le16(EEM_VENDOR_NUM);
++			device_desc.idProduct = cpu_to_le16(EEM_PRODUCT_NUM);
++		} else if (can_support_ecm(cdev->gadget)) {
++			/* ECM */
++			eth_config_driver.label = "CDC Ethernet (ECM)";
++		} else {
++			/* CDC Subset */
++			eth_config_driver.label = "CDC Subset/SAFE";
++
++			device_desc.idVendor = cpu_to_le16(SIMPLE_VENDOR_NUM);
++			device_desc.idProduct = cpu_to_le16(SIMPLE_PRODUCT_NUM);
++			if (!has_rndis())
++				device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
++		}
++
++		if (has_rndis()) {
++			/* RNDIS plus ECM-or-Subset */
++			device_desc.idVendor = cpu_to_le16(RNDIS_VENDOR_NUM);
++			device_desc.idProduct = cpu_to_le16(RNDIS_PRODUCT_NUM);
++			device_desc.bNumConfigurations = 2;
++		}
++	#endif
+ 
+ 	gcnum = usb_gadget_controller_number(gadget);
+ 	if (gcnum >= 0)
+--- linux/drivers/usb/gadget/f_ecm.c	2011-05-09 21:08:37.037066579 +0800
++++ linux.ltq_patched/drivers/usb/gadget/f_ecm.c	2011-05-03 13:19:04.000000000 +0800
+@@ -48,14 +48,18 @@
+ struct ecm_ep_descs {
+ 	struct usb_endpoint_descriptor	*in;
+ 	struct usb_endpoint_descriptor	*out;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	struct usb_endpoint_descriptor	*notify;
++	#endif
+ };
+ 
++#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ enum ecm_notify_state {
+ 	ECM_NOTIFY_NONE,		/* don't notify */
+ 	ECM_NOTIFY_CONNECT,		/* issue CONNECT next */
+ 	ECM_NOTIFY_SPEED,		/* issue SPEED_CHANGE next */
+ };
++#endif
+ 
+ struct f_ecm {
+ 	struct gether			port;
+@@ -66,10 +70,12 @@
+ 	struct ecm_ep_descs		fs;
+ 	struct ecm_ep_descs		hs;
+ 
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	struct usb_ep			*notify;
+ 	struct usb_endpoint_descriptor	*notify_desc;
+ 	struct usb_request		*notify_req;
+ 	u8				notify_state;
++	#endif
+ 	bool				is_open;
+ 
+ 	/* FIXME is_open needs some irq-ish locking
+@@ -118,7 +124,11 @@
+ 
+ 	/* .bInterfaceNumber = DYNAMIC */
+ 	/* status endpoint is optional; this could be patched later */
+-	.bNumEndpoints =	1,
++	#if defined(__IFX_USB_GADGET__) && defined(__ECM_NO_INTR__)
++		.bNumEndpoints   = 0,
++	#else
++		.bNumEndpoints   = 1,
++	#endif
+ 	.bInterfaceClass =	USB_CLASS_COMM,
+ 	.bInterfaceSubClass =	USB_CDC_SUBCLASS_ETHERNET,
+ 	.bInterfaceProtocol =	USB_CDC_PROTO_NONE,
+@@ -186,6 +196,7 @@
+ 
+ /* full speed support: */
+ 
++#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ static struct usb_endpoint_descriptor fs_ecm_notify_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+@@ -195,6 +206,7 @@
+ 	.wMaxPacketSize =	cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		1 << LOG2_STATUS_INTERVAL_MSEC,
+ };
++#endif
+ 
+ static struct usb_endpoint_descriptor fs_ecm_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+@@ -219,7 +231,9 @@
+ 	(struct usb_descriptor_header *) &ecm_union_desc,
+ 	(struct usb_descriptor_header *) &ecm_desc,
+ 	/* NOTE: status endpoint might need to be removed */
+-	(struct usb_descriptor_header *) &fs_ecm_notify_desc,
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
++		(struct usb_descriptor_header *) &fs_ecm_notify_desc,
++	#endif
+ 	/* data interface, altsettings 0 and 1 */
+ 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
+ 	(struct usb_descriptor_header *) &ecm_data_intf,
+@@ -230,6 +244,7 @@
+ 
+ /* high speed support: */
+ 
++#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ static struct usb_endpoint_descriptor hs_ecm_notify_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+@@ -239,6 +254,7 @@
+ 	.wMaxPacketSize =	cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		LOG2_STATUS_INTERVAL_MSEC + 4,
+ };
++#endif
+ static struct usb_endpoint_descriptor hs_ecm_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+@@ -264,7 +280,9 @@
+ 	(struct usb_descriptor_header *) &ecm_union_desc,
+ 	(struct usb_descriptor_header *) &ecm_desc,
+ 	/* NOTE: status endpoint might need to be removed */
+-	(struct usb_descriptor_header *) &hs_ecm_notify_desc,
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
++		(struct usb_descriptor_header *) &hs_ecm_notify_desc,
++	#endif
+ 	/* data interface, altsettings 0 and 1 */
+ 	(struct usb_descriptor_header *) &ecm_data_nop_intf,
+ 	(struct usb_descriptor_header *) &ecm_data_intf,
+@@ -294,6 +312,7 @@
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ static void ecm_do_notify(struct f_ecm *ecm)
+ {
+ 	struct usb_request		*req = ecm->notify_req;
+@@ -384,6 +403,7 @@
+ 	ecm->notify_req = req;
+ 	ecm_do_notify(ecm);
+ }
++#endif
+ 
+ static int ecm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
+ {
+@@ -391,9 +411,15 @@
+ 	struct usb_composite_dev *cdev = f->config->cdev;
+ 	struct usb_request	*req = cdev->req;
+ 	int			value = -EOPNOTSUPP;
+-	u16			w_index = le16_to_cpu(ctrl->wIndex);
+-	u16			w_value = le16_to_cpu(ctrl->wValue);
+-	u16			w_length = le16_to_cpu(ctrl->wLength);
++	#if defined(__IFX_USB_GADGET__) && defined(__NOSWAPINCTRL__)
++		u16			w_index  =(ctrl->wIndex);
++		u16			w_value  =(ctrl->wValue);
++		u16			w_length =(ctrl->wLength);
++	#else
++		u16			w_index  =le16_to_cpu(ctrl->wIndex);
++		u16			w_value  =le16_to_cpu(ctrl->wValue);
++		u16			w_length =le16_to_cpu(ctrl->wLength);
++	#endif
+ 
+ 	/* composite driver infrastructure handles everything except
+ 	 * CDC class messages; interface activation uses set_alt().
+@@ -460,6 +486,7 @@
+ 		if (alt != 0)
+ 			goto fail;
+ 
++		#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 		if (ecm->notify->driver_data) {
+ 			VDBG(cdev, "reset ecm control %d\n", intf);
+ 			usb_ep_disable(ecm->notify);
+@@ -471,6 +498,7 @@
+ 		}
+ 		usb_ep_enable(ecm->notify, ecm->notify_desc);
+ 		ecm->notify->driver_data = ecm;
++		#endif
+ 
+ 	/* Data interface has two altsettings, 0 and 1 */
+ 	} else if (intf == ecm->data_id) {
+@@ -517,7 +545,9 @@
+ 		 * follow another (if the first is in flight), and instead
+ 		 * just guarantee that a speed notification is always sent.
+ 		 */
++		#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 		ecm_notify(ecm);
++		#endif
+ 	} else
+ 		goto fail;
+ 
+@@ -548,11 +578,13 @@
+ 	if (ecm->port.in_ep->driver_data)
+ 		gether_disconnect(&ecm->port);
+ 
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	if (ecm->notify->driver_data) {
+ 		usb_ep_disable(ecm->notify);
+ 		ecm->notify->driver_data = NULL;
+ 		ecm->notify_desc = NULL;
+ 	}
++	#endif
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -582,7 +614,9 @@
+ 	DBG(ecm->port.func.config->cdev, "%s\n", __func__);
+ 
+ 	ecm->is_open = true;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	ecm_notify(ecm);
++	#endif
+ }
+ 
+ static void ecm_close(struct gether *geth)
+@@ -592,11 +626,57 @@
+ 	DBG(ecm->port.func.config->cdev, "%s\n", __func__);
+ 
+ 	ecm->is_open = false;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	ecm_notify(ecm);
++	#endif
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_TX__)
++	int ecm_wrap(struct gether *port,
++					u8 *buf,
++					struct sk_buff *skb,
++					int max_len)
++	{
++		int length;
++		length = skb->len;
++		if(length > max_len)
++			return -1;
++		memcpy( buf , skb->data,skb->len);
++		return length;
++	}
++#endif
++
++#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_RX__)
++	int ecm_unwrap(	struct gether *port,
++						u8 *buf, u16 len,
++						struct sk_buff_head *list)
++	{
++		struct sk_buff *skb;
++
++		#if defined(NET_IP_ALIGN) && NET_IP_ALIGN > 0
++			skb = dev_alloc_skb (len+NET_IP_ALIGN );
++		#else
++			skb = dev_alloc_skb (len);
++		#endif
++
++		if(!skb)
++		{
++			printk(KERN_INFO "%s() %d NO SKB\n",__func__,__LINE__);
++			return (-ENOMEM);
++		}
++		#if defined(NET_IP_ALIGN) && NET_IP_ALIGN > 0
++			skb_reserve(skb, NET_IP_ALIGN);
++		#endif
++		memcpy(skb->data,((void *)buf),len);
++		skb_put (skb, len);
++		skb_queue_tail(list, skb);
++		return 0;
++	}
++#endif
++
++
+ /* ethernet function driver setup/binding */
+ 
+ static int __init
+@@ -644,6 +724,7 @@
+ 	 * don't treat it that way.  It's simpler, and some newer CDC
+ 	 * profiles (wireless handsets) no longer treat it as optional.
+ 	 */
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	ep = usb_ep_autoconfig(cdev->gadget, &fs_ecm_notify_desc);
+ 	if (!ep)
+ 		goto fail;
+@@ -656,11 +737,16 @@
+ 	ecm->notify_req = usb_ep_alloc_request(ep, GFP_KERNEL);
+ 	if (!ecm->notify_req)
+ 		goto fail;
+-	ecm->notify_req->buf = kmalloc(ECM_STATUS_BYTECOUNT, GFP_KERNEL);
++	#if defined(__IFX_USB_GADGET__)
++		ecm->notify_req->buf = gadget_alloc_buffer(ECM_STATUS_BYTECOUNT);
++	#else
++		ecm->notify_req->buf = kmalloc(ECM_STATUS_BYTECOUNT, GFP_KERNEL);
++	#endif
+ 	if (!ecm->notify_req->buf)
+ 		goto fail;
+ 	ecm->notify_req->context = ecm;
+ 	ecm->notify_req->complete = ecm_notify_complete;
++	#endif
+ 
+ 	/* copy descriptors, and track endpoint copies */
+ 	f->descriptors = usb_copy_descriptors(ecm_fs_function);
+@@ -671,8 +757,10 @@
+ 			f->descriptors, &fs_ecm_in_desc);
+ 	ecm->fs.out = usb_find_endpoint(ecm_fs_function,
+ 			f->descriptors, &fs_ecm_out_desc);
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	ecm->fs.notify = usb_find_endpoint(ecm_fs_function,
+ 			f->descriptors, &fs_ecm_notify_desc);
++	#endif
+ 
+ 	/* support all relevant hardware speeds... we expect that when
+ 	 * hardware is dual speed, all bulk-capable endpoints work at
+@@ -683,8 +771,10 @@
+ 				fs_ecm_in_desc.bEndpointAddress;
+ 		hs_ecm_out_desc.bEndpointAddress =
+ 				fs_ecm_out_desc.bEndpointAddress;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 		hs_ecm_notify_desc.bEndpointAddress =
+ 				fs_ecm_notify_desc.bEndpointAddress;
++	#endif
+ 
+ 		/* copy descriptors, and track endpoint copies */
+ 		f->hs_descriptors = usb_copy_descriptors(ecm_hs_function);
+@@ -695,8 +785,10 @@
+ 				f->hs_descriptors, &hs_ecm_in_desc);
+ 		ecm->hs.out = usb_find_endpoint(ecm_hs_function,
+ 				f->hs_descriptors, &hs_ecm_out_desc);
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 		ecm->hs.notify = usb_find_endpoint(ecm_hs_function,
+ 				f->hs_descriptors, &hs_ecm_notify_desc);
++	#endif
+ 	}
+ 
+ 	/* NOTE:  all that is done without knowing or caring about
+@@ -707,24 +799,51 @@
+ 	ecm->port.open = ecm_open;
+ 	ecm->port.close = ecm_close;
+ 
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_TX__)
++		ecm->port.wrap = ecm_wrap;
++		alloc_size_tx = (sizeof (struct ethhdr) + ETH_FRAME_LEN);
++		alloc_size_tx += ecm->port.in_ep->maxpacket - 1;
++		alloc_size_tx -= alloc_size_tx % ecm->port.in_ep->maxpacket;
++	#endif
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_RX__)
++		ecm->port.unwrap = ecm_unwrap;
++		alloc_size_rx = (sizeof (struct ethhdr) + ETH_FRAME_LEN + RX_EXTRA+NET_IP_ALIGN);
++		alloc_size_rx += ecm->port.out_ep->maxpacket - 1;
++		alloc_size_rx -= alloc_size_rx % ecm->port.out_ep->maxpacket;
++	#endif
++
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	DBG(cdev, "CDC Ethernet: %s speed IN/%s OUT/%s NOTIFY/%s\n",
+ 			gadget_is_dualspeed(c->cdev->gadget) ? "dual" : "full",
+ 			ecm->port.in_ep->name, ecm->port.out_ep->name,
+ 			ecm->notify->name);
++	#else
++	DBG(cdev, "CDC Ethernet: %s speed IN/%s OUT/%s\n",
++			gadget_is_dualspeed(c->cdev->gadget) ? "dual" : "full",
++			ecm->port.in_ep->name, ecm->port.out_ep->name);
++	#endif
+ 	return 0;
+ 
+ fail:
+ 	if (f->descriptors)
+ 		usb_free_descriptors(f->descriptors);
+ 
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	if (ecm->notify_req) {
+-		kfree(ecm->notify_req->buf);
++		#if defined(__IFX_USB_GADGET__)
++			gadget_free_buffer(ecm->notify_req->buf);
++		#else
++			kfree(ecm->notify_req->buf);
++		#endif
+ 		usb_ep_free_request(ecm->notify, ecm->notify_req);
+ 	}
++	#endif
+ 
+ 	/* we might as well release our claims on endpoints */
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
+ 	if (ecm->notify)
+ 		ecm->notify->driver_data = NULL;
++	#endif
+ 	if (ecm->port.out)
+ 		ecm->port.out_ep->driver_data = NULL;
+ 	if (ecm->port.in)
+@@ -746,8 +865,14 @@
+ 		usb_free_descriptors(f->hs_descriptors);
+ 	usb_free_descriptors(f->descriptors);
+ 
+-	kfree(ecm->notify_req->buf);
++	#if !defined(__IFX_USB_GADGET__) || !defined(__ECM_NO_INTR__)
++	#if defined(__IFX_USB_GADGET__)
++		gadget_free_buffer(ecm->notify_req->buf);
++	#else
++		kfree(ecm->notify_req->buf);
++	#endif
+ 	usb_ep_free_request(ecm->notify, ecm->notify_req);
++	#endif
+ 
+ 	ecm_string_defs[1].s = NULL;
+ 	kfree(ecm);
+--- linux/drivers/usb/gadget/f_rndis.c	2011-05-09 21:08:37.114075099 +0800
++++ linux.ltq_patched/drivers/usb/gadget/f_rndis.c	2011-03-21 11:05:36.000000000 +0800
+@@ -386,9 +386,15 @@
+ 	struct usb_composite_dev *cdev = f->config->cdev;
+ 	struct usb_request	*req = cdev->req;
+ 	int			value = -EOPNOTSUPP;
+-	u16			w_index = le16_to_cpu(ctrl->wIndex);
+-	u16			w_value = le16_to_cpu(ctrl->wValue);
+-	u16			w_length = le16_to_cpu(ctrl->wLength);
++	#if defined(__IFX_USB_GADGET__) && defined(__NOSWAPINCTRL__)
++		u16			w_index  =(ctrl->wIndex);
++		u16			w_value  =(ctrl->wValue);
++		u16			w_length =(ctrl->wLength);
++	#else
++		u16			w_index  =le16_to_cpu(ctrl->wIndex);
++		u16			w_value  =le16_to_cpu(ctrl->wValue);
++		u16			w_length =le16_to_cpu(ctrl->wLength);
++	#endif
+ 
+ 	/* composite driver infrastructure handles everything except
+ 	 * CDC class messages; interface activation uses set_alt().
+@@ -630,7 +636,11 @@
+ 	rndis->notify_req = usb_ep_alloc_request(ep, GFP_KERNEL);
+ 	if (!rndis->notify_req)
+ 		goto fail;
+-	rndis->notify_req->buf = kmalloc(STATUS_BYTECOUNT, GFP_KERNEL);
++	#if defined(__IFX_USB_GADGET__)
++		rndis->notify_req->buf = gadget_alloc_buffer(ECM_STATUS_BYTECOUNT);
++	#else
++		rndis->notify_req->buf = kmalloc(ECM_STATUS_BYTECOUNT, GFP_KERNEL);
++	#endif
+ 	if (!rndis->notify_req->buf)
+ 		goto fail;
+ 	rndis->notify_req->length = STATUS_BYTECOUNT;
+@@ -693,6 +703,22 @@
+ 		goto fail0;
+ #endif
+ 
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_TX__)
++	#else
++		alloc_size_tx = (sizeof (struct ethhdr) + ETH_FRAME_LEN);
++		alloc_size_tx += sizeof (struct rndis_packet_msg_type);
++		alloc_size_tx += rndis->port.in_ep->maxpacket - 1;
++		alloc_size_tx -= alloc_size_tx % rndis->port.in_ep->maxpacket;
++	#endif
++
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_RX__)
++		alloc_size_rx = (sizeof (struct ethhdr) + ETH_FRAME_LEN + RX_EXTRA+NET_IP_ALIGN);
++		alloc_size_rx += sizeof (struct rndis_packet_msg_type);
++		alloc_size_rx += rndis->port.out_ep->maxpacket - 1;
++		alloc_size_rx -= alloc_size_rx % rndis->port.out_ep->maxpacket;
++	#endif
++
++
+ 	/* NOTE:  all that is done without knowing or caring about
+ 	 * the network link ... which is unavailable to this code
+ 	 * until we're activated via set_alt().
+@@ -711,7 +737,11 @@
+ 		usb_free_descriptors(f->descriptors);
+ 
+ 	if (rndis->notify_req) {
+-		kfree(rndis->notify_req->buf);
++		#if defined(__IFX_USB_GADGET__)
++			gadget_free_buffer(rndis->notify_req->buf);
++		#else
++			kfree(rndis->notify_req->buf);
++		#endif
+ 		usb_ep_free_request(rndis->notify, rndis->notify_req);
+ 	}
+ 
+@@ -740,7 +770,11 @@
+ 		usb_free_descriptors(f->hs_descriptors);
+ 	usb_free_descriptors(f->descriptors);
+ 
+-	kfree(rndis->notify_req->buf);
++	#if defined(__IFX_USB_GADGET__)
++		gadget_free_buffer(rndis->notify_req->buf);
++	#else
++		kfree(rndis->notify_req->buf);
++	#endif
+ 	usb_ep_free_request(rndis->notify, rndis->notify_req);
+ 
+ 	kfree(rndis);
+@@ -757,6 +791,164 @@
+ 	return true;
+ }
+ 
++#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_TX__)
++	int rndis_wrap(struct gether *port,
++					u8 *buf,
++					struct sk_buff *skb,
++					int max_len)
++	{
++		int length;
++		struct rndis_packet_msg_type	*header;
++
++		if (!skb)
++			return -1;
++		if (!buf)
++			return -1;
++
++		length = skb->len+sizeof(struct rndis_packet_msg_type);
++		if(length > max_len)
++			return -1;
++		memcpy( buf + sizeof (struct rndis_packet_msg_type), skb->data,skb->len);
++		header = (void *) buf;
++		memset (header, 0, sizeof *header);
++		header->MessageType = __constant_cpu_to_le32(REMOTE_NDIS_PACKET_MSG);
++		header->MessageLength = cpu_to_le32(skb->len + sizeof *header);
++		header->DataOffset = __constant_cpu_to_le32 ((sizeof (*header)) -8);
++ 		header->DataLength = cpu_to_le32(skb->len );
++		return length;
++	}
++#endif
++
++#if defined(__IFX_USB_GADGET__)
++	#if defined(__RETAIN_BUF_RX__)
++		int rndis_unwrap(	struct gether *port,
++							u8 *buf, u16 len,
++							struct sk_buff_head *list)
++		{
++			int status=0;
++			uint32_t offset,length;
++			struct sk_buff *skb;
++			u32 *tmp = (u32 *)buf;
++
++			if (__constant_cpu_to_le32(REMOTE_NDIS_PACKET_MSG)
++			//if (REMOTE_NDIS_PACKET_MSG
++				!= get_unaligned(tmp))
++				status= -EINVAL;
++			if(!status)
++			{
++//				u32 *tmp = (u32 *)buf;
++				/* DataOffset, DataLength */
++				offset=le32_to_cpu(get_unaligned(tmp+2))+8;
++				length=le32_to_cpu(get_unaligned(tmp+3));
++				if(length+offset>len)
++					status=-EOVERFLOW;
++			}
++
++			if(!status)
++			{
++				#if defined(NET_IP_ALIGN) && NET_IP_ALIGN > 0
++					skb = dev_alloc_skb (length+NET_IP_ALIGN );
++				#else
++					skb = dev_alloc_skb (length);
++				#endif
++
++				if(!skb)
++				{
++					printk(KERN_INFO "%s() %d NO SKB\n",__func__,__LINE__);
++					status=-EOVERFLOW;
++				}
++			}
++			if(!status)
++			{
++				#if defined(NET_IP_ALIGN) && NET_IP_ALIGN > 0
++					skb_reserve(skb, NET_IP_ALIGN);
++				#endif
++				memcpy(skb->data,((void *)buf)+offset,length);
++				skb_put (skb, length);
++				skb_queue_tail(list, skb);
++			}
++
++			#ifdef __MAC_ECM_FIX__
++				if(port->ecm_only_postive>0 && port->ecm_only_negtive>0)
++				{
++					if(!status)
++					{
++						port->ecm_only_postive --;
++						if(port->ecm_only_postive==0)
++							printk(KERN_INFO "%s() RNDIS-only mode detected !!(%d %d)\n",__func__,port->ecm_only_postive,port->ecm_only_negtive);
++					}
++					else
++					{
++						port->ecm_only_negtive--;
++						if(port->ecm_only_negtive==0)
++						{
++							printk(KERN_INFO "%s() CDC-ECM-only mode detected!!(%d %d)\n",__func__,port->ecm_only_postive,port->ecm_only_negtive);
++							port->ecm_only=1;
++							soft_reconnect_pcd(port->ioport);
++						}
++					}
++				}
++			#endif
++			return status;
++		}
++	#elif defined(__MAC_ECM_FIX__)
++		int rndis_unwrap(	struct gether *port,
++						struct sk_buff *skb,
++						struct sk_buff_head *list)
++		{
++			int status=0;
++			/* tmp points to a struct rndis_packet_msg_type */
++			__le32		*tmp = (void *) skb->data;
++
++			/* MessageType, MessageLength */
++			if (cpu_to_le32(REMOTE_NDIS_PACKET_MSG)
++//			if (REMOTE_NDIS_PACKET_MSG)
++					!= get_unaligned(tmp++)) {
++				dev_kfree_skb_any(skb);
++				status= -EINVAL;
++			}
++			if(!status)
++			{
++				tmp++;
++				/* DataOffset, DataLength */
++				if (!skb_pull(skb, get_unaligned_le32(tmp++) + 8)) {
++					dev_kfree_skb_any(skb);
++					status= -EOVERFLOW;
++				}
++			}
++			if(!status)
++			{
++				skb_trim(skb, get_unaligned_le32(tmp++));
++				skb_queue_tail(list, skb);
++			}
++			else
++			{
++				if(port->ecm_only_postive>0 && port->ecm_only_negtive>0)
++				{
++					if(!status)
++					{
++						port->ecm_only_postive --;
++						if(port->ecm_only_postive==0)
++							printk(KERN_INFO "%s() RNDIS-only mode detected !!(%d %d)\n",__func__,port->ecm_only_postive,port->ecm_only_negtive);
++					}
++					else
++					{
++						port->ecm_only_negtive--;
++						if(port->ecm_only_negtive==0)
++						{
++							printk(KERN_INFO "%s() CDC-ECM-only mode detected!!(%d %d)\n",__func__,port->ecm_only_postive,port->ecm_only_negtive);
++							port->ecm_only=1;
++							soft_reconnect_pcd(port->ioport);
++						}
++					}
++				}
++			}
++			return status;
++	}
++#endif
++#endif
++
++
+ /**
+  * rndis_bind_config - add RNDIS network link to a configuration
+  * @c: the configuration to support the network link
+@@ -813,8 +1005,18 @@
+ 
+ 	/* RNDIS has special (and complex) framing */
+ 	rndis->port.header_len = sizeof(struct rndis_packet_msg_type);
+-	rndis->port.wrap = rndis_add_header;
+-	rndis->port.unwrap = rndis_rm_hdr;
++
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_TX__)
++		rndis->port.wrap = rndis_add_header;
++	#else
++		rndis->port.wrap = rndis_wrap;
++	#endif
++
++	#if defined(__RETAIN_BUF_RX__) || defined(__MAC_ECM_FIX__)
++		rndis->port.unwrap = rndis_unwrap;
++	#else
++		rndis->port.unwrap = rndis_rm_hdr;
++	#endif
+ 
+ 	rndis->port.func.name = "rndis";
+ 	rndis->port.func.strings = rndis_strings;
+--- linux/drivers/usb/gadget/gadget_chips.h	2011-05-09 21:08:37.196088579 +0800
++++ linux.ltq_patched/drivers/usb/gadget/gadget_chips.h	2011-03-18 13:40:06.000000000 +0800
+@@ -156,6 +156,12 @@
+ #define	gadget_is_m66592(g)	0
+ #endif
+ 
++#ifdef __IFX_USB_GADGET__
++	#define gadget_is_ifxusb(g)		!strcmp("ifxusb_pcd", (g)->name)
++#else
++	#define gadget_is_ifxusb(g)	0
++#endif
++
+ /* Freescale CPM/QE UDC SUPPORT */
+ #ifdef CONFIG_USB_GADGET_FSL_QE
+ #define gadget_is_fsl_qe(g)	!strcmp("fsl_qe_udc", (g)->name)
+@@ -247,6 +253,10 @@
+ 		return 0x24;
+ 	else if (gadget_is_r8a66597(gadget))
+ 		return 0x25;
++	#ifdef __IFX_USB_GADGET__
++		else if (gadget_is_ifxusb(gadget))
++			return 0x26;
++	#endif
+ 	return -ENOENT;
+ }
+ 
+--- linux/drivers/usb/gadget/rndis.c	2011-05-09 21:08:37.525086622 +0800
++++ linux.ltq_patched/drivers/usb/gadget/rndis.c	2011-03-18 13:40:06.000000000 +0800
+@@ -979,7 +979,10 @@
+ 		r = list_entry (act, rndis_resp_t, list);
+ 		if (r && r->buf == buf) {
+ 			list_del (&r->list);
+-			kfree (r);
++			#if defined(__IFX_USB_GADGET__)
++				gadget_free_buffer(r->buf);
++			#endif
++			kfree(r);
+ 		}
+ 	}
+ }
+@@ -1010,10 +1013,20 @@
+ 	rndis_resp_t	*r;
+ 
+ 	/* NOTE:  this gets copied into ether.c USB_BUFSIZ bytes ... */
+-	r = kmalloc (sizeof (rndis_resp_t) + length, GFP_ATOMIC);
+-	if (!r) return NULL;
+-
+-	r->buf = (u8 *) (r + 1);
++	#ifdef __IFX_USB_GADGET__
++		r = kmalloc (sizeof (rndis_resp_t), GFP_ATOMIC);
++		if (!r) return NULL;
++		r->buf = (u8 *) gadget_alloc_buffer(length);
++		if (!r->buf) 
++		{
++			kfree(r);
++			return NULL;
++		}
++	#else
++		r = kmalloc (sizeof (rndis_resp_t) + length, GFP_ATOMIC);
++		if (!r) return NULL;
++		r->buf = (u8 *) (r + 1);
++	#endif
+ 	r->length = length;
+ 	r->send = 0;
+ 
+--- linux/drivers/usb/gadget/u_ether.c	2011-05-09 21:08:37.586079289 +0800
++++ linux.ltq_patched/drivers/usb/gadget/u_ether.c	2011-05-04 12:30:30.000000000 +0800
+@@ -31,6 +31,59 @@
+ #include "u_ether.h"
+ 
+ 
++#if defined(__IFX_USB_GADGET__ )
++	static void *gadget_alloc_buffer(unsigned _bytes)
++	{
++		void *buf;
++		size_t size;
++		u32 *cached,*uncached;
++		u32 totalsize,page;
++
++		/* Check dword alignment */
++ 		if(!_bytes)
++			return NULL;
++
++		if ((_bytes & 0x3UL) != 0)
++			printk(KERN_INFO "%s() Buffer size is not a multiple of DWORD size (%d)",__func__, _bytes);
++
++		size=(_bytes+3)&0xFFFFFFFC;
++		totalsize=size + 12;
++		page=get_order(totalsize);
++
++		cached = (void *) __get_free_pages(( GFP_ATOMIC | GFP_DMA), page);
++		if(!cached)
++		{
++			printk(KERN_INFO "%s Allocation Failed size:%d\n",__func__,size);
++			return NULL;
++		}
++		uncached = (u32 *)(KSEG1ADDR(cached));
++		memset(uncached, 0, totalsize);
++		*(uncached+0)=totalsize;
++		*(uncached+1)=page;
++		*(uncached+2)=(u32)cached;
++		buf = (void *)(uncached+3);
++		return buf;
++	}
++
++	static void gadget_free_buffer(void *_buf)
++	{
++		u32 totalsize,page;
++		u32 *cached,*uncached;
++
++		if(_buf != NULL)
++		{
++			uncached=_buf;
++			uncached-=3;
++			totalsize=*(uncached+0);
++			page=*(uncached+1);
++			cached=(u32 *)(*(uncached+2));
++			if(totalsize && page==get_order(totalsize) && cached==(u32 *)(KSEG0ADDR(uncached)))
++				free_pages((unsigned long)cached, page);
++		}
++		return;
++	}
++#endif
++
+ /*
+  * This component encapsulates the Ethernet link glue needed to provide
+  * one (!) network link through the USB gadget stack, normally "usb0".
+@@ -71,10 +124,24 @@
+ 	struct sk_buff_head	rx_frames;
+ 
+ 	unsigned		header_len;
+-	struct sk_buff		*(*wrap)(struct gether *, struct sk_buff *skb);
+-	int			(*unwrap)(struct gether *,
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_TX__)
++		int (*wrap)(struct gether *port,
++						u8 *buf,
++						struct sk_buff *skb,
++						int max_len);
++	#else
++		struct sk_buff *(*wrap)(struct gether *, struct sk_buff *skb);
++	#endif
++
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_RX__)
++		int		(*unwrap)(	struct gether *port,
++							u8 *buf, u16 len,
++							struct sk_buff_head *list);
++	#else
++		int		(*unwrap)(struct gether *,
+ 						struct sk_buff *skb,
+ 						struct sk_buff_head *list);
++	#endif
+ 
+ 	struct work_struct	work;
+ 
+@@ -83,34 +150,72 @@
+ 
+ 	bool			zlp;
+ 	u8			host_mac[ETH_ALEN];
++
++	#if defined(__IFX_USB_GADGET__ )
++		int                      tx_len;
++		int                      tx_wml;
++		int                      tx_wmh;
++		int                      gfp_flags;
++	#endif
++	#ifdef __MAC_ECM_FIX__
++		int                  ecm_only;
++			int                  ecm_only_postive;
++			int                  ecm_only_negtive;
++				#define ecm_only_postive_max 3
++				#define ecm_only_negtive_max 5
++	#endif
+ };
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+ #define RX_EXTRA	20	/* bytes guarding against rx overflows */
+ 
+-#define DEFAULT_QLEN	2	/* double buffering by default */
+-
+-
+-#ifdef CONFIG_USB_GADGET_DUALSPEED
+-
+-static unsigned qmult = 5;
+-module_param(qmult, uint, S_IRUGO|S_IWUSR);
+-MODULE_PARM_DESC(qmult, "queue length multiplier at high speed");
++#if defined(__IFX_USB_GADGET__ )
++	#define DEFAULT_QLEN_TX_FS 10
++	#define DEFAULT_QLEN_TX_HS 10
++	#define DEFAULT_QLEN_RX_FS 20
++	#define DEFAULT_QLEN_RX_HS 10
++
++	static ushort qlen_tx_fs=DEFAULT_QLEN_TX_FS;
++	module_param(qlen_tx_fs, ushort, S_IRUGO);
++	MODULE_PARM_DESC(qlen_tx_fs, "QLen fot FS Tx");
++	static ushort qlen_rx_fs=DEFAULT_QLEN_RX_FS;
++	module_param(qlen_rx_fs, ushort, S_IRUGO);
++	MODULE_PARM_DESC(qlen_rx_fs, "QLen fot FS Rx");
++
++	#ifdef CONFIG_USB_GADGET_DUALSPEED
++		static ushort qlen_tx_hs=DEFAULT_QLEN_TX_HS;
++		module_param(qlen_tx_hs, ushort, S_IRUGO);
++		MODULE_PARM_DESC(qlen_tx_hs, "QLen fot HS Tx");
++		#define qlen_tx(gadget) ((gadget->speed == USB_SPEED_HIGH) ? qlen_tx_hs : qlen_tx_fs)
++		static ushort qlen_rx_hs=DEFAULT_QLEN_RX_HS;
++		module_param(qlen_rx_hs, ushort, S_IRUGO);
++		MODULE_PARM_DESC(qlen_rx_hs, "QLen fot HS Rx");
++		#define qlen_rx(gadget) ((gadget->speed == USB_SPEED_HIGH) ? qlen_rx_hs : qlen_rx_fs)
++	#else	/* full speed (low speed doesn't do bulk) */
++		#define qlen_tx(gadget) (qlen_tx_fs)
++		#define qlen_rx(gadget) (qlen_rx_fs)
++	#endif
++#else
++	#define DEFAULT_QLEN	2	/* double buffering by default */
+ 
+-#else	/* full speed (low speed doesn't do bulk) */
+-#define qmult		1
++		#ifdef CONFIG_USB_GADGET_DUALSPEED
++			static unsigned qmult = 5;
++			module_param(qmult, uint, S_IRUGO|S_IWUSR);
++			MODULE_PARM_DESC(qmult, "queue length multiplier at high speed");
++		#else	/* full speed (low speed doesn't do bulk) */
++			#define qmult		1
++		#endif
++		/* for dual-speed hardware, use deeper queues at highspeed */
++		static inline int qlen(struct usb_gadget *gadget)
++		{
++			if (gadget_is_dualspeed(gadget) && gadget->speed == USB_SPEED_HIGH)
++				return qmult * DEFAULT_QLEN;
++			else
++				return DEFAULT_QLEN;
++		}
+ #endif
+ 
+-/* for dual-speed hardware, use deeper queues at highspeed */
+-static inline int qlen(struct usb_gadget *gadget)
+-{
+-	if (gadget_is_dualspeed(gadget) && gadget->speed == USB_SPEED_HIGH)
+-		return qmult * DEFAULT_QLEN;
+-	else
+-		return DEFAULT_QLEN;
+-}
+-
+ /*-------------------------------------------------------------------------*/
+ 
+ /* REVISIT there must be a better way than having two sets
+@@ -205,165 +310,297 @@
+ static int
+ rx_submit(struct eth_dev *dev, struct usb_request *req, gfp_t gfp_flags)
+ {
+-	struct sk_buff	*skb;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_RX__)
++		struct sk_buff	*skb;
++	#endif
+ 	int		retval = -ENOMEM;
+ 	size_t		size = 0;
+ 	struct usb_ep	*out;
+-	unsigned long	flags;
++	#if !defined(__IFX_USB_GADGET__)
++		unsigned long	flags;
++	#endif
+ 
+-	spin_lock_irqsave(&dev->lock, flags);
++	#if defined(__IFX_USB_GADGET__)
++		spin_lock(&dev->req_lock);
++	#else
++		spin_lock_irqsave(&dev->lock, flags);
++	#endif
+ 	if (dev->port_usb)
+ 		out = dev->port_usb->out_ep;
+ 	else
+ 		out = NULL;
+-	spin_unlock_irqrestore(&dev->lock, flags);
++	#if defined(__IFX_USB_GADGET__)
++		spin_unlock(&dev->req_lock);
++	#else
++		spin_unlock_irqrestore(&dev->lock, flags);
++	#endif
+ 
+ 	if (!out)
+ 		return -ENOTCONN;
+ 
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_RX__)
++		/* Padding up to RX_EXTRA handles minor disagreements with host.
++		 * Normally we use the USB "terminate on short read" convention;
++		 * so allow up to (N*maxpacket), since that memory is normally
++		 * already allocated.  Some hardware doesn't deal well with short
++		 * reads (e.g. DMA must be N*maxpacket), so for now don't trim a
++		 * byte off the end (to force hardware errors on overflow).
++		 *
++		 * RNDIS uses internal framing, and explicitly allows senders to
++		 * pad to end-of-packet.  That's potentially nice for speed, but
++		 * means receivers can't recover lost synch on their own (because
++		 * new packets don't only start after a short RX).
++		 */
++		size += sizeof(struct ethhdr) + dev->net->mtu + RX_EXTRA;
++		size += dev->port_usb->header_len;
++		size += out->maxpacket - 1;
++		size -= size % out->maxpacket;
++
++		skb = alloc_skb(size + NET_IP_ALIGN, gfp_flags);
++		if (skb == NULL) {
++			DBG(dev, "no rx skb\n");
++			goto enomem;
++		}
+ 
+-	/* Padding up to RX_EXTRA handles minor disagreements with host.
+-	 * Normally we use the USB "terminate on short read" convention;
+-	 * so allow up to (N*maxpacket), since that memory is normally
+-	 * already allocated.  Some hardware doesn't deal well with short
+-	 * reads (e.g. DMA must be N*maxpacket), so for now don't trim a
+-	 * byte off the end (to force hardware errors on overflow).
+-	 *
+-	 * RNDIS uses internal framing, and explicitly allows senders to
+-	 * pad to end-of-packet.  That's potentially nice for speed, but
+-	 * means receivers can't recover lost synch on their own (because
+-	 * new packets don't only start after a short RX).
+-	 */
+-	size += sizeof(struct ethhdr) + dev->net->mtu + RX_EXTRA;
+-	size += dev->port_usb->header_len;
+-	size += out->maxpacket - 1;
+-	size -= size % out->maxpacket;
+-
+-	skb = alloc_skb(size + NET_IP_ALIGN, gfp_flags);
+-	if (skb == NULL) {
+-		DBG(dev, "no rx skb\n");
+-		goto enomem;
+-	}
+-
+-	/* Some platforms perform better when IP packets are aligned,
+-	 * but on at least one, checksumming fails otherwise.  Note:
+-	 * RNDIS headers involve variable numbers of LE32 values.
+-	 */
+-	skb_reserve(skb, NET_IP_ALIGN);
++		/* Some platforms perform better when IP packets are aligned,
++		 * but on at least one, checksumming fails otherwise.  Note:
++		 * RNDIS headers involve variable numbers of LE32 values.
++		 */
++		skb_reserve(skb, NET_IP_ALIGN);
+ 
+-	req->buf = skb->data;
+-	req->length = size;
+-	req->complete = rx_complete;
+-	req->context = skb;
+-
+-	retval = usb_ep_queue(out, req, gfp_flags);
+-	if (retval == -ENOMEM)
+-enomem:
+-		defer_kevent(dev, WORK_RX_MEMORY);
+-	if (retval) {
+-		DBG(dev, "rx submit --> %d\n", retval);
+-		if (skb)
+-			dev_kfree_skb_any(skb);
+-		spin_lock_irqsave(&dev->req_lock, flags);
+-		list_add(&req->list, &dev->rx_reqs);
+-		spin_unlock_irqrestore(&dev->req_lock, flags);
+-	}
+-	return retval;
++		req->buf = skb->data;
++		req->length = size;
++		req->complete = rx_complete;
++		req->context = skb;
++
++		retval = usb_ep_queue(out, req, gfp_flags);
++		if (retval == -ENOMEM)
++	enomem:
++			defer_kevent(dev, WORK_RX_MEMORY);
++		if (retval) {
++			DBG(dev, "rx submit --> %d\n", retval);
++			if (skb)
++				#if defined(__IFX_USB_GADGET__)
++					free_skb("rx_submit","fail",skb,0);
++				#else
++					dev_kfree_skb_any(skb);
++				#endif
++			spin_lock_irqsave(&dev->req_lock, flags);
++			list_add(&req->list, &dev->rx_reqs);
++			spin_unlock_irqrestore(&dev->req_lock, flags);
++		}
++		return retval;
++	#else
++		dev->gfp_flags=gfp_flags;
++		if (!req->buf)
++		{
++			printk(KERN_INFO "%s() %d ERROR Invalid Rx.Buf\n",__func__, __LINE__);
++			req->length=0;
++ 			req->context = NULL;
++			spin_lock(&dev->req_lock);
++			list_add(&req->list, &dev->rx_reqs);
++			spin_unlock(&dev->req_lock);
++			return 0;
++		}
++		else
++		{
++			req->length   = alloc_size_rx;
++			req->complete = rx_complete;
++			retval = usb_ep_queue(out, req, gfp_flags);
++			return retval;
++		}
++	#endif
+ }
+ 
+ static void rx_complete(struct usb_ep *ep, struct usb_request *req)
+ {
+-	struct sk_buff	*skb = req->context, *skb2;
+-	struct eth_dev	*dev = ep->driver_data;
+-	int		status = req->status;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_RX__)
++		struct sk_buff	*skb = req->context, *skb2;
++		struct eth_dev	*dev = ep->driver_data;
++		int		status = req->status;
++
++		switch (status) {
++
++		/* normal completion */
++		case 0:
++			skb_put(skb, req->actual);
++
++			if (dev->unwrap) {
++				unsigned long	flags;
++
++				spin_lock_irqsave(&dev->lock, flags);
++				if (dev->port_usb) {
++					status = dev->unwrap(dev->port_usb,
++								skb,
++								&dev->rx_frames);
++				} else {
++					#if defined(__IFX_USB_GADGET__)
++						free_skb("rx_complete","NOTCONN",skb,0);
++					#else
++						dev_kfree_skb_any(skb);
++					#endif
++					status = -ENOTCONN;
++				}
++				spin_unlock_irqrestore(&dev->lock, flags);
++			} else {
++				skb_queue_tail(&dev->rx_frames, skb);
++			}
++			skb = NULL;
+ 
+-	switch (status) {
++			skb2 = skb_dequeue(&dev->rx_frames);
++			while (skb2) {
++				if (status < 0
++						|| ETH_HLEN > skb2->len
++						|| skb2->len > ETH_FRAME_LEN) {
++					dev->net->stats.rx_errors++;
++					dev->net->stats.rx_length_errors++;
++					DBG(dev, "rx length %d\n", skb2->len);
++					#if defined(__IFX_USB_GADGET__)
++						free_skb("rx_submit","netif_rx_fail",skb2,0);
++					#else
++						dev_kfree_skb_any(skb2);
++					#endif
++					goto next_frame;
++				}
++				skb2->protocol = eth_type_trans(skb2, dev->net);
++				dev->net->stats.rx_packets++;
++				dev->net->stats.rx_bytes += skb2->len;
++
++				/* no buffer copies needed, unless hardware can't
++				 * use skb buffers.
++				 */
++				status = netif_rx(skb2);
++	next_frame:
++				skb2 = skb_dequeue(&dev->rx_frames);
++			}
++			break;
+ 
+-	/* normal completion */
+-	case 0:
+-		skb_put(skb, req->actual);
++		/* software-driven interface shutdown */
++		case -ECONNRESET:		/* unlink */
++		case -ESHUTDOWN:		/* disconnect etc */
++			VDBG(dev, "rx shutdown, code %d\n", status);
++			goto quiesce;
++
++		/* for hardware automagic (such as pxa) */
++		case -ECONNABORTED:		/* endpoint reset */
++			DBG(dev, "rx %s reset\n", ep->name);
++			defer_kevent(dev, WORK_RX_MEMORY);
++	quiesce:
++			#if defined(__IFX_USB_GADGET__)
++				free_skb("rx_submit","CONNABORTED",skb,0);
++			#else
++				dev_kfree_skb_any(skb);
++			#endif
++			goto clean;
+ 
+-		if (dev->unwrap) {
+-			unsigned long	flags;
++		/* data overrun */
++		case -EOVERFLOW:
++			dev->net->stats.rx_over_errors++;
++			/* FALLTHROUGH */
++
++		default:
++			dev->net->stats.rx_errors++;
++			DBG(dev, "rx status %d\n", status);
++			break;
++		}
+ 
+-			spin_lock_irqsave(&dev->lock, flags);
+-			if (dev->port_usb) {
+-				status = dev->unwrap(dev->port_usb,
+-							skb,
+-							&dev->rx_frames);
+-			} else {
++		if (skb)
++			#if defined(__IFX_USB_GADGET__)
++				free_skb("rx_submit","skb remain",skb,0);
++			#else
+ 				dev_kfree_skb_any(skb);
+-				status = -ENOTCONN;
+-			}
+-			spin_unlock_irqrestore(&dev->lock, flags);
+-		} else {
+-			skb_queue_tail(&dev->rx_frames, skb);
++			#endif
++		if (!netif_running(dev->net)) {
++	clean:
++			spin_lock(&dev->req_lock);
++			list_add(&req->list, &dev->rx_reqs);
++			spin_unlock(&dev->req_lock);
++			req = NULL;
+ 		}
+-		skb = NULL;
+-
+-		skb2 = skb_dequeue(&dev->rx_frames);
+-		while (skb2) {
+-			if (status < 0
+-					|| ETH_HLEN > skb2->len
+-					|| skb2->len > ETH_FRAME_LEN) {
+-				dev->net->stats.rx_errors++;
+-				dev->net->stats.rx_length_errors++;
+-				DBG(dev, "rx length %d\n", skb2->len);
+-				dev_kfree_skb_any(skb2);
+-				goto next_frame;
++		if (req)
++			rx_submit(dev, req, GFP_ATOMIC);
++	#else
++		struct eth_dev	*dev = ep->driver_data;
++		int		status = req->status;
++		struct  sk_buff *skb2;
++
++		switch (status)
++		{
++			case 0:
++				if (!dev->port_usb)
++					status = -ENOTCONN;
++				else if (dev->unwrap)
++				{
++					unsigned long	flags;
++					spin_lock_irqsave(&dev->lock, flags);
++					status = dev->unwrap(dev->port_usb,
++								req->buf,req->actual,
++								&dev->rx_frames);
++					spin_unlock_irqrestore(&dev->lock, flags);
++				}
++				else
++					status = -EINVAL;
++
++				skb2 = skb_dequeue(&dev->rx_frames);
++				while (skb2)
++				{
++					if (status < 0
++							|| ETH_HLEN > skb2->len
++							|| skb2->len > ETH_FRAME_LEN)
++					{
++						dev->net->stats.rx_errors++;
++						dev->net->stats.rx_length_errors++;
++						DBG(dev, "rx length %d\n", skb2->len);
++						free_skb("rx_submit","netif_rx_fail",skb2,0);
++					}
++					else
++					{
++						skb2->protocol = eth_type_trans(skb2, dev->net);
++						dev->net->stats.rx_packets++;
++						dev->net->stats.rx_bytes += skb2->len;
++						status = netif_rx(skb2);
++					}
++					skb2 = skb_dequeue(&dev->rx_frames);
+ 			}
+-			skb2->protocol = eth_type_trans(skb2, dev->net);
+-			dev->net->stats.rx_packets++;
+-			dev->net->stats.rx_bytes += skb2->len;
+-
+-			/* no buffer copies needed, unless hardware can't
+-			 * use skb buffers.
+-			 */
+-			status = netif_rx(skb2);
+-next_frame:
+-			skb2 = skb_dequeue(&dev->rx_frames);
++				break;
++			/* software-driven interface shutdown */
++			case -ECONNRESET:		/* unlink */
++ 			case -ESHUTDOWN:		/* disconnect etc */
++				VDBG(dev, "rx shutdown, code %d\n", status);
++				goto clean;
++			case -ECONNABORTED:		/* endpoint reset */
++				DBG(dev, "rx %s reset\n", ep->name);
++				defer_kevent(dev, WORK_RX_MEMORY);
++				goto clean;
++			/* data overrun */
++			case -EOVERFLOW:
++				dev->net->stats.rx_over_errors++;
++				/* FALLTHROUGH */
++			default:
++				dev->net->stats.rx_errors++;
++				DBG(dev, "rx status %d\n", status);
++				break;
+ 		}
+-		break;
+-
+-	/* software-driven interface shutdown */
+-	case -ECONNRESET:		/* unlink */
+-	case -ESHUTDOWN:		/* disconnect etc */
+-		VDBG(dev, "rx shutdown, code %d\n", status);
+-		goto quiesce;
+-
+-	/* for hardware automagic (such as pxa) */
+-	case -ECONNABORTED:		/* endpoint reset */
+-		DBG(dev, "rx %s reset\n", ep->name);
+-		defer_kevent(dev, WORK_RX_MEMORY);
+-quiesce:
+-		dev_kfree_skb_any(skb);
+-		goto clean;
+-
+-	/* data overrun */
+-	case -EOVERFLOW:
+-		dev->net->stats.rx_over_errors++;
+-		/* FALLTHROUGH */
+-
+-	default:
+-		dev->net->stats.rx_errors++;
+-		DBG(dev, "rx status %d\n", status);
+-		break;
+-	}
+-
+-	if (skb)
+-		dev_kfree_skb_any(skb);
+-	if (!netif_running(dev->net)) {
+-clean:
+-		spin_lock(&dev->req_lock);
+-		list_add(&req->list, &dev->rx_reqs);
+-		spin_unlock(&dev->req_lock);
+-		req = NULL;
+-	}
+-	if (req)
+-		rx_submit(dev, req, GFP_ATOMIC);
++		if (netif_running(dev->net) && req)
++		{
++			rx_submit(dev, req, GFP_ATOMIC);
++			req = NULL;
++		}
++	clean:
++		if (req)
++		{
++			spin_lock(&dev->req_lock);
++			list_add(&req->list, &dev->rx_reqs);
++			spin_unlock(&dev->req_lock);
++		}
++	#endif
+ }
+ 
+-static int prealloc(struct list_head *list, struct usb_ep *ep, unsigned n)
++#if defined(__IFX_USB_GADGET__) && (defined(__RETAIN_BUF_TX__) || defined(__RETAIN_BUF_RX__))
++	static int prealloc(struct list_head *list, struct usb_ep *ep, unsigned n,int bufsiz)
++#else
++	static int prealloc(struct list_head *list, struct usb_ep *ep, unsigned n)
++#endif
+ {
+ 	unsigned		i;
+ 	struct usb_request	*req;
+@@ -377,10 +614,18 @@
+ 		if (i-- == 0)
+ 			goto extra;
+ 	}
+-	while (i--) {
++
++	while (i--)
++	{
+ 		req = usb_ep_alloc_request(ep, GFP_ATOMIC);
+ 		if (!req)
+ 			return list_empty(list) ? -ENOMEM : 0;
++
++		req->buf=NULL;
++		#if defined(__IFX_USB_GADGET__) && (defined(__RETAIN_BUF_TX__) || defined(__RETAIN_BUF_RX__))
++			if(bufsiz>0)
++				req->buf=gadget_alloc_buffer(bufsiz);
++		#endif
+ 		list_add(&req->list, list);
+ 	}
+ 	return 0;
+@@ -392,7 +637,11 @@
+ 
+ 		next = req->list.next;
+ 		list_del(&req->list);
+-		usb_ep_free_request(ep, req);
++		#if defined(__IFX_USB_GADGET__)
++			if(!req->context && req->buf)
++				gadget_free_buffer(req->buf);
++		#endif
++		usb_ep_free_request (ep, req);
+ 
+ 		if (next == list)
+ 			break;
+@@ -402,15 +651,44 @@
+ 	return 0;
+ }
+ 
+-static int alloc_requests(struct eth_dev *dev, struct gether *link, unsigned n)
++#if defined(__IFX_USB_GADGET__)
++	static int alloc_requests(struct eth_dev *dev, struct gether *link, unsigned txn, unsigned rxn)
++#else
++	static int alloc_requests(struct eth_dev *dev, struct gether *link, unsigned n)
++#endif
+ {
+ 	int	status;
+ 
+ 	spin_lock(&dev->req_lock);
+-	status = prealloc(&dev->tx_reqs, link->in_ep, n);
++
++	#if defined(__IFX_USB_GADGET__ )
++		dev->tx_len = txn;
++		dev->tx_wml = txn /4-1;
++		if(dev->tx_wml<1) dev->tx_wml=1;
++		dev->tx_wmh = txn *3/4+1;
++		if(dev->tx_wmh>dev->tx_len-1) dev->tx_wmh=dev->tx_len-1;
++ 		#if defined(__RETAIN_BUF_TX__) || defined(__RETAIN_BUF_RX__)
++			status = prealloc (&dev->tx_reqs, link->in_ep, txn,alloc_size_tx);
++		#else
++			status = prealloc (&dev->tx_reqs, link->in_ep, txn);
++		#endif
++	#else
++		status = prealloc(&dev->tx_reqs, link->in_ep, n);
++	#endif
++
+ 	if (status < 0)
+ 		goto fail;
+-	status = prealloc(&dev->rx_reqs, link->out_ep, n);
++
++	#if defined(__IFX_USB_GADGET__ )
++ 		#if defined(__RETAIN_BUF_TX__) || defined(__RETAIN_BUF_RX__)
++			status = prealloc (&dev->rx_reqs, link->out_ep, rxn,alloc_size_rx);
++		#else
++			status = prealloc (&dev->rx_reqs, link->out_ep, rxn);
++		#endif
++	#else
++		status = prealloc(&dev->rx_reqs, link->out_ep, n);
++	#endif
++
+ 	if (status < 0)
+ 		goto fail;
+ 	goto done;
+@@ -459,7 +737,9 @@
+ 
+ static void tx_complete(struct usb_ep *ep, struct usb_request *req)
+ {
+-	struct sk_buff	*skb = req->context;
++	#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_TX__)
++		struct sk_buff	*skb = req->context;
++	#endif
+ 	struct eth_dev	*dev = ep->driver_data;
+ 
+ 	switch (req->status) {
+@@ -471,14 +751,30 @@
+ 	case -ESHUTDOWN:		/* disconnect etc */
+ 		break;
+ 	case 0:
+-		dev->net->stats.tx_bytes += skb->len;
++		#if !defined(__IFX_USB_GADGET__) || !defined(__RETAIN_BUF_TX__)
++			dev->net->stats.tx_bytes += skb->len;
++		#else
++			dev->net->stats.tx_bytes += req->length;
++		#endif
+ 	}
+ 	dev->net->stats.tx_packets++;
+ 
+ 	spin_lock(&dev->req_lock);
++	#if defined(__IFX_USB_GADGET__)
++		dev->tx_len++;
++	#endif
+ 	list_add(&req->list, &dev->tx_reqs);
+ 	spin_unlock(&dev->req_lock);
+-	dev_kfree_skb_any(skb);
++
++	#if defined(__IFX_USB_GADGET__)
++		#if !defined(__RETAIN_BUF_TX__)
++			free_skb("tx_complete","OK",skb,0);
++		#endif
++		req->context=NULL;
++		req->length=0;
++	#else
++		dev_kfree_skb_any(skb);
++ 	#endif
+ 
+ 	atomic_dec(&dev->tx_qlen);
+ 	if (netif_carrier_ok(dev->net))
+@@ -512,10 +808,25 @@
+ 	spin_unlock_irqrestore(&dev->lock, flags);
+ 
+ 	if (!in) {
+-		dev_kfree_skb_any(skb);
++		#if defined(__IFX_USB_GADGET__)
++			free_skb("eth_start_xmit","port_off",skb,0);
++		#else
++			dev_kfree_skb_any(skb);
++		#endif
+ 		return NETDEV_TX_OK;
+ 	}
+ 
++	#if defined(__IFX_USB_GADGET__)
++		if (list_empty (&dev->tx_reqs))
++		{
++			//dev->stats.tx_dropped++;
++			netif_stop_queue (net);
++			free_skb("eth_start_xmit","empty queue",skb,0);
++			printk(KERN_INFO "%s() %d QUEUE STOPPED\n",__func__,__LINE__);
++			return 0;
++		}
++	#endif
++
+ 	/* apply outgoing CDC or RNDIS filters */
+ 	if (!is_promisc(cdc_filter)) {
+ 		u8		*dest = skb->data;
+@@ -530,8 +841,14 @@
+ 				type = USB_CDC_PACKET_TYPE_BROADCAST;
+ 			else
+ 				type = USB_CDC_PACKET_TYPE_ALL_MULTICAST;
+-			if (!(cdc_filter & type)) {
+-				dev_kfree_skb_any(skb);
++			if (!(cdc_filter & type))
++			{
++				#if defined(__IFX_USB_GADGET__)
++					//dev->stats.tx_dropped++;
++					free_skb("eth_start_xmit","filted",skb,0);
++				#else
++					dev_kfree_skb_any (skb);
++				#endif
+ 				return NETDEV_TX_OK;
+ 			}
+ 		}
+@@ -553,28 +870,75 @@
+ 	list_del(&req->list);
+ 
+ 	/* temporarily stop TX queue when the freelist empties */
+-	if (list_empty(&dev->tx_reqs))
+-		netif_stop_queue(net);
++
++	#if defined(__IFX_USB_GADGET__)
++		dev->tx_len--;
++		if (dev->tx_len < dev->tx_wml || list_empty (&dev->tx_reqs))
++	#else
++		if (list_empty (&dev->tx_reqs))
++	#endif
++			netif_stop_queue (net);
++
+ 	spin_unlock_irqrestore(&dev->req_lock, flags);
+ 
+ 	/* no buffer copies needed, unless the network stack did it
+ 	 * or the hardware can't use skb buffers.
+ 	 * or there's not enough space for extra headers we need
+ 	 */
+-	if (dev->wrap) {
+-		unsigned long	flags;
+-
+-		spin_lock_irqsave(&dev->lock, flags);
+-		if (dev->port_usb)
+-			skb = dev->wrap(dev->port_usb, skb);
+-		spin_unlock_irqrestore(&dev->lock, flags);
+-		if (!skb)
++	#ifdef __IFX_USB_GADGET__
++		if (!dev->port_usb)
+ 			goto drop;
++	#endif
+ 
+-		length = skb->len;
+-	}
+-	req->buf = skb->data;
+-	req->context = skb;
++	#ifdef __IFX_USB_GADGET__
++		if (dev->wrap)
++		{
++			unsigned long	flags;
++
++			#ifdef __RETAIN_BUF_TX__
++				spin_lock_irqsave(&dev->lock, flags);
++				length = dev->wrap(dev->port_usb,req->buf, skb,alloc_size_tx);
++				spin_unlock_irqrestore(&dev->lock, flags);
++				if(length < 0)
++					goto drop;
++				free_skb("eth_start_xmit","copy and free",skb,0);
++				skb=NULL;
++			#else
++				spin_lock_irqsave(&dev->lock, flags);
++				skb = dev->wrap(dev->port_usb, skb);
++				spin_unlock_irqrestore(&dev->lock, flags);
++				if (!skb)
++					goto drop;
++				length = skb->len;
++				req->buf = skb->data;
++				req->context = skb;
++			#endif
++		}
++		else
++		{
++			#ifdef __RETAIN_BUF_TX__
++				goto drop;
++			#else
++				req->buf = skb->data;
++				req->context = skb;
++			#endif
++		}
++	#else
++		if (dev->wrap) {
++			unsigned long	flags;
++
++			spin_lock_irqsave(&dev->lock, flags);
++			if (dev->port_usb)
++				skb = dev->wrap(dev->port_usb, skb);
++			spin_unlock_irqrestore(&dev->lock, flags);
++			if (!skb)
++				goto drop;
++
++			length = skb->len;
++		}
++		req->buf = skb->data;
++		req->context = skb;
++	#endif
+ 	req->complete = tx_complete;
+ 
+ 	/* use zlp framing on tx for strict CDC-Ether conformance,
+@@ -587,11 +951,15 @@
+ 
+ 	req->length = length;
+ 
+-	/* throttle highspeed IRQ rate back slightly */
+-	if (gadget_is_dualspeed(dev->gadget))
+-		req->no_interrupt = (dev->gadget->speed == USB_SPEED_HIGH)
+-			? ((atomic_read(&dev->tx_qlen) % qmult) != 0)
+-			: 0;
++	#if defined(__IFX_USB_GADGET__)
++		req->no_interrupt = 0;
++	#else
++		/* throttle highspeed IRQ rate back slightly */
++		if (gadget_is_dualspeed(dev->gadget))
++			req->no_interrupt = (dev->gadget->speed == USB_SPEED_HIGH)
++				? ((atomic_read(&dev->tx_qlen) % qmult) != 0)
++				: 0;
++	#endif
+ 
+ 	retval = usb_ep_queue(in, req, GFP_ATOMIC);
+ 	switch (retval) {
+@@ -604,13 +972,27 @@
+ 	}
+ 
+ 	if (retval) {
+-		dev_kfree_skb_any(skb);
+ drop:
++		if(skb)
++			#if defined(__IFX_USB_GADGET__)
++				free_skb("eth_start_xmit","dropped",skb,0);
++			#else
++				dev_kfree_skb_any (skb);
++			#endif
+ 		dev->net->stats.tx_dropped++;
++
+ 		spin_lock_irqsave(&dev->req_lock, flags);
+ 		if (list_empty(&dev->tx_reqs))
+ 			netif_start_queue(net);
+ 		list_add(&req->list, &dev->tx_reqs);
++		#if defined(__IFX_USB_GADGET__)
++			dev->tx_len++;
++			if (netif_running (dev->net) && netif_carrier_ok (dev->net) && dev->tx_len >= dev->tx_wmh)
++			{
++				if(netif_queue_stopped(net))
++					netif_wake_queue (net);
++			}
++		#endif
+ 		spin_unlock_irqrestore(&dev->req_lock, flags);
+ 	}
+ 	return NETDEV_TX_OK;
+@@ -735,6 +1117,86 @@
+ 	return 1;
+ }
+ 
++#ifdef __IFX_USB_GADGET__
++	static char *SerialNumber;
++	module_param(SerialNumber, charp, S_IRUGO);
++	MODULE_PARM_DESC(SerialNumber, "Serial Number");
++
++	static char host_addr1[18];
++	static char dev_addr1[18];
++
++	static int __init get_ether_addr_2(const char *str, u8 *dev_addr)
++	{
++		if (str)
++		{
++			unsigned	i;
++
++			for (i = 0; i < 6; i++) {
++				unsigned char num;
++
++				if ((*str == '.') || (*str == ':'))
++					str++;
++				num = nibble(*str++) << 4;
++				num |= (nibble(*str++));
++				dev_addr [i] = num;
++			}
++			if (is_valid_ether_addr(dev_addr))
++				return 0;
++		}
++		return -1;
++	}
++
++	static void next_ether_addr (u8 *dev_addr,u8 *from_addr, int increment)
++	{
++		unsigned int i;
++		for (i = 0; i < 6; i++)
++			dev_addr[i]=from_addr[i];
++		if(increment)
++		{
++			dev_addr[5] += increment;
++			if (dev_addr[5] == 0)
++			{
++				dev_addr[4]++;
++				if (dev_addr[4] == 0)
++						dev_addr[3]++;
++			}
++		}
++		return;
++	}
++
++	static int __init addr_setup (char *line)
++	{
++		u8 addr_str[18];
++		char host_addr2[6];
++		char dev_addr2[6];
++
++		strncpy(addr_str, line, 17);
++		addr_str[17] = '\0';
++
++		if(get_ether_addr_2(addr_str,dev_addr2)==0)
++		{
++			next_ether_addr (host_addr2,dev_addr2,1);
++			if(!dev_addr)
++			{
++				snprintf (dev_addr1, 17, "%02X:%02X:%02X:%02X:%02X:%02X",
++					dev_addr2[0], dev_addr2[1], dev_addr2[2],
++					dev_addr2[3], dev_addr2[4], dev_addr2[5]);
++				dev_addr=dev_addr1;
++			}
++			if(!host_addr)
++			{
++				snprintf (host_addr1, 17, "%02X:%02X:%02X:%02X:%02X:%02X",
++					host_addr2[0], host_addr2[1], host_addr2[2],
++					host_addr2[3], host_addr2[4], host_addr2[5]);
++				host_addr=host_addr1;
++			}
++		}
++		return 0;
++	}
++	__setup("ethaddr=", addr_setup);
++#endif
++
++
+ static struct eth_dev *the_dev;
+ 
+ static const struct net_device_ops eth_netdev_ops = {
+@@ -759,7 +1221,10 @@
+  *
+  * Returns negative errno, or zero on success
+  */
+-int __init gether_setup(struct usb_gadget *g, u8 ethaddr[ETH_ALEN])
++#ifdef __IFX_USB_GADGET__
++	extern char serial_number [];
++#endif
++int __init gether_setup(struct usb_gadget *g, u8 hostaddr[ETH_ALEN], u8 devaddr[ETH_ALEN])
+ {
+ 	struct eth_dev		*dev;
+ 	struct net_device	*net;
+@@ -792,8 +1257,19 @@
+ 		dev_warn(&g->dev,
+ 			"using random %s ethernet address\n", "host");
+ 
+-	if (ethaddr)
+-		memcpy(ethaddr, dev->host_mac, ETH_ALEN);
++	if (hostaddr)
++		memcpy(hostaddr, dev->host_mac, ETH_ALEN);
++	if (devaddr)
++		memcpy(devaddr, net->dev_addr, ETH_ALEN);
++	#ifdef __IFX_USB_GADGET__
++		if(SerialNumber)
++			strncpy(serial_number, SerialNumber, 12);
++		else
++			snprintf (serial_number, 12, "%02X%02X%02X%02X%02X%02X",
++				net->dev_addr[0], net->dev_addr[1],
++				net->dev_addr[2], net->dev_addr[3],
++				net->dev_addr[4], net->dev_addr[5]);
++	#endif
+ 
+ 	net->netdev_ops = &eth_netdev_ops;
+ 
+@@ -807,8 +1283,9 @@
+ 	netif_carrier_off(net);
+ 
+ 	dev->gadget = g;
+-	SET_NETDEV_DEV(net, &g->dev);
+-
++	#if !defined(__IFX_USB_GADGET__ )
++		SET_NETDEV_DEV(net, &g->dev);
++	#endif
+ 	status = register_netdev(net);
+ 	if (status < 0) {
+ 		dev_dbg(&g->dev, "register_netdev failed, %d\n", status);
+@@ -819,7 +1296,6 @@
+ 
+ 		the_dev = dev;
+ 	}
+-
+ 	return status;
+ }
+ 
+@@ -885,7 +1361,11 @@
+ 	}
+ 
+ 	if (result == 0)
+-		result = alloc_requests(dev, link, qlen(dev->gadget));
++		#if defined(__IFX_USB_GADGET__)
++			result = alloc_requests( dev, link, qlen_tx (dev->gadget),qlen_rx (dev->gadget));
++		#else
++			result = alloc_requests (dev, link, qlen(dev->gadget));
++		#endif
+ 
+ 	if (result == 0) {
+ 		dev->zlp = link->is_zlp_ok;
+@@ -962,7 +1442,11 @@
+ 		list_del(&req->list);
+ 
+ 		spin_unlock(&dev->req_lock);
+-		usb_ep_free_request(link->in_ep, req);
++		#if defined(__IFX_USB_GADGET__)
++			if(!req->context && req->buf)
++				gadget_free_buffer(req->buf);
++ 		#endif
++		usb_ep_free_request (link->in_ep, req);
+ 		spin_lock(&dev->req_lock);
+ 	}
+ 	spin_unlock(&dev->req_lock);
+@@ -977,7 +1461,11 @@
+ 		list_del(&req->list);
+ 
+ 		spin_unlock(&dev->req_lock);
+-		usb_ep_free_request(link->out_ep, req);
++		#if defined(__IFX_USB_GADGET__)
++			if(!req->context && req->buf)
++				gadget_free_buffer(req->buf);
++ 		#endif
++		usb_ep_free_request (link->out_ep, req);
+ 		spin_lock(&dev->req_lock);
+ 	}
+ 	spin_unlock(&dev->req_lock);
+@@ -992,5 +1480,9 @@
+ 	spin_lock(&dev->lock);
+ 	dev->port_usb = NULL;
+ 	link->ioport = NULL;
++	#if defined(__MAC_ECM_FIX__)
++		dev->ecm_only_postive = ecm_only_postive_max;
++		dev->ecm_only_negtive = ecm_only_negtive_max;
++	#endif
+ 	spin_unlock(&dev->lock);
+ }
+--- linux/drivers/usb/gadget/u_ether.h	2011-05-09 21:08:37.590089067 +0800
++++ linux.ltq_patched/drivers/usb/gadget/u_ether.h	2011-05-03 13:24:50.000000000 +0800
+@@ -62,15 +62,36 @@
+ 
+ 	/* hooks for added framing, as needed for RNDIS and EEM. */
+ 	u32				header_len;
+-	struct sk_buff			*(*wrap)(struct gether *port,
+-						struct sk_buff *skb);
+-	int				(*unwrap)(struct gether *port,
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_TX__)
++		int (*wrap)(struct gether *port,
++						u8 *buf,
++						struct sk_buff *skb,
++						int max_len);
++	#else
++		struct sk_buff *(*wrap)(struct gether *, struct sk_buff *skb);
++	#endif
++
++	#if defined(__IFX_USB_GADGET__) && defined(__RETAIN_BUF_RX__)
++		int		(*unwrap)(	struct gether *port,
++							u8 *buf, u16 len,
++							struct sk_buff_head *list);
++	#else
++		int		(*unwrap)(struct gether *,
+ 						struct sk_buff *skb,
+ 						struct sk_buff_head *list);
++	#endif
+ 
+ 	/* called on network open/close */
+ 	void				(*open)(struct gether *);
+ 	void				(*close)(struct gether *);
++
++	#if defined(__MAC_ECM_FIX__)
++		int                  ecm_only;
++		int                  ecm_only_postive;
++		int                  ecm_only_negtive;
++			#define ecm_only_postive_max 3
++			#define ecm_only_negtive_max 5
++	#endif
+ };
+ 
+ #define	DEFAULT_FILTER	(USB_CDC_PACKET_TYPE_BROADCAST \
+@@ -80,7 +101,8 @@
+ 
+ 
+ /* netdev setup/teardown as directed by the gadget driver */
+-int gether_setup(struct usb_gadget *g, u8 ethaddr[ETH_ALEN]);
++//int gether_setup(struct usb_gadget *g, u8 ethaddr[ETH_ALEN]);
++int gether_setup(struct usb_gadget *g, u8 hostaddr[ETH_ALEN], u8 devaddr[ETH_ALEN]);
+ void gether_cleanup(void);
+ 
+ /* connect/disconnect is handled by individual functions */

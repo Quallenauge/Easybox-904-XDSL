@@ -1,0 +1,46 @@
+Patch description:
+=================
+Support for IPv4 multicast acceleration.
+
+
+diff -Naur linux.orig/net/ipv4/ipmr.c linux/net/ipv4/ipmr.c
+--- linux.orig/net/ipv4/ipmr.c	2011-03-01 16:53:47.000000000 +0530
++++ linux/net/ipv4/ipmr.c	2011-03-01 18:05:48.000000000 +0530
+@@ -799,10 +799,21 @@
+                     dev = net->ipv4.vif_table[n].dev;
+                     for ( i = 0, idx = 0; i < ppa_mc_entry_cmp.num_ifs; i++ )
+                     {
+-                        if ( strcmp(dev->name, ppa_mc_entry_cmp.array_mem_ifs[i].ifname) == 0 )
+-                            ppa_mc_entry.if_mask &= ~(1 << idx);
++#ifdef CONFIG_IFX_MCAST_FASTPATH
++							if (( strcmp(dev->name, ppa_mc_entry_cmp.array_mem_ifs[i].ifname) == 0 )
++							      || ( memcmp(dev->name, "br", 2) == 0 ))
++#else
++							if ( strcmp(dev->name, ppa_mc_entry_cmp.array_mem_ifs[i].ifname) == 0 )
++#endif
++							{
++                            	ppa_mc_entry.if_mask &= ~(1 << idx);
++							}
+                     }
+-                    ppa_mc_entry.array_mem_ifs[idx].ifname = dev->name;
++#ifdef CONFIG_IFX_MCAST_FASTPATH
++					ppa_mc_entry.array_mem_ifs[idx].ifname = "eth0"; // FIXME:
++#else
++					ppa_mc_entry.array_mem_ifs[idx].ifname = dev->name;
++#endif
+                     ppa_mc_entry.array_mem_ifs[idx].ttl = c->mfc_un.res.ttls[n];
+                     ppa_mc_entry.ip_mc_group = c->mfc_mcastgrp;
+                     ppa_mc_entry.num_ifs++;
+@@ -870,7 +881,11 @@
+                 //  only dst itf are added here by kernel
+ 
+                 struct net_device *dev = net->ipv4.vif_table[n].dev;
+-
++#ifdef CONFIG_IFX_MCAST_FASTPATH
++				if( memcmp(dev->name, "br", 2) == 0 )
++					ppa_mc_entry.array_mem_ifs[idx].ifname = "eth0";
++				else
++#endif
+                 ppa_mc_entry.array_mem_ifs[idx].ifname = dev->name;
+                 ppa_mc_entry.array_mem_ifs[idx].ttl = c->mfc_un.res.ttls[n];
+                 ppa_mc_entry.if_mask |= 1 << idx;

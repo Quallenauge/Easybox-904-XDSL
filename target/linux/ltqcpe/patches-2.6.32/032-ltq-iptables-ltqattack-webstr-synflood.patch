@@ -1,0 +1,1569 @@
+Index: linux/include/linux/netfilter/nf_conntrack_ftp.h
+===================================================================
+--- linux.orig/include/linux/netfilter/nf_conntrack_ftp.h	2010-04-02 04:29:14.000000000 +0530
++++ linux/include/linux/netfilter/nf_conntrack_ftp.h	2010-12-28 18:27:23.391813000 +0530
+@@ -26,6 +26,9 @@
+ 	u_int32_t seq_aft_nl[IP_CT_DIR_MAX][NUM_SEQ_TO_REMEMBER];
+ 	/* 0 means seq_match_aft_nl not set */
+ 	int seq_aft_nl_num[IP_CT_DIR_MAX];
++#if defined(CONFIG_IP_NF_MATCH_LTQATTACK) || defined(CONFIG_IP_NF_MATCH_LTQATTACK_MODULE)
++        int active_ftp_port;
++#endif
+ };
+ 
+ struct nf_conntrack_expect;
+Index: linux/include/linux/netfilter_ipv4/ipt_ifxattack.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/linux/netfilter_ipv4/ipt_ifxattack.h	2010-12-28 18:55:25.312249000 +0530
+@@ -0,0 +1,65 @@
++/* ============================================================================
++ * Copyright (C) 2003[- 2004] ? Infineon Technologies AG.
++ *
++ * All rights reserved.
++ * ============================================================================
++ *
++ * ============================================================================
++ *
++ * This document contains proprietary information belonging to Infineon 
++ * Technologies AG. Passing on and copying of this document, and communication
++ * of its contents is not permitted without prior written authorisation.
++ * 
++ * ============================================================================
++ */
++
++
++/* ===========================================================================
++ *
++ * File Name: ipt_ifxattack.h
++ * Author : Nirav Salot
++ * Date: 
++ *
++ * ===========================================================================
++ *
++ * Project: <project/component name>
++ * Block: <block/module name>
++ *
++ * ===========================================================================
++ * Contents: This file contains the common definitions required by the
++ * 	     ifxattack module.
++ * 
++ * ===========================================================================
++ * References: <List of design documents covering this file.>
++ */
++#ifndef _IPT_IFXATTACK_MATCH_H
++#define _IPT_IFXATTACK_MATCH_H
++
++/*
++#define	CONFIG_CODE_REDI
++#define CONFIG_CODE_REDII
++#define CONFIG_LAND_ATTACK
++#define CONFIG_ICQ_DOS
++#define CONFIG_MALFORMED_MIME
++//#define CONFIG_IIS_FRONTPAGE
++#define CONFIG_UDP_BOMB
++#define CONFIG_FTP_PORT_REST
++*/
++
++enum ifxattack_name { 
++	CODE_REDI = 111 ,
++	CODE_REDII = 222,
++	LAND_ATTACK = 333 ,
++	ICQ_DOS = 444 ,
++	MALFORMED_MIME = 555,
++	IIS_FRONTPAGE = 666 ,
++	UDP_BOMB = 777,
++	FTP_PORT_REST = 888
++};
++
++struct ipt_ifxattack_match_info {
++	enum ifxattack_name attack_name;
++};
++
++#endif /*_IPT_IFXATTACK_MATCH_H */
++
+Index: linux/net/ipv4/netfilter/Kconfig
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Kconfig	2010-12-28 16:52:36.000000000 +0530
++++ linux/net/ipv4/netfilter/Kconfig	2010-12-28 19:04:40.721960000 +0530
+@@ -9,6 +9,13 @@
+ 	tristate
+ 	default n
+ 
++config LTQ_NF_ADDONS
++        bool 'LTQ netfilter addons'
++        depends on LTQ_ADDON
++        help
++          If chosen, all the additions done by LTQ to netfilters
++          could be slected. It is recommended to be alwyas on.
++
+ config NF_CONNTRACK_IPV4
+ 	tristate "IPv4 connection tracking support (required for NAT)"
+ 	depends on NF_CONNTRACK
+@@ -369,6 +376,56 @@
+ 	 
+ 	  If unsure, say N.
+ 
++config IP_NF_MATCH_LTQATTACK
++       tristate "LTQattack match support"
++       depends on IP_NF_IPTABLES && LTQ_NF_ADDONS
++       help
++         Firewall support against several common DOS attacks.
++
++config CODE_REDI
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config CODE_REDII
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config ICQ_DOS
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config IIS_FRONTPAGE
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default n
++
++config LAND_ATTACK
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config FRAGGLE
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default n
++
++config MALFORMED_MIME
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config UDP_BOMB
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
++
++config FTP_PORT_REST
++       bool
++       depends on IP_NF_MATCH_LTQATTACK
++       default y
+ endif # IP_NF_IPTABLES
+ 
+ # ARP tables
+Index: linux/net/ipv4/netfilter/Makefile
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Makefile	2010-12-28 16:52:36.000000000 +0530
++++ linux/net/ipv4/netfilter/Makefile	2010-12-28 19:10:59.847987000 +0530
+@@ -54,6 +54,7 @@
+ obj-$(CONFIG_IP_NF_MATCH_ADDRTYPE) += ipt_addrtype.o
+ obj-$(CONFIG_IP_NF_MATCH_AH) += ipt_ah.o
+ obj-$(CONFIG_IP_NF_MATCH_ECN) += ipt_ecn.o
++obj-$(CONFIG_IP_NF_MATCH_LTQATTACK) += ipt_ifxattack.o
+ 
+ # targets
+ obj-$(CONFIG_IP_NF_TARGET_CLUSTERIP) += ipt_CLUSTERIP.o
+Index: linux/net/ipv4/netfilter/ipt_ifxattack.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/net/ipv4/netfilter/ipt_ifxattack.c	2010-12-28 19:46:50.347081000 +0530
+@@ -0,0 +1,385 @@
++/* ============================================================================
++ * Copyright (C) 2003[- 2004] ?Infineon Technologies AG.
++ *
++ * All rights reserved.
++ * ============================================================================
++ *
++ * ============================================================================
++ *
++ * This document contains proprietary information belonging to Infineon 
++ * Technologies AG. Passing on and copying of this document, and communication
++ * of its contents is not permitted without prior written authorisation.
++ * 
++ * ============================================================================
++ */
++
++
++/* ===========================================================================
++ *
++ * File Name: ipt_ifxattack.c
++ * Author : Nirav Salot
++ * Date: 
++ *
++ * ===========================================================================
++ *
++ * Project: Danube/DoS Attacks
++ * Block: <block/module name>
++ *
++ * ===========================================================================
++ * Contents:  This file contains the code to handle DoS attacks.
++ * 
++ * ===========================================================================
++ * References: <List of design documents covering this file.>
++ */
++
++/*
++ * ===========================================================================
++ */
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <net/tcp.h>
++#include <net/udp.h>
++
++#include <linux/string.h>
++#include <linux/ctype.h>
++
++#include <linux/netfilter_ipv4/ipt_ifxattack.h>
++#include <linux/netfilter_ipv4/ip_tables.h>
++
++#include <net/netfilter/nf_conntrack_helper.h>
++#include <linux/netfilter/nf_conntrack_ftp.h>
++
++/* ===========================================================================
++ */
++/* Kernel module to match IFX Attacks values. */
++#define TH_SYN 0x02
++
++int xstrncasecmp(char *str1,char *str2,int len) {
++	int i;
++
++	for (i = 0; i < len; i++) {
++		char a1,a2;
++		a1 = tolower(str1[i]);
++	    a2 = tolower(str2[i]);
++		if (a1 != a2)
++			return a1 - a2;
++	}
++	return 0;
++}
++
++int xstrtolower(char *str) {
++	int i;
++
++	for(i = 0; i < strlen(str); i++)
++		str[i] = tolower(str[i]);
++	return 0;
++}
++
++/* Returns 1 if the attack is matched, 0 otherwise */
++static inline int
++attack_match(enum ifxattack_name attack_name,
++		const struct sk_buff *skb,
++		int *hotdrop)
++{
++	const struct iphdr *iph = ip_hdr(skb); //(void *)skb->nh.iph;
++	const struct tcphdr *tcph = (void*)iph + iph->ihl * 4; //(void *)skb->nh.iph + skb->nh.iph->ihl*4;
++	const struct udphdr *udph = (void*)iph + iph->ihl * 4; //(void *)skb->nh.iph + skb->nh.iph->ihl*4;
++	int ret = 0;
++	int ip_data_len = iph->tot_len - iph->ihl * 4;
++
++#if defined(CONFIG_CODE_REDI) || defined(CONFIG_CODE_REDII) || defined(CONFIG_ICQ_DOS)
++	const char CODE_REDI_SIGNATURE[] = "GET /default.ida?NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN%u9090%u6858%ucbd3%u7801%u9090%u6858%ucbd3%u7801%u9090%u6858%ucbd3%u7801%u9090%u9090%u8190%u00c3%u0003%u8b00%u531b%u53ff%u0078%u0000%u00=a";
++
++	const char CODE_REDII_SIGNATURE[] = "GET /default.ida?XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%u9090%u6858%ucbd3%u7801%u9090%u6858%ucbd3%u7801%u9090%u6858%ucbd3%u7801%u9090%u9090%u8190%u00c3%u0003%u8b00%u531b%u53ff%u0078%u0000%u00=a";
++
++	const char ICQ_DOS_SIGNATURE[] = "GET /cgi-bin/guestbook.cgi? ";
++
++	if (attack_name == CODE_REDI || attack_name == CODE_REDII || attack_name == ICQ_DOS) {
++		char localbuf[512];
++		int totsize = 0;
++		int cursig_len = 0;
++		const char *pcursig = NULL;
++
++#ifdef CONFIG_CODE_REDI
++		if (attack_name == CODE_REDI) {
++			cursig_len = strlen(CODE_REDI_SIGNATURE);
++			pcursig = CODE_REDI_SIGNATURE;
++		}
++#endif
++#ifdef CONFIG_CODE_REDII
++		if (attack_name == CODE_REDII) {
++			cursig_len = strlen(CODE_REDII_SIGNATURE);
++			pcursig = CODE_REDII_SIGNATURE;
++		}
++#endif
++#ifdef CONFIG_ICQ_DOS
++		if (attack_name == ICQ_DOS) {
++			cursig_len = strlen(ICQ_DOS_SIGNATURE);
++			pcursig = ICQ_DOS_SIGNATURE;
++		}
++#endif
++		memset(localbuf,0x00,sizeof(localbuf));
++		totsize = ip_data_len - tcph->doff * 4;
++		if (totsize > cursig_len) 
++		{
++			if (totsize > sizeof(localbuf) - 1)
++				totsize = sizeof(localbuf) - 1;
++			memcpy(localbuf, (void *)tcph + tcph->doff * 4, totsize);
++			if (memcmp(localbuf, pcursig, cursig_len) == 0) {
++				ret = 1;
++			}
++		}
++	}
++#endif
++
++#ifdef CONFIG_IIS_FRONTPAGE
++#define	IIS_FRONTPAGE_SIGNATURE1	"POST /_vti_bin/shtml.dll/_vti_rpc"
++#define	IIS_FRONTPAGE_SIGNATURE2	"POST /_vti_bin/_vti_aut/author.dll"
++#define CONTENT_LENGTH				"Content-Length: "
++
++	if (attack_name == IIS_FRONTPAGE) {
++		char localbuf[512];
++		int totsize = 0;
++
++		memset(localbuf,0x00,sizeof(localbuf));
++		totsize = ip_data_len - tcph->doff * 4;
++		if (totsize > strlen(IIS_FRONTPAGE_SIGNATURE2)) {
++			if (totsize > sizeof(localbuf) - 1)
++				totsize = sizeof(localbuf) - 1;
++			memcpy(localbuf, (void *)tcph + tcph->doff * 4, totsize);
++			if ((memcmp(localbuf, IIS_FRONTPAGE_SIGNATURE1, strlen(IIS_FRONTPAGE_SIGNATURE1)) == 0) || (memcmp(localbuf,IIS_FRONTPAGE_SIGNATURE2, strlen(IIS_FRONTPAGE_SIGNATURE2))== 0)) {
++				char *pcontent_length = NULL;
++
++				pcontent_length = strstr(localbuf,CONTENT_LENGTH);
++				if(pcontent_length) {
++					pcontent_length += strlen(CONTENT_LENGTH);
++					localbuf[strstr(pcontent_length,"\r\n") - localbuf] = '\0';
++					if(memcmp(pcontent_length,"5058",strlen("5058")) == 0)
++						ret = 1;
++				}
++			}
++		}
++	}
++#endif
++
++#ifdef CONFIG_LAND_ATTACK
++	if (attack_name == LAND_ATTACK) {
++		if (iph->saddr == iph->daddr) {
++			ret = 1;
++		}
++	}
++#endif
++
++#if 0
++#ifdef CONFIG_FRAGGLE
++	if (attack_name == FRAGGLE) {
++		struct rtable *rt = NULL;
++		struct sk_buff *skb_c = NULL;
++
++		skb_c = skb_clone(skb, 0);
++		if (skb_c == NULL) {
++			printk("ifxattack : Fraggle -> Could not clone skb");
++			goto frag_out;
++		}
++		if (ip_route_input(skb_c, iph->daddr, iph->saddr, iph->tos, skb->dev)) {
++			printk("ifxattack : Fraggle -> Could not ip_route_input");
++			goto frag_out;
++		}
++		rt = (struct rtable *)skb_c->dst;
++		if (rt->rt_flags & (RTCF_BROADCAST | RTCF_MULTICAST)) {
++			ret = 1;
++		}
++frag_out:
++		if (skb_c) 
++			kfree_skb(skb_c);
++	}
++#endif
++#endif
++
++#ifdef CONFIG_MALFORMED_MIME
++
++#define	STR_EOL			"\r\n"
++#define CONTENT_TYPE	"Content-Type:"
++#define STR_CHARSET		"charset="
++
++	if (attack_name == MALFORMED_MIME) {
++		int totsize = ip_data_len - iph->ihl * 4 - tcph->doff * 4;
++		char *curpos = NULL;
++		char *EofConLine = NULL;
++		int i = 0;
++		char *pbegin = NULL;
++
++		pbegin = curpos = (void *)tcph + tcph->doff * 4;
++		do {
++			EofConLine = NULL;
++			EofConLine = strstr(curpos, STR_EOL);
++			if (EofConLine == NULL)
++				break;
++			while (*(EofConLine + strlen(STR_EOL)) == '\t') {
++				EofConLine = strstr(EofConLine + strlen(STR_EOL) + 1,STR_EOL);
++				if (EofConLine == NULL) 
++					break;
++			}
++			if (EofConLine == NULL) 
++				break;
++			if( xstrncasecmp(curpos,CONTENT_TYPE,strlen(CONTENT_TYPE))== 0) 
++			//if( strncmp(curpos,CONTENT_TYPE,strlen(CONTENT_TYPE))== 0) 
++			{
++				char content_line[256];
++				char *marker = NULL;
++				memset(content_line,0,sizeof(content_line));
++				strncpy(content_line,curpos ,EofConLine - curpos + strlen(STR_EOL));
++				xstrtolower(content_line);
++				marker = strstr(content_line,STR_CHARSET);
++				
++				if(marker != NULL) { // now check if it is non empty
++					//printf("### charset found in [%s]\n",marker);
++					marker += strlen(STR_CHARSET); //to skip the "charset="
++					if( strncmp(marker,"\"\"",strlen("\"\"")) == 0 || strncmp(marker,STR_EOL,strlen(STR_EOL)) == 0) {
++						//printf("### Attack found\n");
++						ret = 1; //attack confirmed
++						break;
++					}
++				}	
++			}
++			curpos = EofConLine + strlen(STR_EOL);
++			i = curpos - pbegin;
++			if (strncmp(EofConLine + strlen(STR_EOL),STR_EOL,strlen(STR_EOL)) == 0)
++				break;
++		}while( i < totsize );
++	}
++#endif
++
++#ifdef CONFIG_UDP_BOMB
++	if (attack_name == UDP_BOMB) {
++		if(udph->len != ip_data_len)
++			ret = 1;
++	}
++#endif
++
++#ifdef CONFIG_FTP_PORT_REST
++	if (attack_name == FTP_PORT_REST) {
++		struct nf_conn *ct = NULL;
++		struct nf_conn_help *help = NULL;
++		enum ip_conntrack_info ctinfo;
++		struct nf_ct_ftp_master *ct_ftp_info = NULL;
++
++		ct = nf_ct_get(skb, &ctinfo);
++		help = nfct_help(ct);
++		if (help != NULL) {
++			ct_ftp_info = &(help->help.ct_ftp_info);
++			if (ct_ftp_info) {
++				if (ct_ftp_info->active_ftp_port > 0 && ct_ftp_info->active_ftp_port <= 1024)
++					ret = 1;
++			}
++		}
++	}
++#endif
++	return ret;
++}
++
++static int
++match(const struct sk_buff *skb,
++		const struct net_device *in,
++		const struct net_device *out,
++		const struct xt_match *match,
++		const void *matchinfo,
++		int offset,
++		unsigned int datalen,
++		int *hotdrop)
++{
++	const struct ipt_ifxattack_match_info *info = matchinfo;
++
++	//return attack_match(info->attack_name, tcph, skb->len - skb->nh.iph->ihl*4, hotdrop);
++	return attack_match(info->attack_name, skb, hotdrop);
++}
++
++static int
++checkentry(const char *tablename,
++		const void *ip_void,
++		const struct xt_match *match,
++		void *matchinfo,
++		unsigned int hook_mask)
++{
++	const struct ipt_ifxattack_match_info *info = matchinfo;
++	const struct ipt_ip *ip = ip_void;
++
++#ifdef CONFIG_LAND_ATTACK
++	/* Nothing */
++#endif
++#ifdef CONFIG_CODE_REDI
++	/* Must specify -p tcp */
++	if (info->attack_name == CODE_REDI && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: code_redI only works on TCP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_CODE_REDII
++	/* Must specify -p tcp */
++	if (info->attack_name == CODE_REDII && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: code_redII only works on TCP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_ICQ_DOS
++	/* Must specify -p tcp */
++	if (info->attack_name == ICQ_DOS && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: icq_dos only works on TCP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_MALFORMED_MIME
++	/* Must specify -p tcp */
++	if (info->attack_name == MALFORMED_MIME && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: malformed_mime only works on TCP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_IIS_FRONTPAGE
++	/* Must specify -p tcp */
++	if (info->attack_name == IIS_FRONTPAGE && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: iis_frontpage only works on TCP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_UDP_BOMB
++	/* Must specify -p udp */
++	if (info->attack_name == UDP_BOMB && (ip->proto != IPPROTO_UDP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: udp_bomb only works on UDP packets\n");
++		return 0;
++	}
++#endif
++#ifdef CONFIG_FTP_PORT_REST
++	/* Must specify -p tcp */
++	if (info->attack_name == FTP_PORT_REST && (ip->proto != IPPROTO_TCP || (ip->invflags & IPT_INV_PROTO))) {
++		printk("ifxattack: ftp_port only works on TCP packets\n");
++		return 0;
++	}
++#endif
++	return 1;
++}
++
++static struct xt_match ifxattack_match = {
++	.list = { NULL, NULL },
++	.name = "ifxattack",
++	.match = match,
++	.checkentry = checkentry,
++	.matchsize = sizeof(struct ipt_ifxattack_match_info),
++	.destroy = NULL,
++	.me = THIS_MODULE
++};
++					
++static int __init init(void)
++{
++	return xt_register_match(&ifxattack_match);
++}
++
++static void __exit fini(void)
++{
++	xt_unregister_match(&ifxattack_match);
++}
++
++module_init(init);
++module_exit(fini);
++MODULE_LICENSE("GPL");
++
+Index: linux/net/netfilter/nf_conntrack_ftp.c
+===================================================================
+--- linux.orig/net/netfilter/nf_conntrack_ftp.c	2010-12-28 16:52:36.000000000 +0530
++++ linux/net/netfilter/nf_conntrack_ftp.c	2010-12-28 19:55:22.583537000 +0530
+@@ -437,7 +437,7 @@
+ 
+ #if defined(CONFIG_IP_NF_MATCH_LTQATTACK) || defined(CONFIG_IP_NF_MATCH_LTQATTACK_MODULE)
+ 	if (search[dir][i].ftptype == NF_CT_FTP_PORT) {
+-		DEBUGP("Found FTP port command with port %d\n", cmd.u.tcp.port);
++		pr_debug("Found FTP port command with port %d\n", cmd.u.tcp.port);
+ 		ct_ftp_info->active_ftp_port =  cmd.u.tcp.port;
+ 	}
+ #endif
+Index: linux/include/linux/netfilter_ipv4/ipt_webstr.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/linux/netfilter_ipv4/ipt_webstr.h	2010-12-28 20:46:18.363118000 +0530
+@@ -0,0 +1,28 @@
++#ifndef _IPT_WEBSTR_H
++#define _IPT_WEBSTR_H
++
++#define BM_MAX_NLEN 256
++#define BM_MAX_HLEN 1024
++
++#define BLK_JAVA		0x01
++#define BLK_ACTIVE		0x02
++#define BLK_COOKIE		0x04
++#define BLK_PROXY		0x08
++
++typedef char *(*proc_ipt_search) (char *, char *, int, int);
++
++struct ipt_webstr_info {
++    char string[BM_MAX_NLEN];
++    u_int16_t invert;
++    u_int16_t len;
++    u_int8_t type;
++};
++
++enum ipt_webstr_type
++{
++    IPT_WEBSTR_HOST,
++    IPT_WEBSTR_URL,
++    IPT_WEBSTR_CONTENT
++};
++
++#endif /* _IPT_WEBSTR_H */
+Index: linux/net/ipv4/netfilter/Kconfig
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Kconfig	2010-12-28 20:09:16.000000000 +0530
++++ linux/net/ipv4/netfilter/Kconfig	2010-12-28 20:44:06.302602000 +0530
+@@ -426,6 +426,13 @@
+        bool
+        depends on IP_NF_MATCH_LTQATTACK
+        default y
++
++config IP_NF_MATCH_WEBSTR
++       tristate 'webstring type match support'
++       depends on IP_NF_IPTABLES && LTQ_NF_ADDONS
++       help
++         This allows one to filter packets based on the string they contain.
++
+ endif # IP_NF_IPTABLES
+ 
+ # ARP tables
+Index: linux/net/ipv4/netfilter/Makefile
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Makefile	2010-12-28 20:09:16.000000000 +0530
++++ linux/net/ipv4/netfilter/Makefile	2010-12-28 20:44:30.448513000 +0530
+@@ -55,6 +55,7 @@
+ obj-$(CONFIG_IP_NF_MATCH_AH) += ipt_ah.o
+ obj-$(CONFIG_IP_NF_MATCH_ECN) += ipt_ecn.o
+ obj-$(CONFIG_IP_NF_MATCH_LTQATTACK) += ipt_ifxattack.o
++obj-$(CONFIG_IP_NF_MATCH_WEBSTR) += ipt_webstr.o
+ 
+ # targets
+ obj-$(CONFIG_IP_NF_TARGET_CLUSTERIP) += ipt_CLUSTERIP.o
+Index: linux/net/ipv4/netfilter/ipt_webstr.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/net/ipv4/netfilter/ipt_webstr.c	2010-12-28 20:49:55.619239000 +0530
+@@ -0,0 +1,425 @@
++/* Kernel module to match a string into a packet.
++ *
++ * Copyright (C) 2000 Emmanuel Roger  <winfield@freegates.be>
++ * 
++ * ChangeLog
++ *	19.02.2002: Gianni Tedesco <gianni@ecsc.co.uk>
++ *		Fixed SMP re-entrancy problem using per-cpu data areas
++ *		for the skip/shift tables.
++ *	02.05.2001: Gianni Tedesco <gianni@ecsc.co.uk>
++ *		Fixed kernel panic, due to overrunning boyer moore string
++ *		tables. Also slightly tweaked heuristic for deciding what
++ * 		search algo to use.
++ * 	27.01.2001: Gianni Tedesco <gianni@ecsc.co.uk>
++ * 		Implemented Boyer Moore Sublinear search algorithm
++ * 		alongside the existing linear search based on memcmp().
++ * 		Also a quick check to decide which method to use on a per
++ * 		packet basis.
++ */
++
++/* Kernel module to match a http header string into a packet.
++ *
++ * Copyright (C) 2003, CyberTAN Corporation
++ * All Rights Reserved.
++ *
++ * Description:
++ *   This is kernel module for web content inspection. It was derived from 
++ *   'string' match module, declared as above.
++ *
++ *   The module follows the Netfilter framework, called extended packet 
++ *   matching modules. 
++ */
++
++
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <net/sock.h>
++#include <net/tcp.h>
++#include <net/udp.h>
++#include <linux/string.h>
++/*#include <linux/ctype.h>*/
++
++#include <linux/netfilter_ipv4/ip_tables.h>
++#include <linux/netfilter_ipv4/ipt_webstr.h>
++
++#define	isdigit(x) ((x) >= '0' && (x) <= '9')
++#define	isupper(x) (((unsigned)(x) >= 'A') && ((unsigned)(x) <= 'Z'))
++#define	islower(x) (((unsigned)(x) >= 'a') && ((unsigned)(x) <= 'z'))
++#define	isalpha(x) (isupper(x) || islower(x))
++#define	toupper(x) (isupper(x) ? (x) : (x) - 'a' + 'A')
++#define tolower(x) (isupper(x) ? ((x) - 'A' + 'a') : (x))
++
++#define split(word, wordlist, next, delim) \
++    for (next = wordlist, \
++	strncpy(word, next, sizeof(word)), \
++	word[(next=strstr(next, delim)) ? strstr(word, delim) - word : sizeof(word) - 1] = '\0', \
++	next = next ? next + sizeof(delim) - 1 : NULL ; \
++	strlen(word); \
++	next = next ? : "", \
++	strncpy(word, next, sizeof(word)), \
++	word[(next=strstr(next, delim)) ? strstr(word, delim) - word : sizeof(word) - 1] = '\0', \
++	next = next ? next + sizeof(delim) - 1 : NULL)
++
++#define BUFSIZE 	1024
++
++/* Flags for get_http_info() */
++#define HTTP_HOST	0x01
++#define HTTP_URL	0x02
++/* Flags for mangle_http_header() */
++#define HTTP_COOKIE	0x04
++#if 0
++#define SPARQ_LOG       printk
++#else
++#define SPARQ_LOG(format, args...)
++#endif
++
++typedef struct httpinfo {
++    char host[BUFSIZE + 1];
++    int hostlen;
++    char url[BUFSIZE + 1];
++    int urllen;
++} httpinfo_t;
++
++/* Return 1 for match, 0 for accept, -1 for partial. */
++static int find_pattern2(const char *data, size_t dlen,
++	const char *pattern, size_t plen,
++	char term,
++	unsigned int *numoff,
++	unsigned int *numlen)
++{
++    size_t i, j, k;
++    int state = 0;
++    *numoff = *numlen = 0;
++
++    SPARQ_LOG("%s: pattern = '%s', dlen = %u\n",__FUNCTION__, pattern, dlen);
++    if (dlen == 0)
++	return 0;
++
++    if (dlen <= plen) {	/* Short packet: try for partial? */
++	if (strnicmp(data, pattern, dlen) == 0)
++	    return -1;
++	else 
++	    return 0;
++    }
++    for (i = 0; i <= (dlen - plen); i++) {
++	/* DFA : \r\n\r\n :: 1234 */
++	if (*(data + i) == '\r') {
++	    if (!(state % 2)) state++;	/* forwarding move */
++	    else state = 0;		/* reset */
++	}
++	else if (*(data + i) == '\n') {
++	    if (state % 2) state++;
++	    else state = 0;
++	}
++	else state = 0;
++
++	if (state >= 4)
++	    break;
++
++	/* pattern compare */
++	if (memcmp(data + i, pattern, plen ) != 0)
++	    continue;
++
++	/* Here, it means patten match!! */
++	*numoff=i + plen;
++	for (j = *numoff, k = 0; data[j] != term; j++, k++)
++	    if (j > dlen) return -1 ;	/* no terminal char */
++
++	*numlen = k;
++	return 1;
++    }
++    return 0;
++}
++
++static int mangle_http_header(const struct sk_buff *skb, int flags)
++{
++    const struct iphdr *iph = ip_hdr(skb); //(void *)skb->nh.iph;
++	const struct tcphdr *tcph = (void*)iph + iph->ihl * 4; //(void *)skb->nh.iph + skb->nh.iph->ihl*4;
++    int found, offset, len;
++    int ret = 0;
++	char data[512];
++
++	int ip_data_len = iph->tot_len - iph->ihl * 4;
++	int datalen = ip_data_len - tcph->doff * 4;
++	memset(data,0x00,sizeof(data));
++	memcpy(data, (void *)tcph + tcph->doff * 4, datalen);
++
++	SPARQ_LOG("%s: seq=%u\n", __FUNCTION__, ntohl(tcph->seq));
++    /* Basic checking, is it HTTP packet? */
++    if (datalen < 10)
++	return ret;	/* Not enough length, ignore it */
++    if (memcmp(data, "GET ", sizeof("GET ") - 1) != 0 &&
++        memcmp(data, "POST ", sizeof("POST ") - 1) != 0 &&
++	 memcmp(data, "HEAD ", sizeof("HEAD ") - 1) != 0)
++	return ret;	/* Pass it */
++
++    /* COOKIE modification */
++    if (flags & HTTP_COOKIE) {
++	found = find_pattern2(data, datalen, "Cookie: ", 
++		sizeof("Cookie: ")-1, '\r', &offset, &len);
++	if (found) {
++	    char c;
++	    offset -= (sizeof("Cookie: ") - 1);
++	    /* Swap the 2rd and 4th bit */
++	    c = *(data + offset + 2) ;
++	    *(data + offset + 2) = *(data + offset + 4) ;
++	    *(data + offset + 4) = c ;
++	    ret++;
++	}
++    }
++
++    return ret;
++}
++
++static int get_http_info(const struct sk_buff *skb, int flags, httpinfo_t *info)
++{
++    struct iphdr *iph = ip_hdr(skb); //(skb)->nh.iph;
++    struct tcphdr *tcph = (void *)iph + iph->ihl*4;
++    char data[512];
++	int found, offset;
++	int hostlen, pathlen;
++	int ret = 0;
++	
++	int ip_data_len = iph->tot_len - iph->ihl * 4;
++	int datalen = ip_data_len - tcph->doff * 4;
++	memset(data,0x00,sizeof(data));
++	memcpy(data, (void *)tcph + tcph->doff * 4, datalen);
++
++    SPARQ_LOG("%s: seq=%u\n", __FUNCTION__, ntohl(tcph->seq));
++
++    /* Basic checking, is it HTTP packet? */
++    if (datalen < 10)
++	return ret;	/* Not enough length, ignore it */
++    if (memcmp(data, "GET ", sizeof("GET ") - 1) != 0 &&
++        memcmp(data, "POST ", sizeof("POST ") - 1) != 0 &&
++	 memcmp(data, "HEAD ", sizeof("HEAD ") - 1) != 0)
++	return ret;	/* Pass it */
++
++    if (!(flags & (HTTP_HOST | HTTP_URL)))
++	return ret;
++
++    /* find the 'Host: ' value */
++    found = find_pattern2(data, datalen, "Host: ", 
++	    sizeof("Host: ") - 1, '\r', &offset, &hostlen);
++    SPARQ_LOG("Host found=%d\n", found);
++
++    if (!found || !hostlen)
++	return ret;
++
++    ret++;	/* Host found, increase the return value */
++    hostlen = (hostlen < BUFSIZE) ? hostlen : BUFSIZE;
++    strncpy(info->host, data + offset, hostlen);
++    *(info->host + hostlen) = 0;		/* null-terminated */
++    info->hostlen = hostlen;
++    SPARQ_LOG("HOST=%s, hostlen=%d\n", info->host, info->hostlen);
++
++    if (!(flags & HTTP_URL))
++	return ret;
++
++    /* find the 'GET ' or 'POST ' or 'HEAD 'value */
++    found = find_pattern2(data, datalen, "GET ",
++	    sizeof("GET ") - 1, '\r', &offset, &pathlen);
++    if (!found)
++	found = find_pattern2(data, datalen, "POST ",
++		sizeof("POST ") - 1, '\r', &offset, &pathlen);
++    if (!found)
++	found = find_pattern2(data, datalen, "HEAD ",
++		sizeof("HEAD ") - 1, '\r', &offset, &pathlen);
++    SPARQ_LOG("GET/POST/HEAD found=%d\n", found);
++
++    if (!found || (pathlen -= (sizeof(" HTTP/x.x") - 1)) <= 0)/* ignor this field */
++	return ret;
++
++    ret++;	/* GET/POST found, increase the return value */
++    pathlen = ((pathlen + hostlen) < BUFSIZE) ? pathlen : BUFSIZE - hostlen;
++    strncpy(info->url, info->host, hostlen);
++    strncpy(info->url + hostlen, data + offset, pathlen);
++    *(info->url + hostlen + pathlen) = 0;	/* null-terminated */
++    info->urllen = hostlen + pathlen;
++    SPARQ_LOG("URL=%s, urllen=%d\n", info->url, info->urllen);
++
++    return ret;
++}
++
++/* Linear string search based on memcmp() */
++static char *search_linear (char *needle, char *haystack, int needle_len, int haystack_len) 
++{
++	char *k = haystack + (haystack_len-needle_len);
++	char *t = haystack;
++	
++	SPARQ_LOG("%s: haystack=%s, needle=%s\n", __FUNCTION__, t, needle);
++	for(; t <= k; t++) {
++		//SPARQ_LOG("%s: haystack=%s, needle=%s\n", __FUNCTION__, t, needle);
++		if (strnicmp(t, needle, needle_len) == 0) return t;
++		//if ( memcmp(t, needle, needle_len) == 0 ) return t;
++	}
++
++	return NULL;
++}
++
++
++static int
++match(const struct sk_buff *skb,
++      const struct net_device *in,
++      const struct net_device *out,
++	  const struct xt_match *match,
++      const void *matchinfo,
++      int offset,
++      unsigned int datalen,
++      int *hotdrop)
++{
++	const struct ipt_webstr_info *info = matchinfo;
++	struct iphdr *ip = ip_hdr(skb); //skb->nh.iph;
++	proc_ipt_search search=search_linear;
++
++	char token[] = "<&nbsp;>";
++	char *wordlist = (char *)&info->string;
++	httpinfo_t htinfo;
++	int flags = 0;
++	int found = 0;
++	long int opt = 0;
++
++
++	if (!ip || info->len < 1)
++	    return 0;
++
++	SPARQ_LOG("\n************************************************\n"
++		"%s: type=%s\n", __FUNCTION__, (info->type == IPT_WEBSTR_URL) 
++		? "IPT_WEBSTR_URL"  : (info->type == IPT_WEBSTR_HOST) 
++		? "IPT_WEBSTR_HOST" : "IPT_WEBSTR_CONTENT" );
++	
++	/* Determine the flags value for get_http_info(), and mangle packet 
++	 * if needed. */
++	switch(info->type)
++	{
++	    case IPT_WEBSTR_URL:	/* fall through */
++		flags |= HTTP_URL;
++
++	    case IPT_WEBSTR_HOST:
++		flags |= HTTP_HOST;
++		break;
++
++	    case IPT_WEBSTR_CONTENT:
++		opt = simple_strtol(wordlist, (char **)NULL, 10);
++		SPARQ_LOG("%s: string=%s, opt=%#lx\n", __FUNCTION__, wordlist, opt);
++
++		if (opt & (BLK_JAVA | BLK_ACTIVE | BLK_PROXY))
++		    flags |= HTTP_URL;
++		if (opt & BLK_PROXY)
++		    flags |= HTTP_HOST;
++		if (opt & BLK_COOKIE)
++		    mangle_http_header(skb, HTTP_COOKIE);
++		break;
++
++	    default:
++		printk("%s: Sorry! Cannot find this match option.\n", __FILE__);
++		return 0;
++	}
++
++	/* Get the http header info */
++	if (get_http_info(skb, flags, &htinfo) < 1)
++	    return 0;
++
++	/* Check if the http header content contains the forbidden keyword */
++	if (info->type == IPT_WEBSTR_HOST || info->type == IPT_WEBSTR_URL) {
++	    int nlen = 0, hlen = 0;
++	    char needle[BUFSIZE], *haystack = NULL;
++	    char *next;
++
++	    if (info->type == IPT_WEBSTR_HOST) {
++		haystack = htinfo.host;
++		hlen = htinfo.hostlen;
++	    }
++	    else {
++		haystack = htinfo.url;
++		hlen = htinfo.urllen;
++	    }
++	    split(needle, wordlist, next, token) {
++		nlen = strlen(needle);
++		SPARQ_LOG("keyword=%s, nlen=%d, hlen=%d\n", needle, nlen, hlen);
++		if (!nlen || !hlen || nlen > hlen) continue;
++		if (search(needle, haystack, nlen, hlen) != NULL) {
++		    found = 1;
++		    break;
++		}
++	    }
++	}
++	else {		/* IPT_WEBSTR_CONTENT */
++	    int vicelen;
++
++	    if (opt & BLK_JAVA) {
++		vicelen = sizeof(".js") - 1;
++		if (strnicmp(htinfo.url + htinfo.urllen - vicelen, ".js", vicelen) == 0) {
++		    SPARQ_LOG("%s: MATCH....java\n", __FUNCTION__);
++		    found = 1;
++		    goto match_ret;
++		}
++		vicelen = sizeof(".class") - 1;
++		if (strnicmp(htinfo.url + htinfo.urllen - vicelen, ".class", vicelen) == 0) {
++		    SPARQ_LOG("%s: MATCH....java\n", __FUNCTION__);
++		    found = 1;
++		    goto match_ret;
++		}
++	    }
++	    if (opt & BLK_ACTIVE){
++		vicelen = sizeof(".ocx") - 1;
++		if (strnicmp(htinfo.url + htinfo.urllen - vicelen, ".ocx", vicelen) == 0) {
++		    SPARQ_LOG("%s: MATCH....activex\n", __FUNCTION__);
++		    found = 1;
++		    goto match_ret;
++		}
++		vicelen = sizeof(".cab") - 1;
++		if (strnicmp(htinfo.url + htinfo.urllen - vicelen, ".cab", vicelen) == 0) {
++		    SPARQ_LOG("%s: MATCH....activex\n", __FUNCTION__);
++		    found = 1;
++		    goto match_ret;
++		}
++	    }
++	    if (opt & BLK_PROXY){
++		if (strnicmp(htinfo.url + htinfo.hostlen, "http://", sizeof("http://") - 1) == 0) {
++		    SPARQ_LOG("%s: MATCH....proxy\n", __FUNCTION__);
++		    found = 1;
++		    goto match_ret;
++		}
++	    }
++	}
++
++match_ret:
++	SPARQ_LOG("%s: Verdict =======> %s \n",__FUNCTION__
++		, found ? "DROP" : "ACCEPT");
++
++	return (found ^ info->invert);
++}
++
++static int
++checkentry(const char *tablename,
++		   const void *ip_void,
++		   const struct xt_match *match,
++           void *matchinfo,
++           unsigned int hook_mask)
++{
++	return 1;
++}
++
++static struct xt_match webstr_match = {
++	.list			= { NULL, NULL },
++	.name			= "webstr",
++	.match			= match,
++	.checkentry		= checkentry,
++	.matchsize		= sizeof(struct ipt_webstr_info),
++	.destroy		= NULL,
++	.me				= THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return xt_register_match(&webstr_match);
++}
++
++static void __exit fini(void)
++{
++	xt_unregister_match(&webstr_match);
++}
++
++module_init(init);
++module_exit(fini);
+Index: linux/include/linux/netfilter_ipv4/ipt_synflood.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/include/linux/netfilter_ipv4/ipt_synflood.h	2010-12-29 15:43:33.605482000 +0530
+@@ -0,0 +1,36 @@
++#ifndef _IPT_SYNFLOOD_H
++#define _IPT_SYNFLOOD_H
++
++#include <linux/param.h>
++#include <linux/types.h>
++#include <linux/netfilter/xt_limit.h>
++#define IPT_LIMIT_SCALE XT_LIMIT_SCALE
++#define ipt_rateinfo xt_rateinfo
++
++/* 1/10,000 sec period => max of 10,000/sec.  Min rate is then 429490
++   seconds, or one every 59 hours. */
++/*
++ * Keep track of up to LIST_SIZE source addresses, using a hash table of
++ * HASH_SIZE entries for faster lookups, but limiting hash collisions to
++ * HASH_MAX source addresses per the same hash value.
++ */
++#define LIST_SIZE                      0x40
++#define HASH_LOG                       7
++#define HASH_SIZE                      (1 << HASH_LOG)
++#define HASH_MAX                       0x10
++
++enum addr_type_t { DESTINATION=0, SOURCE };
++#if 0
++struct ipt_rateinfo {
++       u_int32_t avg;    /* Average secs between packets * scale */
++       u_int32_t burst;  /* Period multiplier for upper limit. */
++       u_int8_t  invert; /* Invert */
++
++       /* Used internally by the kernel */
++       u_int32_t credit;
++       u_int32_t credit_cap, cost;
++       enum addr_type_t addr_type;
++};
++#endif
++#endif /*_IPT_SYNFLOOD_H*/
++
+Index: linux/net/ipv4/netfilter/Kconfig
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Kconfig	2010-12-28 20:44:06.000000000 +0530
++++ linux/net/ipv4/netfilter/Kconfig	2010-12-29 15:41:19.987188000 +0530
+@@ -433,6 +433,13 @@
+        help
+          This allows one to filter packets based on the string they contain.
+ 
++config IP_NF_MATCH_SYNFLOOD
++       tristate "synflood match support"
++       depends on IP_NF_IPTABLES && LTQ_NF_ADDONS
++       help
++         Firewall support against synflood DOS attack.
++
++
+ endif # IP_NF_IPTABLES
+ 
+ # ARP tables
+Index: linux/net/ipv4/netfilter/Makefile
+===================================================================
+--- linux.orig/net/ipv4/netfilter/Makefile	2010-12-28 20:44:30.000000000 +0530
++++ linux/net/ipv4/netfilter/Makefile	2010-12-29 15:41:57.440931000 +0530
+@@ -56,6 +56,7 @@
+ obj-$(CONFIG_IP_NF_MATCH_ECN) += ipt_ecn.o
+ obj-$(CONFIG_IP_NF_MATCH_LTQATTACK) += ipt_ifxattack.o
+ obj-$(CONFIG_IP_NF_MATCH_WEBSTR) += ipt_webstr.o
++obj-$(CONFIG_IP_NF_MATCH_SYNFLOOD) += ipt_synflood.o
+ 
+ # targets
+ obj-$(CONFIG_IP_NF_TARGET_CLUSTERIP) += ipt_CLUSTERIP.o
+Index: linux/net/ipv4/netfilter/ipt_synflood.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/net/ipv4/netfilter/ipt_synflood.c	2010-12-29 15:51:00.888145000 +0530
+@@ -0,0 +1,246 @@
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
++#include <linux/interrupt.h>
++
++#include <linux/netfilter_ipv4/ip_tables.h>
++#include <linux/netfilter_ipv4/ipt_synflood.h>
++
++/*
++   To avoid underflow, we multiply by 128 (ie. you get 128 credits per
++   jiffy).  Hence a cost of 2^32-1, means one pass per 32768 seconds
++   at 1024HZ (or one every 9 hours).  A cost of 1 means 12800 passes
++   per second at 100HZ.  */
++
++#define CREDITS_PER_JIFFY 128
++/************************************************************/
++/*
++ * Information we keep per each source address.
++ */
++struct host {
++	struct host *next;		/* Next entry with the same hash */
++	unsigned long timestamp;		/* Last update time */
++	struct in_addr ip_addr;	/* Source address */
++	u_int32_t credit;			/* Total credit of addresses in the list */
++};
++
++/*
++ * State information.
++ */
++static struct repo_state{
++	spinlock_t lock;
++	struct host list[LIST_SIZE];	/* List of source addresses */
++	struct host *hash[HASH_SIZE];	/* Hash: pointers into the list */
++	int index;			/* Oldest entry to be replaced */
++#if 0
++} src_state,dst_state;
++#else
++} dst_state;
++#endif
++
++/*
++ * Convert an IP address into a hash table index.
++ */
++static inline int hashfunc(struct in_addr addr)
++{
++	unsigned int value;
++	int hash;
++
++	value = addr.s_addr;
++	hash = 0;
++	do {
++		hash ^= value;
++	} while ((value >>= HASH_LOG));
++
++	return hash & (HASH_SIZE - 1);
++}
++
++
++/* Precision saver. */
++static u_int32_t
++user2credits(u_int32_t user)
++{
++	/* If multiplying would overflow... */
++	if (user > 0xFFFFFFFF / (HZ*CREDITS_PER_JIFFY))
++		/* Divide first. */
++		return (user / IPT_LIMIT_SCALE) * HZ * CREDITS_PER_JIFFY;
++
++	return (user * HZ * CREDITS_PER_JIFFY) / IPT_LIMIT_SCALE;
++}
++
++static int
++match(const struct sk_buff *skb,
++		const struct net_device *in,
++		const struct net_device *out,
++		const struct xt_match *match,
++		const void *matchinfo,
++		int offset,
++		unsigned int datalen,
++		int *hotdrop)
++{
++	unsigned long now;
++	struct host **head,*last,*curr;
++	int count,hash;
++	struct repo_state *state = NULL;
++	struct in_addr addr;
++
++	/* Parameters from userspace */
++	const struct ipt_rateinfo *rateinfo = matchinfo;
++
++	struct iphdr *ip_h;
++	/* IP header */
++	ip_h = ip_hdr(skb); //skb->nh.iph;
++
++	/* Get the source address, source & destination ports, and TCP flags */
++	addr.s_addr = ip_h->saddr;
++
++	/* We're using IP address 0.0.0.0 for a special purpose here, so don't let
++	 * them spoof us. [DHCP needs this feature - HW] */
++	if (!addr.s_addr) {
++		return 0;
++	}
++
++#if 0
++	if (rateinfo->addr_type == SOURCE) {
++		addr.s_addr = ip_h->saddr;
++		state = &src_state;
++	} else {
++		addr.s_addr = ip_h->daddr;
++		state = &dst_state;
++	}
++#else
++	addr.s_addr = ip_h->daddr;
++	state = &dst_state;
++#endif
++
++	/* Use jiffies here not to depend on someone setting the time while we're
++	 * running; we need to be careful with possible return value overflows. */
++	now = jiffies;
++
++	spin_lock(&(*state).lock);
++	
++	/* Do we know this source address already? */
++	count = 0;
++	last = NULL;
++	if ((curr = *(head = &(*state).hash[hash = hashfunc(addr)])))
++		do {
++			if (curr->ip_addr.s_addr == addr.s_addr) break;
++			count++;
++			if (curr->next) last = curr;
++		} while ((curr = curr->next));
++
++	if(curr) {
++		curr->credit += (now - xchg(&curr->timestamp, now)) * CREDITS_PER_JIFFY;
++		if (curr->credit > rateinfo->credit_cap)
++			curr->credit = rateinfo->credit_cap;
++		if(curr->credit >= rateinfo->cost) {
++			curr->credit -= rateinfo->cost;
++			goto out_match;
++		}
++		goto out_no_match;
++	}
++
++	/* Got too many source addresses with the same hash value? Then remove the
++	 * oldest one from the hash table, so that they can't take too much of our
++	 * CPU time even with carefully chosen spoofed IP addresses. */
++	if (count >= HASH_MAX && last) {
++		last->next = NULL;
++	}
++
++	/* We're going to re-use the oldest list entry, so remove it from the hash
++	 * table first (if it is really already in use, and isn't removed from the
++	 * hash table already because of the HASH_MAX check above). */
++
++	/* First, find it */
++	if ((*state).list[(*state).index].ip_addr.s_addr)
++		head = &(*state).hash[hashfunc((*state).list[(*state).index].ip_addr)];
++	else
++		head = &last;
++	last = NULL;
++	if ((curr = *head))
++	do {
++		if (curr == &(*state).list[(*state).index]) break;
++		last = curr;
++	} while ((curr = curr->next));
++
++	/* Then, remove it */
++	if (curr) {
++		if (last)
++			last->next = last->next->next;
++		else if (*head)
++			*head = (*head)->next;
++	}
++
++	/* Get our list entry */
++	curr = &(*state).list[(*state).index++];
++	if ((*state).index >= LIST_SIZE) (*state).index = 0;
++
++	/* Link it into the hash table */
++	head = &(*state).hash[hash];
++	curr->next = *head;
++	*head = curr;
++
++	/* And fill in the fields */
++	curr->timestamp = now;
++	curr->ip_addr = addr;
++	curr->credit = rateinfo->credit - rateinfo->cost;
++
++out_match:
++	spin_unlock(&(*state).lock);
++	return (1 ^ rateinfo->invert);
++out_no_match:
++	spin_unlock(&(*state).lock);
++	return (0 ^ rateinfo->invert);
++}
++
++static int
++checkentry(const char *tablename,
++			 const void *ip_void,
++			 const struct xt_match *match,
++		     void *matchinfo,
++		     unsigned int hook_mask)
++{
++	struct ipt_rateinfo *r = matchinfo;
++	
++	/* Check for overflow. */
++	if (r->burst == 0
++	    || user2credits(r->avg * r->burst) < user2credits(r->avg)) {
++		printk("Call rusty: overflow in ipt_limit: %u/%u\n",
++		       r->avg, r->burst);
++		return 0;
++	}
++
++	/* User avg in seconds * IPT_LIMIT_SCALE: convert to jiffies *
++	   128. */
++	r->credit = user2credits(r->avg * r->burst);	 /* Credits full. */
++	r->credit_cap = user2credits(r->avg * r->burst); /* Credits full. */
++	r->cost = user2credits(r->avg);
++
++	return 1;
++}
++
++static struct xt_match ipt_synflood_reg = {
++	.list = { NULL, NULL },
++	.name       = "synflood",
++	.match      = match,
++	.checkentry = checkentry,
++	.matchsize = sizeof(struct ipt_rateinfo),
++	.destroy = NULL,
++	.me = THIS_MODULE,
++};
++static int __init init(void)
++{
++	if (xt_register_match(&ipt_synflood_reg))
++		return -EINVAL;
++	return 0;
++}
++
++static void __exit fini(void)
++{
++	xt_unregister_match(&ipt_synflood_reg);
++}
++
++module_init(init);
++module_exit(fini);
++MODULE_LICENSE("GPL");
++
+Index: linux/include/linux/netfilter/xt_limit.h
+===================================================================
+--- linux.orig/include/linux/netfilter/xt_limit.h	2010-04-02 04:29:14.000000000 +0530
++++ linux/include/linux/netfilter/xt_limit.h	2010-12-29 16:00:42.333020000 +0530
+@@ -20,5 +20,8 @@
+ 	__u32 credit_cap, cost;
+ 
+ 	struct xt_limit_priv *master;
++#ifdef CONFIG_LTQ_NF_ADDONS
++       u_int8_t  invert; /* Invert: added mainly for synflood ipt_synflood */
++#endif
+ };
+ #endif /*_XT_RATE_H*/
+Index: linux/net/netfilter/xt_limit.c
+===================================================================
+--- linux.orig/net/netfilter/xt_limit.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/net/netfilter/xt_limit.c	2010-12-29 16:06:52.106546000 +0530
+@@ -78,11 +78,19 @@
+ 		/* We're not limited. */
+ 		priv->credit -= r->cost;
+ 		spin_unlock_bh(&limit_lock);
++#ifdef CONFIG_LTQ_NF_ADDONS
++               return (true ^ r->invert);
++#else
+ 		return true;
++#endif
+ 	}
+ 
+ 	spin_unlock_bh(&limit_lock);
++#ifdef CONFIG_LTQ_NF_ADDONS
++               return (false ^ r->invert);
++#else
+ 	return false;
++#endif
+ }
+ 
+ /* Precision saver. */
+diff -Naur linux/net/ipv4/netfilter.orig/ipt_ifxattack.c linux/net/ipv4/netfilter/ipt_ifxattack.c
+--- linux/net/ipv4/netfilter.orig/ipt_ifxattack.c	2011-02-16 17:11:08.655846058 +0530
++++ linux/net/ipv4/netfilter/ipt_ifxattack.c	2011-02-16 17:14:34.524596688 +0530
+@@ -279,30 +279,19 @@
+ }
+ 
+ static int
+-match(const struct sk_buff *skb,
+-		const struct net_device *in,
+-		const struct net_device *out,
+-		const struct xt_match *match,
+-		const void *matchinfo,
+-		int offset,
+-		unsigned int datalen,
+-		int *hotdrop)
++match(const struct sk_buff *skb, const struct xt_match_param *par)
+ {
+-	const struct ipt_ifxattack_match_info *info = matchinfo;
++	const struct ipt_ifxattack_match_info *info = par->matchinfo;
+ 
+ 	//return attack_match(info->attack_name, tcph, skb->len - skb->nh.iph->ihl*4, hotdrop);
+-	return attack_match(info->attack_name, skb, hotdrop);
++	return attack_match(info->attack_name, skb, (int*)par->hotdrop);
+ }
+ 
+ static int
+-checkentry(const char *tablename,
+-		const void *ip_void,
+-		const struct xt_match *match,
+-		void *matchinfo,
+-		unsigned int hook_mask)
++checkentry(const struct xt_mtchk_param *par)
+ {
+-	const struct ipt_ifxattack_match_info *info = matchinfo;
+-	const struct ipt_ip *ip = ip_void;
++	const struct ipt_ifxattack_match_info *info = par->matchinfo;
++	const struct ipt_ip *ip = par->entryinfo;
+ 
+ #ifdef CONFIG_LAND_ATTACK
+ 	/* Nothing */
+@@ -362,6 +351,7 @@
+ static struct xt_match ifxattack_match = {
+ 	.list = { NULL, NULL },
+ 	.name = "ifxattack",
++	.family = NFPROTO_IPV4,
+ 	.match = match,
+ 	.checkentry = checkentry,
+ 	.matchsize = sizeof(struct ipt_ifxattack_match_info),
+diff -Naur linux/net/ipv4/netfilter.orig/ipt_synflood.c linux/net/ipv4/netfilter/ipt_synflood.c
+--- linux/net/ipv4/netfilter.orig/ipt_synflood.c	2011-02-16 17:11:08.695845954 +0530
++++ linux/net/ipv4/netfilter/ipt_synflood.c	2011-02-16 17:14:42.124599498 +0530
+@@ -69,14 +69,7 @@
+ }
+ 
+ static int
+-match(const struct sk_buff *skb,
+-		const struct net_device *in,
+-		const struct net_device *out,
+-		const struct xt_match *match,
+-		const void *matchinfo,
+-		int offset,
+-		unsigned int datalen,
+-		int *hotdrop)
++match(const struct sk_buff *skb, const struct xt_match_param *par)
+ {
+ 	unsigned long now;
+ 	struct host **head,*last,*curr;
+@@ -85,7 +78,7 @@
+ 	struct in_addr addr;
+ 
+ 	/* Parameters from userspace */
+-	const struct ipt_rateinfo *rateinfo = matchinfo;
++	const struct ipt_rateinfo *rateinfo = par->matchinfo;
+ 
+ 	struct iphdr *ip_h;
+ 	/* IP header */
+@@ -194,13 +187,9 @@
+ }
+ 
+ static int
+-checkentry(const char *tablename,
+-			 const void *ip_void,
+-			 const struct xt_match *match,
+-		     void *matchinfo,
+-		     unsigned int hook_mask)
++checkentry(const struct xt_mtchk_param *par)
+ {
+-	struct ipt_rateinfo *r = matchinfo;
++	struct ipt_rateinfo *r = par->matchinfo;
+ 	
+ 	/* Check for overflow. */
+ 	if (r->burst == 0
+@@ -222,6 +211,7 @@
+ static struct xt_match ipt_synflood_reg = {
+ 	.list = { NULL, NULL },
+ 	.name       = "synflood",
++	.family = NFPROTO_IPV4,
+ 	.match      = match,
+ 	.checkentry = checkentry,
+ 	.matchsize = sizeof(struct ipt_rateinfo),
+diff -Naur linux/net/ipv4/netfilter.orig/ipt_webstr.c linux/net/ipv4/netfilter/ipt_webstr.c
+--- linux/net/ipv4/netfilter.orig/ipt_webstr.c	2011-02-16 17:11:08.705846541 +0530
++++ linux/net/ipv4/netfilter/ipt_webstr.c	2011-02-16 17:14:29.375846644 +0530
+@@ -259,16 +259,9 @@
+ 
+ 
+ static int
+-match(const struct sk_buff *skb,
+-      const struct net_device *in,
+-      const struct net_device *out,
+-	  const struct xt_match *match,
+-      const void *matchinfo,
+-      int offset,
+-      unsigned int datalen,
+-      int *hotdrop)
++match(const struct sk_buff *skb, const struct xt_match_param *par)
+ {
+-	const struct ipt_webstr_info *info = matchinfo;
++	const struct ipt_webstr_info *info = par->matchinfo;
+ 	struct iphdr *ip = ip_hdr(skb); //skb->nh.iph;
+ 	proc_ipt_search search=search_linear;
+ 
+@@ -392,11 +385,7 @@
+ }
+ 
+ static int
+-checkentry(const char *tablename,
+-		   const void *ip_void,
+-		   const struct xt_match *match,
+-           void *matchinfo,
+-           unsigned int hook_mask)
++checkentry(const struct xt_mtchk_param *par)
+ {
+ 	return 1;
+ }
+@@ -404,6 +393,7 @@
+ static struct xt_match webstr_match = {
+ 	.list			= { NULL, NULL },
+ 	.name			= "webstr",
++	.family 		= NFPROTO_IPV4,
+ 	.match			= match,
+ 	.checkentry		= checkentry,
+ 	.matchsize		= sizeof(struct ipt_webstr_info),

@@ -1,0 +1,48 @@
+Index: linux/arch/mips/Kconfig
+===================================================================
+--- linux.orig/arch/mips/Kconfig
++++ linux/arch/mips/Kconfig
+@@ -1456,6 +1456,11 @@ config LTQ_SYS_OPT
+ 	Enbaling this feature improves the networking performance
+ 	due to LTQ enhancements to IRQ scheduling.
+ 
++config LTQ_OPTIMIZATION
++	bool "Kernel LTQ optimizations"
++	help
++	Kernel LTQ optimizations
++
+ choice
+ 
+ 	prompt "Kernel code model"
+Index: linux/net/netfilter/nf_conntrack_ftp.c
+===================================================================
+--- linux.orig/net/netfilter/nf_conntrack_ftp.c
++++ linux/net/netfilter/nf_conntrack_ftp.c
+@@ -555,7 +555,11 @@ static int __init nf_conntrack_ftp_init(
+ 	int i, j = -1, ret = 0;
+ 	char *tmpname;
+ 
++#ifdef CONFIG_LTQ_OPTIMIZATION
++	ftp_buffer = kmalloc(32768, GFP_KERNEL);
++#else
+ 	ftp_buffer = kmalloc(65536, GFP_KERNEL);
++#endif
+ 	if (!ftp_buffer)
+ 		return -ENOMEM;
+ 
+Index: linux/net/netfilter/nf_conntrack_h323_main.c
+===================================================================
+--- linux.orig/net/netfilter/nf_conntrack_h323_main.c
++++ linux/net/netfilter/nf_conntrack_h323_main.c
+@@ -1774,7 +1774,11 @@ static int __init nf_conntrack_h323_init
+ {
+ 	int ret;
+ 
++#ifdef CONFIG_LTQ_OPTIMIZATION
++	h323_buffer = kmalloc(32768, GFP_KERNEL);
++#else
+ 	h323_buffer = kmalloc(65536, GFP_KERNEL);
++#endif
+ 	if (!h323_buffer)
+ 		return -ENOMEM;
+ 	ret = nf_conntrack_helper_register(&nf_conntrack_helper_h245);

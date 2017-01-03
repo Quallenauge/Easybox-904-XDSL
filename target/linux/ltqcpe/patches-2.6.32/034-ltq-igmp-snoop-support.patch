@@ -1,0 +1,731 @@
+Patch description:
+=================
+1) Add support for IGMP snooping for Bridged interfaces
+2) Add new ioctls to pass IGMP control packets to Upper layer software - IGMP daemon
+
+
+diff -Naur linux.orig/include/linux/sockios.h linux/include/linux/sockios.h
+--- linux.orig/include/linux/sockios.h	2010-12-29 19:39:13.000000000 +0530
++++ linux/include/linux/sockios.h	2011-01-03 18:34:46.000000000 +0530
+@@ -122,6 +122,13 @@
+ #define SIOCBRADDIF	0x89a2		/* add interface to bridge      */
+ #define SIOCBRDELIF	0x89a3		/* remove interface from bridge */
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++/* bridge snooping */
++#define SIOCBRADDMGREC     0x89ab
++#define SIOCBRDELMGREC     0x89ac
++#define SIOCBRSETROUTERPORT    0x89ad
++#endif
++
+ /* hardware time stamping: parameters in linux/net_tstamp.h */
+ #define SIOCSHWTSTAMP   0x89b0
+ 
+diff -Naur linux.orig/include/linux/sysctl.h linux/include/linux/sysctl.h
+--- linux.orig/include/linux/sysctl.h	2010-12-29 19:39:23.000000000 +0530
++++ linux/include/linux/sysctl.h	2011-01-03 18:34:46.000000000 +0530
+@@ -788,6 +788,12 @@
+ 	NET_SCTP_RCVBUF_POLICY		 = 17,
+ };
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++enum {
++   NET_BRIDGE_IGMP_SNOOPING = 1,
++};
++#endif
++
+ /* /proc/sys/net/bridge */
+ enum {
+ 	NET_BRIDGE_NF_CALL_ARPTABLES = 1,
+diff -Naur linux.orig/net/bridge/br.c linux/net/bridge/br.c
+--- linux.orig/net/bridge/br.c	2010-12-29 19:39:48.000000000 +0530
++++ linux/net/bridge/br.c	2011-01-04 13:13:34.000000000 +0530
+@@ -69,6 +69,10 @@
+ 	br_fdb_test_addr_hook = br_fdb_test_addr;
+ #endif
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_mcast_snoop_init();
++#endif
++
+ 	return 0;
+ err_out4:
+ 	unregister_netdevice_notifier(&br_device_notifier);
+@@ -102,6 +106,10 @@
+ 
+ 	br_handle_frame_hook = NULL;
+ 	br_fdb_fini();
++
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_mcast_snoop_deinit();
++#endif
+ }
+ 
+ EXPORT_SYMBOL(br_should_route_hook);
+diff -Naur linux.orig/net/bridge/br_forward.c linux/net/bridge/br_forward.c
+--- linux.orig/net/bridge/br_forward.c	2010-12-29 19:39:48.000000000 +0530
++++ linux/net/bridge/br_forward.c	2011-01-04 13:13:36.000000000 +0530
+@@ -148,6 +148,12 @@
+ 			if (prev != NULL) {
+ 				struct sk_buff *skb2;
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++				if ((bridge_igmp_snooping) && (eth_hdr(skb)->h_dest[0] & 0x1) && 
++				    (br_selective_flood(prev, skb) == 0))
++						continue;
++#endif
++
+ 				if ((skb2 = skb_clone(skb, GFP_ATOMIC)) == NULL) {
+ 					br->dev->stats.tx_dropped++;
+ 					kfree_skb(skb);
+@@ -162,6 +168,12 @@
+ 	}
+ 
+ 	if (prev != NULL) {
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++		if ((bridge_igmp_snooping) && (eth_hdr(skb)->h_dest[0] & 0x1) && 
++		    (br_selective_flood(prev, skb) == 0))
++			kfree_skb(skb);
++		else
++#endif
+ 		__packet_hook(prev, skb);
+ 		return;
+ 	}
+diff -Naur linux.orig/net/bridge/br_if.c linux/net/bridge/br_if.c
+--- linux.orig/net/bridge/br_if.c	2010-12-29 19:39:48.000000000 +0530
++++ linux/net/bridge/br_if.c	2011-01-04 13:13:37.000000000 +0530
+@@ -258,6 +258,10 @@
+ 	p->port_no = index;
+ 	p->flags = 0;
+ 	br_init_port(p);
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_mcast_port_init(p);
++	spin_lock_init(&p->mghash_lock);
++#endif
+ 	p->state = BR_STATE_DISABLED;
+ 	br_stp_port_timer_init(p);
+ 
+@@ -431,6 +435,10 @@
+ 
+ 	kobject_uevent(&p->kobj, KOBJ_ADD);
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_ifinfo_notify(RTM_NEWLINK, p);
++#endif
++
+ 	return 0;
+ err2:
+ 	br_fdb_delete_by_port(br, p, 1);
+@@ -459,6 +467,9 @@
+ 	br_stp_recalculate_bridge_id(br);
+ 	br_features_recompute(br);
+ 	spin_unlock_bh(&br->lock);
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	br_ifinfo_notify(RTM_DELLINK, p);
++#endif
+ 
+ 	return 0;
+ }
+diff -Naur linux.orig/net/bridge/br_ioctl.c linux/net/bridge/br_ioctl.c
+--- linux.orig/net/bridge/br_ioctl.c	2010-12-29 19:39:48.000000000 +0530
++++ linux/net/bridge/br_ioctl.c	2011-01-04 13:13:38.000000000 +0530
+@@ -102,6 +102,106 @@
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++/* Set router port ioctl request */
++struct router_port {
++	u32	if_index; /* interface index */
++	u32	expires; /* expiry time */
++};
++
++static int mcast_snoop_set_router_port(struct net_bridge *br, struct ifreq *rq)
++{
++	struct router_port rp;
++	struct net_bridge_port *port;
++	struct net_device *dev;
++
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
++	if (copy_from_user((void *)&rp, rq->ifr_data, sizeof(struct router_port)))
++		return -EFAULT;
++
++	dev = dev_get_by_index(dev_net(br->dev), rp.if_index);
++	if (dev == NULL)
++		return -EINVAL;
++
++	port = dev->br_port;
++   if (port == NULL) {
++		dev_put(dev);
++      return -ENODEV;
++	}
++
++	port->router_port = 1;
++	mod_timer(&port->router_timer, jiffies + rp.expires * HZ);
++
++	dev_put(dev);
++	return 0;
++}
++
++/* Multicast group record ioctl request */
++struct br_grp_rec {
++    u32 if_index;   /* interface index */
++    u32 gaddr;          /* Group address */
++    u32 filter_mode;    /* Filter mode */
++    u32 igmp_compat;    /* Compatibility mode */
++    u32 nsrc;       /* number of sources */
++    u32 slist[0];   /* source list */
++};
++
++static int add_del_mg_entry(struct net_bridge *br, struct ifreq *rq, int isadd)
++{
++    struct net_device *dev;
++    struct net_bridge_port *port;
++    struct br_grp_rec recbuf, *rec;
++    char *buf;
++    int nsrc = 0;
++    int ret;
++    int ifindex;
++
++    if (!capable(CAP_NET_ADMIN))
++        return -EPERM;
++
++    /* Step 1. get src count from record */
++    if (copy_from_user((void *)&recbuf, rq->ifr_data, sizeof(struct br_grp_rec)))
++        return -EFAULT;
++
++    ifindex = recbuf.if_index;
++    nsrc = recbuf.nsrc;
++
++    /* allocate buffer large enough to accommodate the src list also */
++    buf = kmalloc(sizeof(struct br_grp_rec) + nsrc * sizeof(u32), GFP_KERNEL);
++    if(buf == NULL)
++        return -ENOMEM;
++
++    /* Step 2. now copy the entire record */
++    if (copy_from_user(buf, rq->ifr_data, sizeof(struct br_grp_rec) + nsrc * sizeof(u32)))
++        return -EFAULT;
++
++    rec = (struct br_grp_rec *)buf;
++
++    dev = dev_get_by_index(dev_net(br->dev), ifindex);
++    if (dev == NULL)
++        return -EINVAL;
++
++    port = dev->br_port;
++    if (port == NULL) {
++		  dev_put(dev);
++        kfree(buf);
++        return -ENODEV;
++    }
++
++    if(isadd)
++        ret = br_mg_add_entry(port, rec->gaddr, rec->filter_mode, rec->igmp_compat, rec->nsrc, rec->slist);
++    else
++        ret = br_mg_del_record(port, rec->gaddr);    // TODO: add function
++
++    dev_put(dev);
++    kfree(buf);
++    return ret;
++}
++#endif /* CONFIG_IFX_IGMP_SNOOPING */
++
++
+ /*
+  * Legacy ioctl's through SIOCDEVPRIVATE
+  * This interface is deprecated because it was too difficult to
+@@ -408,6 +508,14 @@
+ 	case SIOCBRADDIF:
+ 	case SIOCBRDELIF:
+ 		return add_del_if(br, rq->ifr_ifindex, cmd == SIOCBRADDIF);
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	case SIOCBRADDMGREC:
++	case SIOCBRDELMGREC:
++		return add_del_mg_entry(br, rq, cmd == SIOCBRADDMGREC);
++	case SIOCBRSETROUTERPORT:
++		printk("[%s():%d]\n", __func__, __LINE__);
++		return mcast_snoop_set_router_port(br, rq);
++#endif /* CONFIG_IFX_IGMP_SNOOPING */
+ 
+ 	}
+ 
+diff -Naur linux.orig/net/bridge/br_mcast_snooping.c linux/net/bridge/br_mcast_snooping.c
+--- linux.orig/net/bridge/br_mcast_snooping.c	1970-01-01 05:30:00.000000000 +0530
++++ linux/net/bridge/br_mcast_snooping.c	2011-01-05 19:03:19.000000000 +0530
+@@ -0,0 +1,377 @@
++/*
++ * Bridge multicast snooping.
++ *
++ * Copyright (c)
++ *
++ *
++ *
++ *
++ *
++ *
++ */
++#include <linux/kernel.h>
++#include <linux/netdevice.h>
++#include <linux/skbuff.h>
++#include <linux/if_vlan.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/in.h>
++#include <linux/ip.h>
++#include <linux/igmp.h>
++#include <linux/jhash.h>
++#include <linux/timer.h>
++#ifdef CONFIG_SYSCTL
++#include <linux/sysctl.h>
++#endif
++#include "br_private.h"
++
++int bridge_igmp_snooping = 0;
++
++#ifdef CONFIG_SYSCTL
++static struct ctl_table_header *br_mcast_sysctl_header;
++
++static
++int br_mcast_sysctl_call_tables(ctl_table * ctl, int write,
++			    void __user * buffer, size_t * lenp, loff_t * ppos)
++{
++	int ret;
++
++	ret = proc_dointvec(ctl, write, buffer, lenp, ppos);
++
++	if (write && *(int *)(ctl->data))
++		*(int *)(ctl->data) = 1;
++	return ret;
++}
++
++static ctl_table br_mcast_table[] = {
++	{
++#if 0
++		.ctl_name	= NET_BRIDGE_IGMP_SNOOPING,
++#endif
++		.procname	= "bridge-igmp-snooping",
++		.data		= &bridge_igmp_snooping,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &br_mcast_sysctl_call_tables,
++	},
++	{ .ctl_name = 0 }
++};
++
++static struct ctl_path brnf_path[] = {
++	{ .procname = "net", .ctl_name = CTL_NET, },
++	{ .procname = "bridge", .ctl_name = NET_BRIDGE, },
++	{ }
++};
++#endif
++
++void br_mcast_snoop_init(void)
++{
++#ifdef CONFIG_SYSCTL
++	br_mcast_sysctl_header = register_sysctl_paths(brnf_path, br_mcast_table);
++	if (br_mcast_sysctl_header == NULL) {
++		printk(KERN_WARNING "Failed to register bridge mcast snoop sysctl table.\n");
++		return;
++	}
++#endif
++}
++
++void br_mcast_snoop_deinit(void)
++{
++#ifdef CONFIG_SYSCTL
++	unregister_sysctl_table(br_mcast_sysctl_header);
++#endif
++}
++
++static void router_timer_handler(unsigned long data)
++{
++	struct net_bridge_port *port = (struct net_bridge_port *)data;
++
++	port->router_port = 0;
++}
++
++void br_mcast_port_init(struct net_bridge_port *port)
++{
++	/* init mghash secret */
++	get_random_bytes(&port->mghash_secret, sizeof(port->mghash_secret));
++
++	/* init router port timer */
++	port->router_timer.function = router_timer_handler;
++	port->router_timer.data = (unsigned int)port;
++	init_timer(&port->router_timer);
++}
++
++static inline int br_gaddr_hash(struct net_bridge_port *port, __be32 gaddr)
++{
++	return jhash_1word(port->mghash_secret, (u32)gaddr) & (BR_HASH_SIZE - 1);
++}
++
++static inline struct net_bridge_mg_entry *_br_mg_get_entry(struct hlist_head *head, const __be32 gaddr)
++{
++	struct net_bridge_mg_entry *entry;
++	struct hlist_node *h;
++
++	hlist_for_each_entry_rcu(entry, h, head, hlist) {
++		if(entry->gaddr == gaddr)
++			return entry;
++	}
++
++	return NULL;
++}
++
++/* Search multicast group table for a group */
++struct net_bridge_mg_entry *br_mg_get_entry(struct net_bridge_port *port, __be32 gaddr)
++{
++	struct hlist_head *head;
++	int hash;
++
++	hash = br_gaddr_hash(port, gaddr);
++	head = &port->mghash[hash];
++
++	return _br_mg_get_entry(head, gaddr);
++}
++
++static void _br_mg_free_entry(struct rcu_head *head)
++{
++	struct net_bridge_mg_entry *entry = 
++		container_of(head, struct net_bridge_mg_entry, rcu);
++
++	kfree(entry);
++}
++
++static void br_mg_delete_entry(struct net_bridge_mg_entry *entry)
++{
++	hlist_del_rcu(&entry->hlist);
++	call_rcu(&entry->rcu, _br_mg_free_entry);
++}
++
++static int br_mg_update_entry(struct net_bridge_port *port, struct net_bridge_mg_entry *old, struct hlist_head *head, 
++				__be32 gaddr, u8 filter, u8 igmp_compat, u32 saddr_cnt, __be32 *saddr)
++{
++	struct net_bridge_mg_entry *new;
++	int i;
++
++	/* prepare a new temporary group entry */
++	new = kzalloc(sizeof(*new) + saddr_cnt * sizeof(*saddr), GFP_ATOMIC);
++	if(unlikely(!new))
++		return -1;
++
++	new->gaddr = gaddr;
++	new->port = port;
++	new->filter_mode = filter;
++	new->igmp_compat_mode = igmp_compat;
++	new->saddr_cnt = saddr_cnt;
++	for(i = 0; i < saddr_cnt; i++)
++		new->saddr[i] = saddr[i];
++
++	/* delete old entry */
++	br_mg_delete_entry(old);
++
++	/* add new entry */
++	hlist_add_head_rcu(&new->hlist, head);
++
++	return 0;
++}
++
++static void br_mg_del_table(struct net_bridge_port *port)
++{
++	int i;
++
++	spin_lock(&port->mghash_lock);
++	for (i = 0; i < BR_HASH_SIZE; i++) {
++		struct net_bridge_mg_entry *entry;
++		struct hlist_node *h, *n;
++
++		hlist_for_each_entry_safe(entry, h, n, &port->mghash[i], hlist) {
++			br_mg_delete_entry(entry);
++		}
++	}
++	spin_unlock(&port->mghash_lock);
++}
++
++/*Delete a group from multicast group table*/
++int br_mg_del_record(struct net_bridge_port *port, __be32 gaddr)
++{
++	struct net_bridge_mg_entry *entry;
++	struct hlist_head *head;
++	int hash;
++
++	spin_lock(&port->mghash_lock);
++
++	hash = br_gaddr_hash(port, gaddr);
++	head = &port->mghash[hash];
++
++	if (gaddr){
++		entry = _br_mg_get_entry(head, gaddr);
++		if (entry) br_mg_delete_entry(entry);
++	} else {
++		br_mg_del_table(port);
++	}
++
++	spin_unlock(&port->mghash_lock);
++
++	return 0;
++}
++
++
++
++
++/* Add a group to multicast group table */
++int br_mg_add_entry(struct net_bridge_port *port, 
++					__be32 gaddr, u8 filter, u8 igmp_compat, u32 saddr_cnt, __be32 *saddr)
++{
++	struct net_bridge_mg_entry *entry;
++	struct hlist_head *head;
++	int hash;
++	int i;
++
++	spin_lock(&port->mghash_lock);
++
++	hash = br_gaddr_hash(port, gaddr);
++	head = &port->mghash[hash];
++
++	entry = _br_mg_get_entry(head, gaddr);
++	if(!entry) {
++		/* Create new mg entry */
++		entry = kzalloc(sizeof(*entry) + saddr_cnt * sizeof(*saddr), GFP_ATOMIC);
++		if(unlikely(!entry)) {
++			spin_unlock(&port->mghash_lock);
++			return -1;
++		}
++
++		entry->port = port;
++		entry->gaddr = gaddr;
++		entry->filter_mode = filter;
++		entry->igmp_compat_mode = igmp_compat;
++		entry->saddr_cnt = saddr_cnt;
++		for(i = 0; i < saddr_cnt; i++)
++			entry->saddr[i] = saddr[i];
++
++		hlist_add_head_rcu(&entry->hlist, head);
++
++	}
++	else {
++		/* Update existing entry */
++		br_mg_update_entry(port, entry, head, gaddr, filter, igmp_compat, saddr_cnt, saddr);
++	}
++
++	spin_unlock(&port->mghash_lock);
++
++	return 0;
++}
++
++/* Handle IGMP query */
++static int br_forward_igmp_query(struct net_bridge_port *port, __be32 gaddr, __be32 saddr, int ver)
++{
++	struct net_bridge_mg_entry *entry;
++	u8 igmp_compat_mode;
++
++	if(!IN_MULTICAST(ntohl(gaddr)))  // XXX: ntohl
++		return 1;
++
++	/* Handle Group specific query */
++	if(NULL == (entry = br_mg_get_entry(port, gaddr))) {
++		/* no matching group found */
++		return 0;
++	}
++
++	rcu_read_lock();	// XXX: needed ???
++	igmp_compat_mode = entry->igmp_compat_mode;
++	rcu_read_unlock();
++	if (igmp_compat_mode == ver)
++		return 1;
++	else
++		return 0;
++
++
++}
++
++/* Handle multicast data */
++static int br_snoop_multicast_data(struct net_bridge_port *port, __be32 gaddr, __be32 saddr)
++{
++	struct net_bridge_mg_entry *entry;
++	int i;
++	int found = 0;
++	int filter_mode = 1;
++
++	if(!IN_MULTICAST(ntohl(gaddr)))	// check if redundant ??
++		return 1;
++
++	if(NULL == (entry = br_mg_get_entry(port, gaddr))) {
++		/* no matching group found */
++		return 0;
++	}
++
++	rcu_read_lock();	// XXX: needed ???
++	filter_mode = entry->filter_mode;
++
++	for (i = 0; i < entry->saddr_cnt; i++) {
++		if(entry->saddr[i] == saddr) {
++			found = 1;
++			break;
++		}
++	}
++	rcu_read_unlock();
++
++	if(found) {
++		return filter_mode == 1 ? 1 : 0;
++	}
++	else {
++		return filter_mode == 0 ? 1 : 0;
++	}
++}
++
++int br_selective_flood(struct net_bridge_port *p, struct sk_buff *skb)
++{
++	struct iphdr *iph;
++	struct igmphdr *igmph;
++	struct igmpv3_query *igmph3;
++	int ret = 1;
++	int igmplen;
++	int ver = 3;
++
++	/* Do not mess with non-IP packets */
++	if(skb->protocol != htons(ETH_P_IP))
++		return 1;
++
++	iph = (struct iphdr *)skb_network_header(skb);
++
++	/* Also not interested if IP dest address is not a multicast address */
++	if(!IN_MULTICAST(ntohl(iph->daddr)))
++		return 1;
++
++	if(iph->protocol == IPPROTO_IGMP) {
++		igmph = (struct igmphdr *) (skb->data + 4 * (int)iph->ihl);
++
++		switch(igmph->type) {
++		case IGMP_HOST_MEMBERSHIP_QUERY:
++			if (p->router_port) 
++				return 0;
++			igmph3 = (struct igmpv3_query *)igmph;
++			igmplen = ntohs((int)iph->tot_len) - 4 * (int)iph->ihl; 
++			if(igmplen == 8) {
++				ver = igmph->code == 0 ? 1 : 2;
++			}
++			else if(igmplen > 8 && igmplen < 12)
++				return 1;	/* Do not handle malformed IGMP query packet */
++			return br_forward_igmp_query(p, ntohl(igmph->group), ntohl(iph->saddr), ver);
++		case IGMP_HOST_MEMBERSHIP_REPORT:
++		case IGMPV2_HOST_MEMBERSHIP_REPORT:
++		case IGMPV3_HOST_MEMBERSHIP_REPORT:
++		case IGMP_HOST_LEAVE_MESSAGE:
++			if (p->router_port)
++				return 1;
++			else
++				return 0;	/* Do not flood IGMP reports */
++		default:
++			break;
++		}
++
++		return ret;
++	}
++
++	/* Skip snooping 224.0.0.x and 239.0.0.x */
++	if((ntohl(iph->daddr) & 0xffffff00U) == 0xe0000000U ||
++		(ntohl(iph->daddr) & 0xffffff00U) == 0xef000000U)
++		return 1;
++
++	return br_snoop_multicast_data(p, iph->daddr, iph->saddr);
++}
+diff -Naur linux.orig/net/bridge/br_private.h linux/net/bridge/br_private.h
+--- linux.orig/net/bridge/br_private.h	2010-12-29 19:39:54.000000000 +0530
++++ linux/net/bridge/br_private.h	2011-01-03 18:35:35.000000000 +0530
+@@ -57,6 +57,20 @@
+ 	unsigned char			is_static;
+ };
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++struct net_bridge_mg_entry
++{
++	struct hlist_node       hlist;
++	__be32					gaddr;          	/* Group ipaddr */
++	u8						filter_mode;        /* 0 = EX, 1 = IN */
++	u8						igmp_compat_mode;   /* 1 = v1, 2 = v2, 3 = v3 */
++	struct net_bridge_port	*port;
++	struct rcu_head			rcu;
++	u32						saddr_cnt;
++	__be32					saddr[0];       	/* Array of src ipaddr */
++};
++#endif /* CONFIG_IFX_IGMP_SNOOPING */
++
+ struct net_bridge_port
+ {
+ 	struct net_bridge		*br;
+@@ -84,6 +98,13 @@
+ 
+ 	unsigned long 			flags;
+ #define BR_HAIRPIN_MODE		0x00000001
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	u32                     mghash_secret;
++	spinlock_t				mghash_lock;
++	struct hlist_head		mghash[BR_HASH_SIZE];
++	u8						router_port;
++	struct timer_list		router_timer;
++#endif /* CONFIG_IFX_IGMP_SNOOPING */
+ };
+ 
+ struct net_bridge
+@@ -252,6 +273,19 @@
+ extern void br_netlink_fini(void);
+ extern void br_ifinfo_notify(int event, struct net_bridge_port *port);
+ 
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++/* br_mcast_snooping.c */
++
++extern void br_mcast_port_init(struct net_bridge_port *port);
++extern int br_mg_del_record(struct net_bridge_port *port, __be32 gaddr);
++extern int br_mg_add_entry(struct net_bridge_port *port, __be32 gaddr, u8 filter, u8 igmp_compat, u32 saddr_cnt, __be32 *saddr);
++extern int br_selective_flood(struct net_bridge_port *p, struct sk_buff *skb);
++
++extern int bridge_igmp_snooping;
++extern void br_mcast_snoop_init(void);
++extern void br_mcast_snoop_deinit(void);
++#endif
++
+ #ifdef CONFIG_SYSFS
+ /* br_sysfs_if.c */
+ extern struct sysfs_ops brport_sysfs_ops;
+diff -Naur linux.orig/net/bridge/Makefile linux/net/bridge/Makefile
+--- linux.orig/net/bridge/Makefile	2010-12-29 19:41:53.000000000 +0530
++++ linux/net/bridge/Makefile	2011-01-03 18:35:35.000000000 +0530
+@@ -10,6 +10,8 @@
+ 
+ bridge-$(CONFIG_SYSFS) += br_sysfs_if.o br_sysfs_br.o
+ 
++bridge-$(CONFIG_IFX_IGMP_SNOOPING) += br_mcast_snooping.o
++
+ bridge-$(CONFIG_BRIDGE_NETFILTER) += br_netfilter.o
+ 
+ obj-$(CONFIG_BRIDGE_NF_EBTABLES) += netfilter/
+diff -Naur linux.orig/net/core/dev.c linux/net/core/dev.c
+--- linux.orig/net/core/dev.c	2011-01-03 18:37:59.000000000 +0530
++++ linux/net/core/dev.c	2011-01-03 18:35:53.000000000 +0530
+@@ -4434,6 +4434,11 @@
+ 		    cmd == SIOCSMIIREG ||
+ 		    cmd == SIOCBRADDIF ||
+ 		    cmd == SIOCBRDELIF ||
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++			cmd == SIOCBRADDMGREC ||
++			cmd == SIOCBRDELMGREC ||
++			cmd == SIOCBRSETROUTERPORT ||
++#endif
+ 		    cmd == SIOCSHWTSTAMP ||
+ 		    cmd == SIOCWANDEV) {
+ 			err = -EOPNOTSUPP;
+@@ -4589,6 +4594,11 @@
+ 	case SIOCBONDCHANGEACTIVE:
+ 	case SIOCBRADDIF:
+ 	case SIOCBRDELIF:
++#ifdef CONFIG_IFX_IGMP_SNOOPING
++	case SIOCBRADDMGREC:
++	case SIOCBRDELMGREC:
++	case SIOCBRSETROUTERPORT:
++#endif
+ 	case SIOCSHWTSTAMP:
+ 		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;

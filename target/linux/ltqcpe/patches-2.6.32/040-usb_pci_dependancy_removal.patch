@@ -1,0 +1,12 @@
+Index: linux/drivers/usb/Makefile
+===================================================================
+--- linux.orig/drivers/usb/Makefile	2011-02-10 16:12:51.784597484 +0530
++++ linux/drivers/usb/Makefile	2011-02-10 16:16:27.374596479 +0530
+@@ -9,6 +9,7 @@
+ obj-$(CONFIG_USB_MON)		+= mon/
+ 
+ obj-$(CONFIG_PCI)		+= host/
++obj-$(CONFIG_USB_HOST_IFX)	+= host/
+ obj-$(CONFIG_USB_EHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_ISP116X_HCD)	+= host/
+ obj-$(CONFIG_USB_OHCI_HCD)	+= host/

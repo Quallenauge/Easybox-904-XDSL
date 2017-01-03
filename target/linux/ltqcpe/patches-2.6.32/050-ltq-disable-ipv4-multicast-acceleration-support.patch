@@ -1,0 +1,41 @@
+Patch description:
+=================
+Disabling support for IPv4 multicast acceleration.
+
+
+diff -Naur linux-2.6.32.11.orig/net/ipv4/ipmr.c linux-2.6.32.11/net/ipv4/ipmr.c
+--- linux-2.6.32.11.orig/net/ipv4/ipmr.c	2011-03-21 17:58:35.204239314 +0530
++++ linux-2.6.32.11/net/ipv4/ipmr.c	2011-03-21 17:59:49.689886895 +0530
+@@ -782,6 +782,7 @@
+ 			*cp = c->next;
+ 			write_unlock_bh(&mrt_lock);
+ 
++#if 0
+ #if defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE)
+             if ( ppa_hook_mc_group_get_fn != NULL && ppa_hook_mc_group_update_fn != NULL )
+             {
+@@ -823,6 +824,7 @@
+                 ppa_hook_mc_group_update_fn(&ppa_mc_entry, 0);
+             }
+ #endif
++#endif
+ 			ipmr_cache_free(c);
+ 			return 0;
+ 		}
+@@ -868,6 +870,7 @@
+ 	if (!mrtsock)
+ 		c->mfc_flags |= MFC_STATIC;
+ 
++#if 0
+ #if defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE)
+     if ( ppa_hook_mc_group_update_fn != NULL )
+     {
+@@ -901,6 +904,8 @@
+         ppa_hook_mc_group_update_fn(&ppa_mc_entry, 0);
+     }
+ #endif
++#endif
++
+ 	write_lock_bh(&mrt_lock);
+ 	c->next = net->ipv4.mfc_cache_array[line];
+ 	net->ipv4.mfc_cache_array[line] = c;

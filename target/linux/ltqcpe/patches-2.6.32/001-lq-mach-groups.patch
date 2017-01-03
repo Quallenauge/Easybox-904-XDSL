@@ -1,0 +1,20 @@
+Index: linux/arch/mips/include/asm/bootinfo.h
+===================================================================
+--- linux.orig/arch/mips/include/asm/bootinfo.h	2010-04-02 04:29:14.000000000 +0530
++++ linux/arch/mips/include/asm/bootinfo.h	2010-04-29 15:52:58.229706000 +0530
+@@ -69,6 +69,15 @@
+ #define MACH_DEXXON_GDIUM2F10  5
+ #define MACH_LOONGSON_END      6
+ 
++/*
++ * Valid machtype for Lantiq chip family
++ */
++#define MACH_DANUBE		0
++#define MACH_AMAZON_SE		1
++#define MACH_AR9		2
++#define MACH_VR9		3
++#define MACH_AR10		4
++
+ #define CL_SIZE			COMMAND_LINE_SIZE
+ 
+ extern char *system_type;

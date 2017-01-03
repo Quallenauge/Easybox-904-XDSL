@@ -1,0 +1,142 @@
+Index: linux/arch/mips/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/mips/kernel/vmlinux.lds.S	2010-12-21 12:50:13.000000000 +0530
++++ linux/arch/mips/kernel/vmlinux.lds.S	2010-12-22 13:05:27.278904000 +0530
+@@ -40,6 +40,9 @@
+ #endif
+ 	. = VMLINUX_LOAD_ADDRESS;
+ 	/* read-only */
++	bridge : {
++		*(bridge)
++	}
+ 	system : {
+ 		*(system)
+ 	}
+Index: linux/include/linux/init.h
+===================================================================
+--- linux.orig/include/linux/init.h	2010-12-21 12:50:13.000000000 +0530
++++ linux/include/linux/init.h	2010-12-22 12:53:23.012799000 +0530
+@@ -41,6 +41,10 @@
+ /* These are for everybody (although not all archs will actually
+    discard it in modules) */
+ 
++#ifdef CONFIG_LTQ_BR_OPT
++#define __bridge	__section(bridge)
++#endif
++
+ #ifdef CONFIG_LTQ_SYS_OPT
+ #define __system       __section(system)
+ #endif
+Index: linux/net/bridge/Kconfig
+===================================================================
+--- linux.orig/net/bridge/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux/net/bridge/Kconfig	2010-12-22 13:00:00.920262000 +0530
+@@ -31,3 +31,11 @@
+ 	  will be called bridge.
+ 
+ 	  If unsure, say N.
++
++config LTQ_BR_OPT
++       bool "LTQ Bridge Optimizations"
++       depends on  BRIDGE && LTQ_ADDON
++       help
++         If selected, LTQ enhancements to the bridging code would be enabled.
++         This significantly enhances the bridging performance over that of vanilla kernel.
++         It is recommended to be alwyas on.
+Index: linux/net/bridge/br_forward.c
+===================================================================
+--- linux.orig/net/bridge/br_forward.c	2010-12-21 12:50:13.000000000 +0530
++++ linux/net/bridge/br_forward.c	2010-12-22 13:38:10.729521000 +0530
+@@ -56,7 +56,11 @@
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_LTQ_BR_OPT
++int __bridge br_forward_finish(struct sk_buff *skb)
++#else
+ int br_forward_finish(struct sk_buff *skb)
++#endif
+ {
+ #if defined(CONFIG_LTQ_NETFILTER_PROCFS) && (defined(CONFIG_BRIDGE_NF_EBTABLES) || defined(CONFIG_BRIDGE_NF_EBTABLES_MODULE))
+        if (!brnf_filter_post_routing_enable)
+@@ -78,7 +82,11 @@
+ 			br_forward_finish);
+ }
+ 
++#ifdef CONFIG_LTQ_BR_OPT
++static void __bridge __br_forward(const struct net_bridge_port *to, struct sk_buff *skb)
++#else
+ static void __br_forward(const struct net_bridge_port *to, struct sk_buff *skb)
++#endif
+ {
+ 	struct net_device *indev;
+ 
+@@ -111,7 +119,11 @@
+ }
+ 
+ /* called with rcu_read_lock */
++#ifdef CONFIG_LTQ_BR_OPT
++void __bridge br_forward(const struct net_bridge_port *to, struct sk_buff *skb)
++#else
+ void br_forward(const struct net_bridge_port *to, struct sk_buff *skb)
++#endif
+ {
+ 	if (should_deliver(to, skb)) {
+ 		__br_forward(to, skb);
+Index: linux/net/core/dev.c
+===================================================================
+--- linux.orig/net/core/dev.c	2010-12-21 12:50:13.000000000 +0530
++++ linux/net/core/dev.c	2010-12-22 13:04:03.466188000 +0530
+@@ -2005,7 +2005,11 @@
+  *
+  */
+ 
++#ifdef CONFIG_LTQ_BR_OPT
++int __bridge netif_rx(struct sk_buff *skb)
++#else
+ int netif_rx(struct sk_buff *skb)
++#endif
+ {
+ 	struct softnet_data *queue;
+ 	unsigned long flags;
+@@ -2293,7 +2297,12 @@
+  *	NET_RX_SUCCESS: no congestion
+  *	NET_RX_DROP: packet was dropped
+  */
++
++#ifdef CONFIG_LTQ_BR_OPT
++int __bridge netif_receive_skb(struct sk_buff *skb)
++#else
+ int netif_receive_skb(struct sk_buff *skb)
++#endif
+ {
+ 	struct packet_type *ptype, *pt_prev;
+ 	struct net_device *orig_dev;
+@@ -2711,7 +2720,11 @@
+ }
+ EXPORT_SYMBOL(napi_gro_frags);
+ 
++#ifdef CONFIG_LTQ_BR_OPT
++static int __bridge process_backlog(struct napi_struct *napi, int quota)
++#else
+ static int process_backlog(struct napi_struct *napi, int quota)
++#endif
+ {
+ 	int work = 0;
+ 	struct softnet_data *queue = &__get_cpu_var(softnet_data);
+Index: linux/net/bridge/br_input.c
+===================================================================
+--- linux.orig/net/bridge/br_input.c	2010-12-21 12:50:13.000000000 +0530
++++ linux/net/bridge/br_input.c	2010-12-22 13:37:06.960091000 +0530
+@@ -45,7 +45,11 @@
+ }
+ 
+ /* note: already called with rcu_read_lock (preempt_disabled) */
++#ifdef CONFIG_LTQ_BR_OPT
++int __bridge br_handle_frame_finish(struct sk_buff *skb)
++#else
+ int br_handle_frame_finish(struct sk_buff *skb)
++#endif
+ {
+ 	const unsigned char *dest = eth_hdr(skb)->h_dest;
+ 	struct net_bridge_port *p = rcu_dereference(skb->dev->br_port);

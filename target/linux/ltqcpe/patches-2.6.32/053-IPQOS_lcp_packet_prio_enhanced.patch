@@ -1,0 +1,33 @@
+diff -Naur linux-2.6.32.32/drivers/net/ppp_generic.c linux-2.6.32.32_mod/drivers/net/ppp_generic.c
+--- linux-2.6.32.32/drivers/net/ppp_generic.c	2011-04-21 10:35:53.379872821 +0530
++++ linux-2.6.32.32_mod/drivers/net/ppp_generic.c	2011-04-21 11:31:59.849874334 +0530
+@@ -1547,6 +1547,7 @@
+ 	if (pch->chan) {
+ 		while (!skb_queue_empty(&pch->file.xq)) {
+ 			skb = skb_dequeue(&pch->file.xq);
++			skb->priority = 7; /* For LCP Prioritization */
+ 			if (!pch->chan->ops->start_xmit(pch->chan, skb)) {
+ 				/* put the packet back and try again later */
+ 				skb_queue_head(&pch->file.xq, skb);
+diff -Naur linux-2.6.32.32/net/core/skbuff.c linux-2.6.32.32_mod/net/core/skbuff.c
+--- linux-2.6.32.32/net/core/skbuff.c	2011-04-21 10:35:53.359872938 +0530
++++ linux-2.6.32.32_mod/net/core/skbuff.c	2011-04-21 11:40:29.008624582 +0530
+@@ -2904,11 +2904,13 @@
+          * IPQoS in UGW: added copy of nfmark set in classifier to skb->priority to be used in hardware queues
+          */
+         /* nfmark range = 1-8 if QoS is enabled; priority range = 0-7; else preserve original priority */
+-	unsigned new_mark;
+-
+-        new_mark = ((skb->mark >> 6) & NFMARK_SHIFT_MASK);
+-        if (new_mark)
+-                skb->priority = new_mark - 1;
++	if(skb->mark)
++	{
++		unsigned new_mark;
++        	new_mark = ((skb->mark >> 6) & NFMARK_SHIFT_MASK);
++        	if (new_mark)
++                	skb->priority = new_mark - 1;
++	}
+ 
+ #else
+         /* TODO: Use DSCP for IP, preserve for others */

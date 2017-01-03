@@ -1,0 +1,14 @@
+Index: linux-2.6.32.32/Makefile
+===================================================================
+--- linux-2.6.32.32.orig/Makefile	2011-04-21 14:51:51.455771284 +0530
++++ linux-2.6.32.32/Makefile	2011-04-21 14:53:54.444520948 +0530
+@@ -520,6 +520,9 @@
+ # Defaults vmlinux but it is usually overridden in the arch makefile
+ all: vmlinux
+ 
++ifneq ($(CONFIG_DANUBE),)
++KBUILD_CFLAGS	+=-mlong-calls 
++endif
+ 
+ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ KBUILD_CFLAGS	+= -Os
