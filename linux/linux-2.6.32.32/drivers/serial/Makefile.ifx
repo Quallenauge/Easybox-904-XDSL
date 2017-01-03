@@ -1,0 +1,6 @@
+obj-$(CONFIG_SERIAL_IFX_ASC)       += ifxmips_asc.o
+
+obj-$(CONFIG_SERIAL_IFX_USIF_UART) += ifxmips_usif_uart_drv.o
+ifxmips_usif_uart_drv-objs         := ifxmips_usif_uart.o
+ifxmips_usif_uart_drv-$(CONFIG_IFX_PMCU) += ifxmips_usif_uart_pm.o
+

@@ -1,0 +1,16 @@
+config IFX_MMC
+	tristate "IFX MMC host Interface Support"
+	depends on ((AR9 || DANUBE || AMAZON_SE || VR9) && MMC)
+	default n
+
+config IFX_MMC_BLOCK_DEV
+	tristate "IFX MMC/SD Card Support"
+	depends on ( IFX_MMC )
+	---help---
+	  Support SD/MMC memory card 
+
+config IFX_MMC_WLAN
+   tristate "IFX WLAN Card Support"
+   depends on ((AR9 || DANUBE || AMAZON_SE || VR9) && MMC && !IFX_MMC_BLOCK_DEV)
+	---help---
+      Support WLAN card

@@ -1,0 +1,21 @@
+config IFX_ATM
+	tristate "IFX ATM driver"
+	depends on (DANUBE || AMAZON_SE || AR9 || VR9) && ATM && IFX_PPA_DATAPATH != y
+	default n
+	---help---
+	Use this exclusively with PTM mode or Acceleration Package
+
+config IFX_ATM_TASKLET
+	bool "Support Tasklet"
+	depends on IFX_ATM
+	default n
+	---help---
+	Use tasklet handle incoming packet. Impact on ATM RX traffic performance.
+
+config IFX_ATM_RETX
+	bool "Support ReTX"
+	depends on IFX_ATM && (DANUBE || AR9)
+	default n
+	---help---
+	Support Retransmission.
+

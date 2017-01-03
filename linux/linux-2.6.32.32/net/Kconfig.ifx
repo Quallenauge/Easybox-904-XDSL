@@ -1,0 +1,21 @@
+
+config IFX_IGMP_PROXY
+        tristate "IGMP Proxy & Snooping support"
+	depends on m
+	default n
+        help
+          Infineon IGMP Proxy & Snooping support
+
+config IFX_IGMP_SNOOPING
+        tristate "IGMP Proxy & Snooping support"
+	default n
+        help
+          Lantiq IGMPv3 Proxy & Snooping support
+
+config IFX_MCAST_FASTPATH
+		tristate "IPv4 Multicast Acceleration"
+		default y
+		help
+			IPv4 Multicast Acceleration.
+
+

@@ -1,0 +1,52 @@
+obj-$(CONFIG_CRYPTO_DEV_DEU_DANUBE) += ifxmips_deu.o ifxmips_deu_danube.o
+obj-$(CONFIG_CRYPTO_DEV_DEU_AR9) += ifxmips_deu.o ifxmips_deu_ar9.o
+obj-$(CONFIG_CRYPTO_DEV_DEU_VR9) += ifxmips_deu.o ifxmips_deu_vr9.o
+
+obj-$(CONFIG_CRYPTO_DEV_DES) += ifxmips_des.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_DES_DANUBE) += ifxmips_des.o ifxmips_deu_danube.o ifxmips_deu_dma.o 
+obj-$(CONFIG_CRYPTO_DEV_DES_AR9) += ifxmips_des.o ifxmips_deu_ar9.o ifxmips_deu_dma.o 
+obj-$(CONFIG_CRYPTO_DEV_DES_VR9) += ifxmips_des.o ifxmips_deu_vr9.o ifxmips_deu_dma.o 
+
+obj-$(CONFIG_CRYPTO_DEV_AES) += ifxmips_aes.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_AES_DANUBE) += ifxmips_aes.o ifxmips_deu_danube.o ifxmips_deu_dma.o
+obj-$(CONFIG_CRYPTO_DEV_AES_AR9) += ifxmips_aes.o ifxmips_deu_ar9.o ifxmips_deu_dma.o
+obj-$(CONFIG_CRYPTO_DEV_AES_VR9) += ifxmips_aes.o ifxmips_deu_vr9.o ifxmips_deu_dma.o
+
+obj-$(CONFIG_CRYPTO_DEV_ARC4) += ifxmips_arc4.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_ARC4_AR9) += ifxmips_arc4.o 
+obj-$(CONFIG_CRYPTO_DEV_ARC4_VR9) += ifxmips_arc4.o
+
+obj-$(CONFIG_CRYPTO_DEV_SHA1) += ifxmips_sha1.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_SHA1_DANUBE) += ifxmips_sha1.o 
+obj-$(CONFIG_CRYPTO_DEV_SHA1_AR9) += ifxmips_sha1.o
+obj-$(CONFIG_CRYPTO_DEV_SHA1_VR9) += ifxmips_sha1.o 
+
+obj-$(CONFIG_CRYPTO_DEV_MD5) += ifxmips_md5.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_MD5_DANUBE) += ifxmips_md5.o
+obj-$(CONFIG_CRYPTO_DEV_MD5_AR9) += ifxmips_md5.o 
+obj-$(CONFIG_CRYPTO_DEV_MD5_VR9) += ifxmips_md5.o 
+
+obj-$(CONFIG_CRYPTO_DEV_SHA1_HMAC) += ifxmips_sha1_hmac.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_SHA1_HMAC_AR9) += ifxmips_sha1_hmac.o 
+obj-$(CONFIG_CRYPTO_DEV_SHA1_HMAC_VR9) += ifxmips_sha1_hmac.o 
+ 
+obj-$(CONFIG_CRYPTO_DEV_MD5_HMAC) += ifxmips_md5_hmac.o ifxmips_deu.o
+obj-$(CONFIG_CRYPTO_DEV_MD5_HMAC_AR9) += ifxmips_md5_hmac.o 
+obj-$(CONFIG_CRYPTO_DEV_MD5_HMAC_VR9) += ifxmips_md5_hmac.o 
+
+obj-$(CONFIG_CRYPTO_DEV_DMA) += ifxmips_deu_dma.o
+obj-$(CONFIG_CRYPTO_DEV_DMA_DANUBE) += ifxmips_deu_dma.o ifxmips_deu_danube.o
+obj-$(CONFIG_CRYPTO_DEV_DMA_AR9) += ifxmips_deu_dma.o ifxmips_deu_ar9.o
+obj-$(CONFIG_CRYPTO_DEV_DMA_VR9) += ifxmips_deu_dma.o ifxmips_deu_vr9.o
+
+#obj-$(CONFIG_CRYPTO_DEV_TCRYPT) += ifxmips_tcrypt.o ifxmips_testmgr.o
+obj-$(CONFIG_CRYPTO_DEV_TCRYPT) += ifxmips_testmgr.o ifxmips_deu.o
+
+# Async. Crypto drivers 
+
+obj-$(CONFIG_CRYPTO_ASYNC_AES_DANUBE) += ifxmips_async_aes.o ifxmips_deu_dma.o ifxmips_deu_danube.o ifxmips_deu.o 
+obj-$(CONFIG_CRYPTO_ASYNC_AES_AR9) += ifxmips_async_aes.o ifxmips_deu_dma.o ifxmips_deu_ar9.o ifxmips_deu.o 
+obj-$(CONFIG_CRYPTO_ASYNC_AES_VR9) += ifxmips_async_aes.o ifxmips_deu_dma.o ifxmips_deu_vr9.o ifxmips_deu.o 
+obj-$(CONFIG_CRYPTO_ASYNC_DES_DANUBE) += ifxmips_async_des.o ifxmips_deu_dma.o ifxmips_deu_danube.o ifxmips_deu.o 
+obj-$(CONFIG_CRYPTO_ASYNC_DES_AR9) += ifxmips_async_des.o ifxmips_deu_dma.o ifxmips_deu_ar9.o ifxmips_deu.o 
+obj-$(CONFIG_CRYPTO_ASYNC_DES_VR9) += ifxmips_async_des.o ifxmips_deu_dma.o ifxmips_deu_vr9.o ifxmips_deu.o

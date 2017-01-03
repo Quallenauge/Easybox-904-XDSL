@@ -1,0 +1,4 @@
+obj-$(CONFIG_MTD_IFX_NAND)        += ifxmips_mtd_nand.o
+obj-$(CONFIG_MTD_IFX_HSNAND)	  += ifxmips_mtd_hsnand.o ifxmips_mtd_nand_ecc.o
+#obj-$(CONFIG_MTD_IFX_HSNAND)	  += mtd_pagetest.o
+obj-$(CONFIG_MTD_SPEEDTEST)	  += mtd_speedtest.o

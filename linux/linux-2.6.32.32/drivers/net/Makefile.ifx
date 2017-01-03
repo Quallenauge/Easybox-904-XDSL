@@ -1,0 +1,35 @@
+obj-$(CONFIG_IFX_PTM)	+= ifxmips_ptm/
+obj-$(CONFIG_IFX_ADTRAN_PTM)	+= ifxmips_adtran_ptm/
+
+#obj-$(CONFIG_IFX_ETHSW_API)         += ifxmips_switch_api/
+obj-y += ifxmips_switch_api/
+
+obj-$(CONFIG_IFX_ETH_FRAMEWORK) += ifxmips_eth_framework.o
+
+obj-$(CONFIG_IFX_PPA)               += ifxmips_ppa/
+
+obj-$(CONFIG_IFX_ETOP_ETHERNET)     += ifxmips_eth_drv.o
+obj-$(CONFIG_IFX_3PORT_SWITCH)      += ifxmips_eth_drv.o
+obj-$(CONFIG_IFX_7PORT_SWITCH)      += ifxmips_eth_drv.o
+ifneq ($(CONFIG_IFX_ETOP_ETHERNET),)
+   ifxmips_eth_drv-objs = ifxmips_eth.o
+   ifneq ($(CONFIG_IFX_PMCU),)
+      ifxmips_eth_drv-objs += ifxmips_eth_pm.o
+   endif
+endif
+ifneq ($(CONFIG_IFX_3PORT_SWITCH),)
+   ifxmips_eth_drv-objs = ifxmips_3port_eth_sw.o
+   ifneq ($(CONFIG_IFX_PMCU),)
+      ifxmips_eth_drv-objs += ifxmips_eth_pm.o
+   endif
+endif
+ifneq ($(CONFIG_IFX_7PORT_SWITCH),)
+   ifxmips_eth_drv-objs = ifxmips_7port_eth_sw.o
+   ifneq ($(CONFIG_IFX_PMCU),)
+      ifxmips_eth_drv-objs += ifxmips_eth_pm.o
+   endif
+endif
+
+obj-$(CONFIG_ASE_SWITCH_GPIO_ACCESS)	+= amazon_se_admmod.o
+
+obj-$(CONFIG_IFX_A2_SE)	+= ifxmips_a2_se/

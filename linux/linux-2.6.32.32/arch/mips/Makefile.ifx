@@ -1,0 +1,45 @@
+# Danube/Amazon-SE/AR9/VR9 Reference board
+
+core-$(CONFIG_DANUBE)	+= arch/mips/infineon/common/ arch/mips/infineon/danube/
+cflags-$(CONFIG_DANUBE)	+= -Iinclude/asm/ifx
+load-$(CONFIG_DANUBE)	+= 0xFFFFFFFF80002000
+
+core-$(CONFIG_AMAZON_SE)	+= arch/mips/infineon/common/ arch/mips/infineon/amazon_se/
+cflags-$(CONFIG_AMAZON_SE)	+= -Iinclude/asm/ifx
+load-$(CONFIG_AMAZON_SE)	+= 0xFFFFFFFF80002000
+
+core-$(CONFIG_AR9)	+= arch/mips/infineon/common/ arch/mips/infineon/ar9/
+cflags-$(CONFIG_AR9)	+= -Iinclude/asm/ifx
+load-$(CONFIG_AR9)	+= 0xFFFFFFFF80002000
+
+core-$(CONFIG_VR9)	+= arch/mips/infineon/common/ arch/mips/infineon/vr9/
+cflags-$(CONFIG_VR9)	+= -Iinclude/asm/ifx
+load-$(CONFIG_VR9)	+= 0xFFFFFFFF80002000
+
+core-$(CONFIG_AR10)	+= arch/mips/infineon/common/ arch/mips/infineon/ar10/
+cflags-$(CONFIG_AR10)	+= -Iinclude/asm-mips/ifx
+load-$(CONFIG_AR10)	+= 0xFFFFFFFF80002000
+
+ikos : $(vmlinux-32)
+	rm -f vmlinux.bin vmlinux.bin.*
+	$(OBJCOPY) -O binary $< vmlinux.bin
+	$(srctree)/scripts/ikos_files_gen vmlinux.bin 1000
+
+palladium: $(vmlinux-32)
+	rm -f vmlinux.bin vmlinux.bin.*
+	$(OBJCOPY) -O binary -R .note -R .comment -S $< vmlinux.bin
+	$(srctree)/scripts/palladium_ddr_files_gen vmlinux.bin 1000
+	mv vmlinux.bin.txt.00 vr9_test_h.asc 
+	mv vmlinux.bin.txt.01 vr9_test_l.asc
+# Only VR9 needs the following two lines	
+	$(srctree)/scripts/vr9_ddr.pl vr9_test_h.asc vr9_img_h.asc
+	$(srctree)/scripts/vr9_ddr.pl vr9_test_l.asc vr9_img_l.asc
+	grep kernel_entry System.map
+
+venus: $(vmlinux-32)
+	rm -f vmlinux.bin vmlinux.bin.*
+	$(OBJCOPY) -O binary $< vmlinux.bin
+	$(srctree)/scripts/swap_bin vmlinux.bin vmlinux.v.bin
+	chmod 755 vmlinux.v.bin
+	grep kernel_entry System.map
+

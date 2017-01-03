@@ -1,0 +1,68 @@
+config IFX_A2_SE
+	tristate "Amazon-SE ATM + ETH with EMA"
+	depends on AMAZON_SE && !IFX_ATM && !IFX_PTM && !IFX_ETOP_ETHERNET && !IFX_PPA
+	default n
+	select IFX_ETH_FRAMEWORK
+
+choice
+    prompt "Interface mode "
+    depends on IFX_A2_SE
+    default EPHY_MODE
+
+config IFX_EPHY_MODE
+    bool "EPHY"
+
+config IFX_RED_MII_MAC_MODE
+    bool "RedMII"
+endchoice
+
+config IFX_ATM_TASKLET
+	bool "Support Tasklet"
+	depends on IFX_A2_SE
+	default y
+	---help---
+	Use tasklet handle incoming packet. Impact on ATM RX traffic performance.
+
+config IFX_ETH_NAPI
+	bool "Support NAPI on ETH interface"
+	depends on IFX_A2_SE
+	default y
+	---help---
+	Use tasklet handle incoming ETH packet. Impact on ETH RX traffic performance.
+
+config IFX_A2_DESC_NUM
+	bool "Change Descriptor Numbers"
+	depends on IFX_A2_SE
+	default n
+	---help---
+	Change descriptor number to balance memory consumption and performance.
+
+if IFX_A2_DESC_NUM
+menu "Descriptor Numbers"
+
+config IFX_A2_ETH_RX
+	int "ETH RX Descriptor Number"
+	default "32"
+	---help---
+	Assign descriptor number for ETH RX. Totally 4 ETH RX queues.
+
+config IFX_A2_ETH_TX
+	int "ETH TX Descriptor Number"
+	default "32"
+	---help---
+	Assign descriptor number for ETH TX. Totally 4 ETH TX queues.
+
+config IFX_A2_ATM_RX
+	int "ATM RX Descriptor Number"
+	default "32"
+	---help---
+	Assign descriptor number for ATM RX. Totally 2 ATM RX queues.
+
+config IFX_A2_ATM_TX
+	int "ATM TX Descriptor Number"
+	default "64"
+	---help---
+	Assign descriptor number for ATM TX. Totally 15 ATM TX queues.
+
+endmenu
+endif

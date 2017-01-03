@@ -1,0 +1,134 @@
+#
+# Makefile for USB Core files and filesystem
+#
+
+ifxusb_gadget-objs    := ifxusb_driver.o
+ifxusb_gadget-objs    += ifxusb_ctl.o
+ifxusb_gadget-objs    += ifxusb_cif.o
+ifxusb_gadget-objs    += ifxusb_cif_d.o
+ifxusb_gadget-objs    += ifxpcd_tran.o
+ifxusb_gadget-objs    += ifxpcd.o
+ifxusb_gadget-objs    += ifxpcd_intr.o
+ifxusb_gadget-objs    += ifxpcd_cmpt.o
+ifxusb_gadget-objs    += ifxpcd_setup.o
+
+
+ifeq ($(CONFIG_TWINPASS),y)
+        EXTRA_CFLAGS        += -D__IS_TWINPASS__
+endif
+ifeq ($(CONFIG_MIPS_TWINPASS),y)
+        EXTRA_CFLAGS        += -D__IS_TWINPASS__
+endif
+
+ifeq ($(CONFIG_DANUBE),y)
+        EXTRA_CFLAGS        += -D__IS_DANUBE__
+endif
+ifeq ($(CONFIG_MIPS_DANUBE),y)
+        EXTRA_CFLAGS        += -D__IS_DANUBE__
+endif
+
+ifeq ($(CONFIG_AMAZON_SE),y)
+        EXTRA_CFLAGS        += -D__IS_AMAZON_SE__
+endif
+ifeq ($(CONFIG_MIPS_AMAZON_SE),y)
+        EXTRA_CFLAGS        += -D__IS_AMAZON_SE__
+endif
+
+ifeq ($(CONFIG_AR9),y)
+        EXTRA_CFLAGS        += -D__IS_AR9__
+endif
+ifeq ($(CONFIG_MIPS_AR9),y)
+        EXTRA_CFLAGS        += -D__IS_AR9__
+endif
+
+ifeq ($(CONFIG_AMAZON_S),y)
+        EXTRA_CFLAGS        += -D__IS_AR9__
+endif
+ifeq ($(CONFIG_MIPS_AMAZON_S),y)
+        EXTRA_CFLAGS        += -D__IS_AR9__
+endif
+
+ifeq ($(CONFIG_VR9),y)
+        EXTRA_CFLAGS        += -D__IS_VR9__
+        EXTRA_CFLAGS        += -D__DED_FIFO__
+        EXTRA_CFLAGS        += -D__VR9_PHY_LONG_PREEMP__
+#       EXTRA_CFLAGS        += -D__DESC_DMA__
+endif
+ifeq ($(CONFIG_MIPS_VR9),y)
+        EXTRA_CFLAGS        += -D__IS_VR9__
+        EXTRA_CFLAGS        += -D__DED_FIFO__
+        EXTRA_CFLAGS        += -D__VR9_PHY_LONG_PREEMP__
+#       EXTRA_CFLAGS        += -D__DESC_DMA__
+endif
+
+ifeq ($(CONFIG_AR10),y)
+        EXTRA_CFLAGS        += -D__IS_AR10__
+        EXTRA_CFLAGS        += -D__DED_FIFO__
+        EXTRA_CFLAGS        += -D__PHY_LONG_PREEMP__
+#       EXTRA_CFLAGS        += -D__DESC_DMA__
+endif
+ifeq ($(CONFIG_MIPS_AR10),y)
+        EXTRA_CFLAGS        += -D__IS_AR10__
+        EXTRA_CFLAGS        += -D__DED_FIFO__
+        EXTRA_CFLAGS        += -D__PHY_LONG_PREEMP__
+#       EXTRA_CFLAGS        += -D__DESC_DMA__
+endif
+
+ifeq ($(CONFIG_USB_GADGET_IFX_0),y)
+	EXTRA_CFLAGS  += -Dlinux -D__LINUX__
+	EXTRA_CFLAGS  += -D__IS_DEVICE__
+	EXTRA_CFLAGS  += -D__BIG_ENDIAN__
+	EXTRA_CFLAGS  += -D__KERNEL__
+endif
+
+ifeq ($(CONFIG_USB_GADGET_IFX_1),y)
+	EXTRA_CFLAGS  += -Dlinux -D__LINUX__
+	EXTRA_CFLAGS  += -D__IS_DEVICE__
+	EXTRA_CFLAGS  += -D__IS_FIRST__
+	EXTRA_CFLAGS  += -D__BIG_ENDIAN__
+	EXTRA_CFLAGS  += -D__KERNEL__
+endif
+
+ifeq ($(CONFIG_USB_GADGET_IFX_2),y)
+	EXTRA_CFLAGS  += -Dlinux -D__LINUX__
+	EXTRA_CFLAGS  += -D__IS_DEVICE__
+	EXTRA_CFLAGS  += -D__IS_SECOND__
+	EXTRA_CFLAGS  += -D__BIG_ENDIAN__
+	EXTRA_CFLAGS  += -D__KERNEL__
+endif
+
+#	EXTRA_CFLAGS        += -D__GADGET_TASKLET_TX__
+	EXTRA_CFLAGS        += -D__GADGET_TASKLET_RX__
+	EXTRA_CFLAGS        += -D__GADGET_TASKLET_HIGH__
+#	EXTRA_CFLAGS        += -D__DO_PCD_UNLOCK__
+
+ifeq ($(CONFIG_USB_GADGET_IFX_FORCE_USB11),y)
+	EXTRA_CFLAGS  += -D__FORCE_USB11__
+endif
+ifeq ($(CONFIG_USB_GADGET_IFX_UNALIGNED_ADJ),y)
+	EXTRA_CFLAGS  += -D__UNALIGNED_BUF_ADJ__
+#	EXTRA_CFLAGS  += -D__UNALIGNED_BUF_BURST__
+endif
+ifeq ($(CONFIG_USB_GADGET_IFX_UNALIGNED_CHK),y)
+	EXTRA_CFLAGS  += -D__UNALIGNED_BUF_CHK__
+#	EXTRA_CFLAGS  += -D__UNALIGNED_BUF_BURST__
+endif
+ifeq ($(CONFIG_USB_GADGET_IFX_LED),y)
+	EXTRA_CFLAGS  += -D__GADGET_LED__
+endif
+ifeq ($(CONFIG_USB_GADGET_IFX_COC),y)
+	EXTRA_CFLAGS  += -D__GADGET_COC__
+endif
+
+	EXTRA_CFLAGS  += -D__DEBUG__
+	EXTRA_CFLAGS  += -D__ENABLE_DUMP__
+	EXTRA_CFLAGS  += -D__RETAIN_BUF_TX__
+	EXTRA_CFLAGS  += -D__RETAIN_BUF_RX__
+	EXTRA_CFLAGS  += -D__DED_INTR__
+#	EXTRA_CFLAGS  += -D__ECM_NO_INTR__
+	EXTRA_CFLAGS  += -D__UEIP__
+	EXTRA_CFLAGS  += -D__QUICKNAK__
+	EXTRA_CFLAGS  += -D__NOSWAPINCTRL__
+obj-$(CONFIG_USB_GADGET_IFX)	+= ifxusb_gadget.o
+
+

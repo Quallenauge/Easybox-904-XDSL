@@ -1,0 +1,2 @@
+obj-$(CONFIG_MTD_IFX_NOR)        += ifxmips_mtd_nor.o
+

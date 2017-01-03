@@ -1,0 +1,67 @@
+config SERIAL_IFX_ASC
+	bool "IFX UART"
+	depends on DANUBE || AMAZON_SE || AR9 || VR9 || AR10
+	select SERIAL_CORE
+
+config IFX_ASC_DEFAULT_BAUDRATE
+	int "Serial Default Baudrate"
+	depends on SERIAL_IFX_ASC
+	default "115200"
+	help
+	  Use default baudrate to setup UART port, so that message can be
+	  printed (with function prom_printf) before Linux console is ready.
+
+config IFX_DISABLE_ASC0
+	bool "Disable ASC0"
+	depends on SERIAL_IFX_ASC && (DANUBE || AR9)
+	default n
+	help
+	  Danube and AR9 has two ASC (UART) port - ASC0 and ASC1. Since ASC0
+	  occupy a set of GPIO pins, this option is available to disable ASC0
+          and release this set of GPIO pins.
+
+config SERIAL_IFX_ASC_CONSOLE
+	bool "Serial Console Support"
+	depends on SERIAL_IFX_ASC
+	default y
+	select SERIAL_CORE_CONSOLE
+
+choice
+	prompt "Serial Console on ..."
+	depends on SERIAL_IFX_ASC_CONSOLE
+	default IFX_ASC_CONSOLE_ASC1
+
+config IFX_ASC_CONSOLE_ASC0
+	bool "ASC0"
+	depends on (DANUBE || AR9) && !IFX_DISABLE_ASC0
+	help
+	  Use UART port 0 to print message (with function prom_printf) before
+	  Linux console is ready.
+
+config IFX_ASC_CONSOLE_ASC1
+	bool "ASC1"
+	help
+	  Use UART port 1 to print message (with function prom_printf) before
+	  Linux console is ready.
+
+endchoice
+
+config SERIAL_IFX_USIF_UART
+	bool "IFX USIF UART"
+	depends on VR9 && !IFX_USIF_SPI
+	select SERIAL_CORE
+	default n
+	help
+	  IFX USIF UART mode driver
+
+config IFX_USIF_UART_CONSOLE
+	bool "IFX USIF UART Cosnole"
+	depends on SERIAL_IFX_USIF_UART
+	select SERIAL_CORE_CONSOLE
+	default n
+
+config IFX_USIF_UART_DEFAULT_BAUDRATE
+	depends on SERIAL_IFX_USIF_UART
+	int "IFX_USIF UART Default Baudrate"
+	default "115200"
+

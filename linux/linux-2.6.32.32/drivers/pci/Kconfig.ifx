@@ -1,0 +1,67 @@
+config IFX_PCI_BOOT
+	bool "IFX PCI Bonding Boot Support"
+	depends on PCI && VR9 && !IFX_PCI
+	default n
+	---help---
+	PCI bonding boot used for DSL off-chip bonding. Only VR9 platform is supported
+	To use this option, VR9 family board and bonding daughter board must connect
+	each other.
+
+config IFX_PCI
+	bool "IFX PCI Support"
+	depends on PCI && (DANUBE || AR9 || VR9)
+
+config IFX_PCI_HW_SWAP
+	bool "IFX PCI HW Swap"
+	depends on IFX_PCI
+	default y
+
+choice
+	prompt "PCI Clock Source"
+	depends on IFX_PCI
+	default IFX_PCI_INTERNAL_CLK_SRC_33
+
+config IFX_PCI_INTERNAL_CLK_SRC_33
+	bool "Internal Clock (33.3MHz)"
+
+config IFX_PCI_INTERNAL_CLK_SRC_60
+	bool "Internal Clock (60MHz)"
+
+config IFX_PCI_EXTERNAL_CLK_SRC
+	bool "External Clock"
+
+endchoice
+
+config IFX_PCI_CLOCK_DELAY_NANO_SECONDS
+	int "PCI Clock Delay Value (0~7) nano seconds"
+	depends on IFX_PCI
+	default "1"
+	range 0 7
+	---help---
+	  Select the clock delays in unit of 1ns. Range is 0ns - 7ns.
+	  1ns works for most cases. If there is mini-pci adapter mounted,
+	  2ns should be applied. If dual miniPCI mounted, 3ns should be applied.
+	  However, the value depends on external PCI device.
+	 
+config IFX_PCI_CLOCK_DELAY_TENTH_NANO_SECOND
+	int "PCI Clock Delay value (0 ~ 5) -> (0.0ns ~ 0.7ns)"
+	depends on IFX_PCI
+	default "0"
+	range 0 5
+	---help--- 
+	  Select the  pci clock delay in unit of 0.1ns. Range is 0.0ns ~ 0.7ns.
+	  0.0ns works for most cases. This is for fine-tuned only.
+	  
+config IFX_PCI_DANUBE_EBU_LED_RST
+    bool "Danube V3 EBU LED Reset"
+    depends on IFX_PCI && DANUBE
+    default n
+    ---help---
+      Danube V3 uses EBU LED for external PCI device reset. Other versions and platforms still use
+      GPIO 21 as reset pin
+            
+config IFX_DUAL_MINI_PCI
+	bool "IFX Dual Mini-PCI Support"
+	depends on IFX_PCI
+	default n
+

@@ -1,0 +1,356 @@
+config DANUBE
+	bool "Danube Family"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select CPU_MIPSR2_IRQ_VI
+	select CPU_MIPSR2_SRS
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_100HZ
+	select SYS_SUPPORTS_1000HZ
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select DMA_NONCOHERENT
+	select BOOT_ELF32
+	select IRQ_CPU
+	select CEVT_R4K
+	select CSRC_R4K
+	select HW_HAS_PCI
+#	select SWAP_IO_SPACE
+	help
+	  This enables support for the Infineon Technologies Danube chip family.
+
+if DANUBE
+
+menu "Danube Boards"
+choice
+	prompt "Board Type"
+
+config DANUBE_REF_BOARD
+	bool "Danube Reference Board"
+
+endchoice
+endmenu
+
+menu "Extra Configuration"
+
+config IFX_DMA_DESCRIPTOR_NUMBER
+	int "DMA descript number"
+	default "32"
+	help
+	  This option will assign DMA descriptor number
+
+config NAPI_ENABLED
+	bool "Enable NAPI Implementation (USE WITH CAUTION)"
+	default yes
+	help
+	  This option will enable NAPI support for IFX
+
+config DMA_HW_POLL_DISABLED
+	bool "Disable DMA HW polling mode, use interrupt mode"
+	default no
+	help
+	  This option will disable DMA HW polling for IFX, and use interrupt mode.
+
+endmenu
+
+endif  # DANUBE
+
+config AMAZON_SE
+	bool "Amazon-SE Family"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select CPU_MIPSR2_IRQ_VI
+	select CPU_MIPSR2_SRS
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_100HZ
+	select SYS_SUPPORTS_1000HZ
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select DMA_NONCOHERENT
+	select BOOT_ELF32
+	select IRQ_CPU
+	select CEVT_R4K
+	select CSRC_R4K
+#	select SWAP_IO_SPACE
+	select USB_ARCH_HAS_HCD
+	help
+	  This enables support for the Infineon Technologies Amazon-SE chip
+	  family.
+
+if AMAZON_SE
+
+menu "Amazon-SE Boards"
+choice
+	prompt "Board Type"
+
+config AMAZON_SE_REF_BOARD
+	bool "Amazon-SE Reference Board"
+
+endchoice
+endmenu
+
+menu "Extra Configuration"
+
+config IFX_DMA_DESCRIPTOR_NUMBER
+	int "DMA descript number"
+	default "32"
+	help
+	  This option will assign DMA descriptor number
+
+config NAPI_ENABLED
+	bool "Enable NAPI Implementation (USE WITH CAUTION)"
+	default yes
+	help
+	  This option will enable NAPI support for IFX
+
+config DMA_HW_POLL_DISABLED
+	bool "Disable DMA HW polling mode, use interrupt mode"
+	default no
+	help
+	  This option will disable DMA HW polling for IFX, and use interrupt mode.
+
+endmenu
+
+endif  # AMAZON_SE
+
+config AR9
+	bool "AR9 Family"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select CPU_MIPSR2_IRQ_VI
+	select CPU_MIPSR2_SRS
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_100HZ
+	select SYS_SUPPORTS_1000HZ
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select SYS_SUPPORTS_MULTITHREADING
+	select DMA_NONCOHERENT
+	select BOOT_ELF32
+	select IRQ_CPU
+	select CEVT_R4K
+	select CSRC_R4K
+	select HW_HAS_PCI
+#	select SWAP_IO_SPACE	# Atheros driver need turn on, USB driver need turn off, after discuss with Mars, disable this item, and Atheros promise to fix it in WLAN driver
+	select USB_ARCH_HAS_HCD
+	help
+	  This enables support for the Infineon Technologies AR9 chip family.
+
+if AR9
+
+menu "AR9 Boards"
+choice
+	prompt "Board Type"
+
+config AR9_REF_BOARD
+	bool "AR9 Reference Board"
+
+endchoice
+
+config IFX_GW188
+        bool "Indicate if it is GW188 board"
+        default no
+        help
+          This option will indicate the GW188 board
+
+config LTQ_VB300
+	bool "Indicate if it is VB300 board"
+	default no
+	help
+	  This option will indicate the VB300 board
+
+endmenu
+
+menu "Extra Configuration"
+
+config IFX_DMA_DESCRIPTOR_NUMBER
+	int "DMA descript number"
+	default "32"
+	help
+	  This option will assign DMA descriptor number
+
+config NAPI_ENABLED
+	bool "Enable NAPI Implementation (USE WITH CAUTION)"
+	default yes
+	help
+	  This option will enable NAPI support for IFX
+
+config DMA_HW_POLL_DISABLED
+	bool "Disable DMA HW polling mode, use interrupt mode"
+	default no
+	help
+	  This option will disable DMA HW polling for IFX, and use interrupt mode.
+
+config IFX_CLOCK_CHANGE
+	bool "Clock Frequency Changes on The Fly"
+	default yes
+	help
+	  This option enable CPU/DDR/FPI clock change on the fly.
+
+endmenu
+
+endif  # AR9
+
+config VR9
+	bool "VR9 Family"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select CPU_MIPSR2_IRQ_VI
+	select CPU_MIPSR2_SRS
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_100HZ
+	select SYS_SUPPORTS_1000HZ
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select SYS_SUPPORTS_MULTITHREADING
+	select DMA_NONCOHERENT
+	select BOOT_ELF32
+	select IRQ_CPU
+	select CEVT_R4K
+	select CSRC_R4K
+	select HW_HAS_PCI
+#	select SWAP_IO_SPACE
+	select USB_ARCH_HAS_HCD
+	help
+	  This enables support for the Infineon Technologies VR9 chip family.
+
+if VR9
+
+menu "VR9 Boards"
+choice
+	prompt "Board Type"
+
+config VR9_REF_BOARD
+	bool "VR9 Reference Board"
+
+endchoice
+
+config LTQ_RT288
+	bool "Indicate if it is RT288 board"
+	default no
+	help
+	  This option will indicate the RT288 board
+
+endmenu
+
+menu "Extra Configuration"
+
+config IFX_DMA_DESCRIPTOR_NUMBER
+	int "DMA descript number"
+	default "32"
+	help
+	  This option will assign DMA descriptor number
+
+config NAPI_ENABLED
+	bool "Enable NAPI Implementation (USE WITH CAUTION)"
+	default yes
+	help
+	  This option will enable NAPI support for IFX
+
+config DMA_HW_POLL_DISABLED
+	bool "Disable DMA HW polling mode, use interrupt mode"
+	default no
+	help
+	  This option will disable DMA HW polling for IFX, and use interrupt mode.
+
+config DMA_PACKET_ARBITRATION_ENABLED
+	bool "Enable DMA Packet Arbitration"
+	default yes
+	help
+	  This option will enable packet arbitration, which improves DMA overall performance. VR9 A14b requires DDR auto refresh mode 1, which issue auto refresh on the next command boundary to avoid hang issue. VR9 A21 does not have this prerequisite.
+
+config IFX_CLOCK_CHANGE
+	bool "Clock Frequency Changes on The Fly"
+	default yes
+	help
+	  This option enable CPU/DDR/FPI clock change on the fly.
+
+endmenu
+
+endif  # VR9
+
+config AR10
+	bool "AR10 Family"
+	select SYS_HAS_CPU_MIPS32_R1
+	select SYS_HAS_CPU_MIPS32_R2
+	select CPU_MIPSR2_IRQ_VI
+	select CPU_MIPSR2_SRS
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_100HZ
+	select SYS_SUPPORTS_1000HZ
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select SYS_SUPPORTS_MULTITHREADING
+	select DMA_NONCOHERENT
+	select BOOT_ELF32
+	select IRQ_CPU
+	select CEVT_R4K
+	select CSRC_R4K
+	select HW_HAS_PCI
+	select USB_ARCH_HAS_HCD
+	help
+	  This enables support for the Infineon Technologies AR10 chip family.
+
+if AR10
+
+menu "AR10 Boards"
+choice
+	prompt "Board Type"
+
+config AR10_REF_BOARD
+	bool "AR10 Reference Board"
+
+endchoice
+endmenu
+
+menu "Emulator Support"
+config USE_EMULATOR
+	bool "Support for FPGA emulation platform"
+	default no
+	help
+	  Use FPGA emulator as platform
+
+choice
+	prompt "Emulator"
+	depends on USE_EMULATOR
+	default USE_VENUS
+
+config USE_VENUS
+	bool "Venus"
+
+config USE_PALLADIUM
+	bool "Palladium"
+
+endchoice
+endmenu
+
+menu "Extra Configuration"
+
+config IFX_DMA_DESCRIPTOR_NUMBER
+	int "DMA descript number"
+	default "32"
+	help
+	  This option will assign DMA descriptor number
+
+config NAPI_ENABLED
+	bool "Enable NAPI Implementation (USE WITH CAUTION)"
+	default yes
+	help
+	  This option will enable NAPI support for IFX
+
+config DMA_HW_POLL_DISABLED
+	bool "Disable DMA HW polling mode, use interrupt mode"
+	default no
+	help
+	  This option will disable DMA HW polling for IFX, and use interrupt mode.
+
+config DMA_PACKET_ARBITRATION_ENABLED
+	bool "Enable DMA Packet Arbitration"
+	default yes
+	help
+	  This option will enable packet arbitration, which improves DMA overall performance.
+
+config IFX_CLOCK_CHANGE
+	bool "Clock Frequency Changes on The Fly"
+	default yes
+	help
+	  This option enable CPU/DDR/FPI clock change on the fly.
+
+endmenu
+
+endif  # AR10

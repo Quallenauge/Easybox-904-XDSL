@@ -1,0 +1,28 @@
+#
+# Makefile for the switch api
+#
+EXTRA_CFLAGS := -I$(srctree)/include/switch_api
+ifeq ($(CONFIG_AMAZON_S),y)
+EXTRA_CFLAGS += -DAR9
+endif
+
+ifneq ($(CONFIG_AMAZON_S_ENABLE_COC),)
+IFX_ETHSW_PM_MODULE_SUPPORT=yes
+EXTRA_CFLAGS += -DIFX_ETHSW_PM_MODULE_SUPPORT
+EXTRA_CFLAGS += -DIFX_ETHSW_AR9_PLATFORM_SUPPORT
+endif
+
+  obj-$(CONFIG_IFX_ETHSW_API)	+= drv_switch_api.o
+  drv_switch_api-objs	:= switch_api/ifx_ethsw_linux.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_init.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_tantosG_api.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_PSB6970_ll_table.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_rml.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_ral.o
+ifeq ($(IFX_ETHSW_PM_MODULE_SUPPORT),yes)
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_pm.o
+  drv_switch_api-objs	+= switch_api/ifx_ethsw_pm_plat.o
+endif
+  drv_switch_api-objs	+= switch_api/AR9.o
+  drv_switch_api-objs	+= switch_api/Tantos3G.o
+

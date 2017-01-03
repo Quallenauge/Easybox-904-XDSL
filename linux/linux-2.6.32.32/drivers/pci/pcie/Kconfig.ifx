@@ -1,0 +1,56 @@
+config IFX_PCIE
+	bool "IFX PCIE Support"
+	depends on PCIEPORTBUS && (VR9 || AR10)
+
+choice
+	prompt "IFX PCIE: Default PCIe PHY Clock Mode"
+	### ctc ###
+#	depends on IFX_PCIE
+	###########
+	default IFX_PCIE_PHY_36MHZ_MODE
+	---help---
+	  Select ifx pci express phy clock mode by default.
+	config IFX_PCIE_PHY_36MHZ_MODE
+	    bool "36MHz"
+	
+	config IFX_PCIE_PHY_25MHZ_MODE
+	    bool "25MHz"
+
+	config IFX_PCIE_PHY_100MHZ_MODE
+	    bool "100MHz"
+endchoice
+
+config IFX_PCIE_1ST_CORE
+	bool "IFX PCIE CORE 0 Support"
+	depends on IFX_PCIE
+	default y
+
+config IFX_PCIE_HW_SWAP
+	bool "IFX PCIE Core 0 CFG/IO/MEM Hardware Swap Support"
+	depends on IFX_PCIE_1ST_CORE
+	default y
+	---help---
+	  This will enable PCIe Core 0 configuration, io/memory space swap. EP register read/write must swap
+
+config IFX_PCIE_VR9_A11_HRST
+	bool "IFX PCIE Core 0 VR9 A11 chip POR Hardware Reset Support"
+	depends on IFX_PCIE_1ST_CORE && VR9
+	default n
+	---help---
+	  This will enable PCIe Core 0 RC to use RCU_REQ_RST Hardware to reset EP. By default, 
+	  GPIO 38 will be used for external PCIe EP reset
+
+config IFX_PCIE_2ND_CORE
+	bool "IFX PCIE Core 1 Support"
+	depends on IFX_PCIE && AR10
+	default n
+	---help---
+	  This will enable 2nd PCIe RC support
+
+config IFX_PCIE1_HW_SWAP
+	bool "IFX PCIE Core 1 CFG/IO/MEM Hardware Swap Support"
+	depends on IFX_PCIE_2ND_CORE
+	default n
+	---help---
+	  This will enable PCIe Core 1 configuration, io/memory space swap. EP register read/write must swap
+

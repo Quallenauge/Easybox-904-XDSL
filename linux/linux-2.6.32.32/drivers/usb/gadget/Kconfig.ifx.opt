@@ -1,0 +1,46 @@
+
+config USB_GADGET_IFX_FORCE_USB11
+	boolean "Forced USB1.1"
+	depends on USB_GADGET_IFX
+	default n
+	help
+	force to be USB 1.1
+
+config USB_GADGET_IFX_LED
+	boolean "Infineon USB Gadget LED Support"
+	depends on USB_GADGET_IFX
+	default n
+	help
+	Infineon USB Gadget LED Support
+
+config USB_GADGET_IFX_COC
+	boolean "Infineon USB Gadget CoC Support"
+	depends on USB_GADGET_IFX
+	default n
+	help
+	Infineon USB Gadget CoC Support
+
+choice
+	prompt "IFX unaligned buffer policy"
+	depends on USB_GADGET_IFX
+	help
+	   IFX unaligned buffer policy
+
+config USB_GADGET_IFX_UNALIGNED_ADJ
+	boolean "Adjust"
+	help
+	USB_GADGET_IFX_UNALIGNED_ADJ
+
+config USB_GADGET_IFX_UNALIGNED_CHK
+	boolean "Check-only"
+	help
+	USB_GADGET_IFX_UNALIGNED_CHK
+
+config USB_GADGET_IFX_UNALIGNED_NONE
+	boolean "No process"
+	help
+	USB_GADGET_IFX_UNALIGNED_NONE
+
+endchoice
+
+

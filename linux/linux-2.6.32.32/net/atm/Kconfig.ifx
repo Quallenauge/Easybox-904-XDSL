@@ -1,0 +1,7 @@
+config IFX_OAM
+	tristate "IFX OAM support"
+	depends on ATM && NET
+	default n
+	---help---
+	IFX OAM support
+

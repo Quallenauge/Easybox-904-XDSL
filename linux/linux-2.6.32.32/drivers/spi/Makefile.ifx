@@ -1,0 +1,12 @@
+obj-$(CONFIG_IFX_SPI)               += ifxmips_ssc_drv.o
+ifxmips_ssc_drv-objs :=             ifxmips_ssc.o
+ifxmips_ssc_drv-$(CONFIG_IFX_PMCU)   += ifxmips_ssc_pm.o
+obj-$(CONFIG_IFX_SPI_EEPROM)        += ifxmips_eeprom.o
+obj-$(CONFIG_IFX_SPI_FLASH)         += ifxmips_sflash.o
+obj-$(CONFIG_IFX_SPI_AT45_FLASH)    += ifxmips_sflash_at45.o
+
+obj-$(CONFIG_IFX_USIF_SPI)          += ifxmips_usif_spi_drv.o
+ifxmips_usif_spi_drv-objs :=        ifxmips_usif_spi.o
+ifxmips_usif_spi_drv-$(CONFIG_IFX_PMCU) += ifxmips_usif_spi_pm.o
+obj-$(CONFIG_IFX_USIF_SPI_FLASH)    += ifxmips_usif_sflash.o
+obj-$(CONFIG_IFX_USIF_AT45_FLASH)   += ifxmips_usif_at45.o

@@ -1,0 +1,24 @@
+config MTD_IFX_NAND
+    tristate "IFX MTD NAND Flash Driver"
+	depends on MTD_NAND && (AMAZON_SE || DANUBE || AR9 || VR9)
+	default y
+		
+config MTD_IFX_NAND_FLASH_SIZE
+    int "Maximum size for IFX flash area (MB)"
+	depends on MTD_IFX_NAND && !(MTD_CMDLINE_PARTS) 
+	default "4"
+
+#config MTD_NAND_ECC_SMC
+#    bool
+    
+config MTD_IFX_HSNAND
+    tristate "IFX MTD HSNAND Flash Driver"
+	depends on MTD_NAND &&  VR9
+#    select MTD_NAND_ECC_SMC 
+	default n
+
+config MTD_IFX_HSNAND_FLASH_SIZE
+    int "Maximum size for IFX flash area (MB)"
+	depends on MTD_IFX_HSNAND && !(MTD_CMDLINE_PARTS) && VR9
+	default "4"
+

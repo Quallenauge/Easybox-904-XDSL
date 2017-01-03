@@ -1,0 +1,305 @@
+config IFX_PTM
+	tristate "IFX PTM driver"
+	depends on (DANUBE || AMAZON_SE || AR9 || VR9) && IFX_PPA_DATAPATH != y
+	default n
+	---help---
+	Use this exclusively with ATM mode or Acceleration Package
+
+choice
+	prompt "RX Packet Handling Mechanism"
+	depends on IFX_PTM
+	default IFX_PTM_RX_NAPI
+
+config IFX_PTM_RX_NAPI
+	bool "NAPI"
+
+config IFX_PTM_RX_TASKLET
+	bool "Tasklet"
+	depends on DANUBE || AMAZON_SE || AR9
+
+config IFX_PTM_RX_INTERRUPT
+	bool "Interrupt"
+	depends on DANUBE || AMAZON_SE || AR9
+
+endchoice
+
+config IFX_PTM_TEST_PROC
+	bool "IFX PTM Driver Test Proc"
+	depends on IFX_PTM
+	default n
+
+config IFX_ADTRAN_PTM
+	tristate "IFX PTM driver for Adtran project"
+	depends on VR9 && IFX_PPA_DATAPATH != y
+	default n
+	---help---
+	Use this exclusively with ATM mode or Acceleration Package
+
+source "drivers/net/ifxmips_switch_api/Kconfig"
+
+source "drivers/net/ifxmips_ppa/Kconfig"
+
+config ASE_SWITCH_GPIO_ACCESS
+    bool "Switch Access per GPIO"
+    depends on AMAZON_SE
+    default y
+    help
+	Supported only ASE, Use GPIO to access swicth instead of MDC/MDIO
+
+config IFX_ETOP_ETHERNET
+    tristate "IFX Ethernet support"
+    depends on NET_ETHERNET && (AMAZON_SE || DANUBE) && IFX_PPA_DATAPATH != y
+    default y
+    select IFX_ETH_FRAMEWORK
+    help
+    Supported only Danube/ASE
+
+choice
+    prompt "Interface mode "
+    depends on (IFX_ETOP_ETHERNET || IFX_PPA_DATAPATH) && AMAZON_SE
+    default EPHY_MODE
+
+config EPHY_MODE
+    bool "EPHY"
+
+config RED_MII_MAC_MODE
+    bool "RedMII"
+endchoice
+
+choice
+    prompt "Interface mode "
+    depends on (IFX_ETOP_ETHERNET && DANUBE) 
+    default REV_MII_MAC_MODE 
+
+config REV_MII_MAC_MODE
+    bool "RevMII"
+endchoice
+
+config IFX_3PORT_SWITCH
+    tristate "AR9 Ethernet"
+    depends on AR9 && NET_ETHERNET && IFX_PPA_DATAPATH != y
+    default y
+    select IFX_ETH_FRAMEWORK
+    help
+    Supported AR9 only
+
+config SW_ROUTING_MODE
+    bool "enable routing mode (2 interfaces)"
+    depends on IFX_3PORT_SWITCH
+    default y
+    help
+    Create two ethernet interfaces(eth0&eth1), disable internal switch bridging, otherwise, create one ethernet interface, enable internal switch bridging.
+
+choice
+    prompt "MII0 Link Setting"
+    depends on IFX_3PORT_SWITCH
+    default MII0_RGMII_MODE
+    help
+    RGMII interface is connected to externl Switch, which supported RGMII mode
+
+config MII0_RGMII_MODE
+    bool "1000MB"
+endchoice
+
+choice
+    prompt "MII1 Link Setting"
+    depends on IFX_3PORT_SWITCH || (AR9 && IFX_PPA_DATAPATH)
+    default MII1_AUTONEG
+
+config MII1_AUTONEG
+    bool "Auto-negotiate"
+
+config MII1_RGMII_MODE_100MB
+    bool "100MB"
+
+config MII1_RGMII_MODE
+    bool "1000MB"
+endchoice
+
+#VR9 setup
+config IFX_7PORT_SWITCH
+    tristate "VR9 Ethernet"
+    depends on VR9 && NET_ETHERNET && IFX_PPA_DATAPATH != y
+    default y
+    select IFX_ETH_FRAMEWORK
+    help
+    Supported VR9 only
+
+config SW_ROUTING_MODE
+    bool "Enable LAN and WAN interfaces (eth0-->LAN, eth1-->WAN)"
+    depends on IFX_7PORT_SWITCH
+    default y
+    help
+    Create eth0 and eth1 interfaces for routing mode (eth0-->LAN traffic, eth1-->WAN traffic). LAN and WAN group selected by Switch API.
+
+choice
+    prompt "MII0 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII0_PORT_DISABLED
+    help
+    Port 0 is enabled/Disabled
+
+config MII0_PORT_ENABLED
+    bool "Port 0 enabled"
+
+config MII0_PORT_DISABLED
+    bool "Port 0 Disabled"
+endchoice
+
+choice
+    prompt "MII0 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII0_PORT_ENABLED)
+    default MII0_RGMII_MAC_MODE
+    help
+     Select the interface type based on the HW board
+
+config MII0_RGMII_MAC_MODE
+    bool "RGMII MAC"
+config MII0_RMII_MAC_MODE
+    bool "RMII MAC "
+config MII0_RMII_PHY_MODE
+    bool "RMII PHY "
+config MII0_MII_MAC_MODE
+    bool "MII MAC  "
+config MII0_MII_PHY_MODE
+    bool "MII PHY  "
+endchoice
+
+choice
+    prompt "MII1 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII1_PORT_DISABLED
+    help
+    Port 1 is enabled/Disabled
+
+config MII1_PORT_ENABLED
+    bool "Port 1 enabled"
+config MII1_PORT_DISABLED
+    bool "Port 1 Disabled"
+endchoice
+
+choice
+    prompt "MII1 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII1_PORT_ENABLED)
+    default MII1_RGMII_MAC_MODE
+    help
+     Select the interface type based on the HW board
+
+config MII1_RGMII_MAC_MODE
+    bool "RGMII MAC"
+config MII1_RMII_MAC_MODE
+    bool "RMII MAC "
+config MII1_RMII_PHY_MODE
+    bool "RMII PHY "
+config MII1_MII_MAC_MODE
+    bool "MII MAC  "
+config MII1_MII_PHY_MODE
+    bool "MII PHY  "
+endchoice
+#port2
+choice
+    prompt "MII2 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII2_PORT_DISABLED
+    help
+    Port 2 is enabled/Disabled
+
+config MII2_PORT_ENABLED
+    bool "Port 2 enabled"
+config MII2_PORT_DISABLED
+    bool "Port 2 Disabled"
+endchoice
+
+choice
+    prompt "MII2 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII2_PORT_ENABLED)
+    default MII2_GMII_MODE
+    help
+    GMII interface is connected 
+
+config MII2_GMII_MODE
+    bool "GMII MAC "
+config MII2_MII_MAC_MODE
+    bool "MII MAC  "
+endchoice
+
+#port3
+choice
+    prompt "MII3 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII3_PORT_DISABLED
+    help
+    Port 3 is enabled/Disabled
+
+config MII3_PORT_ENABLED
+    bool "Port 3 enabled"
+config MII3_PORT_DISABLED
+    bool "Port 3 Disabled"
+endchoice
+choice
+    prompt "MII3 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII3_PORT_ENABLED)
+    default MII3_MII_MODE
+    help
+    MII interface is connected 
+
+config MII3_MII_MAC_MODE
+    bool "MII MAC  "
+endchoice
+#port4
+choice
+    prompt "MII4 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII4_PORT_DISABLED
+    help
+    Port 4 is enabled/Disabled
+
+config MII4_PORT_ENABLED
+    bool "Port 4 enabled"
+config MII4_PORT_DISABLED
+    bool "Port 4 Disabled"
+endchoice
+choice
+    prompt "MII4 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII4_PORT_ENABLED)
+    default MII4_GMII_MODE
+    help
+    GMII interface is connected 
+
+config MII4_GMII_MODE
+    bool "GMII MAC "
+config MII4_MII_MAC_MODE
+    bool "MII MAC  "
+endchoice
+#port5
+choice
+    prompt "MII5 Port enabled/disabled"
+    depends on IFX_7PORT_SWITCH
+    default MII5_PORT_DISABLED
+    help
+    Port 5 is enabled/Disabled
+
+config MII5_PORT_ENABLED
+    bool "Port 5 enabled"
+config MII5_PORT_DISABLED
+    bool "Port 5 Disabled"
+endchoice
+choice
+    prompt "MII5 Interface Mode"
+    depends on (IFX_7PORT_SWITCH && MII5_PORT_ENABLED)
+    default MII5_MII_MODE
+    help
+    GMII/MII interface is connected 
+
+config MII5_RGMII_MODE
+    bool "RGMII MAC"
+config MII5_MII_MAC_MODE
+    bool "MII MAC  "
+endchoice
+
+source "drivers/net/ifxmips_a2_se/Kconfig"
+
+config IFX_ETH_FRAMEWORK
+    bool
+    default n
+

@@ -1,0 +1,9 @@
+obj-$(CONFIG_PCI)            += ifxmips_pci_common.o
+obj-$(CONFIG_IFX_PCI_BOOT)   += ifxmips_pci_boot.o
+obj-$(CONFIG_IFX_PCI)        += ifxmips_pci_drv.o
+ifxmips_pci_drv-objs         := ifxmips_pci_ops.o ifxmips_pci.o
+ifxmips_pci_drv-$(CONFIG_IFX_PMCU) += ifxmips_pci_pm.o
+obj-$(CONFIG_IFX_PCIE)       += ifxmips_pcie_drv.o
+ifxmips_pcie_drv-objs        := ifxmips_pcie_phy.o ifxmips_pcie.o ifxmips_fixup_pcie.o
+ifxmips_pcie_drv-$(CONFIG_IFX_PMCU) += ifxmips_pcie_pm.o
+ifxmips_pcie_drv-$(CONFIG_PCI_MSI)	+= ifxmips_pcie_msi.o

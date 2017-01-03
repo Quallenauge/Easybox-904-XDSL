@@ -1,0 +1,20 @@
+ifdef CONFIG_IFX_MMC_BLOCK_DEV
+obj-$(CONFIG_IFX_MMC)  += ifxmips_mmc_core.o ifxmips_mmc_block.o ifxmips_mmc.o
+endif
+
+ifdef CONFIG_IFX_MMC_WLAN
+obj-$(CONFIG_IFX_MMC)        += ifxmips_mmc_wlan.o
+endif
+#
+#ssd-objs        := ssd_debug.o ssd_adapter.o ssd_busguard.o ssd_sd.o ifx_sdiodrv.o
+##ssd2-objs      := ssd_debug.o ssd_adapter.o ssd_busguard.o ssd_sd.o ifx_sdiodrv2.o
+#
+##testdrv-objs   := testdrv.o
+#
+#
+#ifdef CONFIG_MMC_TNET_1350
+#EXTRA_CFLAGS += -DSSD_DEBUG -DSSD_REPORTLEVEL=4
+#endif
+#ifdef CONFIG_VR9_MMC
+#obj-m   += ssd.o testdrv.o
+#endif

@@ -1,0 +1,7 @@
+config IFX_LED
+	tristate "IFX LED Driver"
+	depends on (DANUBE || AMAZON_SE || AR9 || VR9 || AR10) && LEDS_CLASS && LEDS_TRIGGERS
+	select IFX_GPIO
+	select IFX_LEDC
+	select IFX_EBU_LED if DANUBE
+	default y

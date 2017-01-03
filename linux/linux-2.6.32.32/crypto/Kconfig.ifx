@@ -1,0 +1,417 @@
+#menu "Lantiq Crypto Modules"
+#menuconfig LQ_CRYPTO
+#	bool "LQ CRYPTO MODS"
+#	select CRYPTO_DEV_DEU
+#	default y
+
+menuconfig  CRYPTO_DEV_DEU
+        bool "Support for Lantiq DEU drivers"
+	depends on (DANUBE || AR9 || VR9 || AR10)
+        select CRYPTO_ALGAPI2
+        default y
+        help
+          Will support Infineon DEU HW Crypto
+          If you are unsure, say M. The compiled module will be
+          called ifxdeu.ko
+
+if CRYPTO_DEV_DEU
+
+config CRYPTO_DEV_DEU_DANUBE
+	bool	
+	depends on DANUBE
+	default y
+
+config CRYPTO_DEV_DEU_AR9
+	bool	
+	depends on AR9
+	default y
+
+config CRYPTO_DEV_DEU_VR9
+	bool
+	depends on (VR9 || AR10)
+	default y
+
+
+config CRYPTO_DEV_DES
+	bool
+config CRYPTO_ASYNC_AES_DANUBE
+	bool
+config CRYPTO_ASYNC_AES_AR9
+	bool
+config CRYPTO_ASYNC_AES_VR9
+	bool
+config CRYPTO_ASYNC_DES_DANUBE
+	bool
+config CRYPTO_ASYNC_DES_AR9
+	bool
+config CRYPTO_ASYNC_DES_VR9
+	bool
+
+choice DES_CRYPTO_SEL
+	prompt "Lantiq DEU driver for DES algorithm"
+	default SYNC_DES
+
+config NO_DES_ALGO
+	bool "Unselect DES DEU Driver"
+	help	
+	    To compile without Hardware DES support, check this option.
+	
+config ASYNC_DES
+        bool "Run DES in Aynchronous Block Cipher mode"
+	select CRYPTO_ASYNC_DES
+	help
+	    Compiles kernel crypto DES drivers to use Asynchronous Block Cipher 
+	    mode.
+
+config SYNC_DES 
+	bool "Run DES in Sync. Block Cipher mode"
+	select CRYPTO_DEV_DES
+        select CRYPTO_DEV_DES_DANUBE if DANUBE
+        select CRYPTO_DEV_DES_AR9 if AR9
+        select CRYPTO_DEV_DES_VR9 if (VR9 || AR10)
+	help
+	    Compiles kernel crypto DES drivers to use Synchronous Block Cipher 
+	    mode.
+endchoice
+	
+config CRYPTO_ASYNC_DES
+        bool "---> DES DEU driver in Asynchronous Block Cipher mode"
+	depends on  ASYNC_DES
+        select CRYTO_ABLKCIPHER
+        select CRYPTO_DEV_DMA
+        select CRYPTO_ASYNC_DES_DANUBE if DANUBE
+        select CRYPTO_ASYNC_DES_AR9 if AR9
+        select CRYPTO_ASYNC_DES_VR9 if (VR9 || AR10)
+        default n
+
+config CRYPTO_DEV_DES_DANUBE
+	bool "---> DEU driver for DANUBE DES algorithm"
+	depends on (SYNC_DES && DANUBE)
+	default y
+	help
+	  Use Infineon DEU for DES/3DES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-des.ko
+
+config CRYPTO_DEV_DES_AR9
+	bool "---> DEU driver for AR9 DES algorithm"
+	depends on (SYNC_DES && AR9)
+	default y
+	help
+	  Use Infineon DEU for DES/3DES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-des.ko
+
+config CRYPTO_DEV_DES_VR9
+	bool "---> DEU driver for VR9 DES algorithm"
+	depends on (SYNC_DES && (VR9 || AR10))
+	default y
+	help
+	  Use Infineon DEU for DES/3DES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-des.ko
+
+config CRYPTO_DEV_AES
+	bool
+
+choice AES_CRYPTO_SEL
+        prompt "Lantiq DEU driver for AES algorithm"
+	default SYNC_AES
+
+config NO_AES_ALGO
+        bool "Unselect AES DEU Driver"
+	help
+	    To compile without Hardware AES support, check this option.    
+
+config ASYNC_AES
+        bool "Run AES in Asynchronous Block Cipher mode"
+        select CRYPTO_ASYNC_AES
+	help
+	    Compiles kernel crypto AES drivers to use Asynchronous Block Cipher
+            mode.
+
+config SYNC_AES
+        bool "Run AES in Sync. Block Cipher mode"
+        select CRYPTO_DEV_AES
+        select CRYPTO_BLKCIPHER
+        select CRYPTO_DEV_AES_DANUBE if DANUBE
+        select CRYPTO_DEV_AES_AR9 if AR9
+        select CRYPTO_DEV_AES_VR9 if (VR9 || AR10)
+	help
+	    Compiles kernel crypto AES drivers to use Synchronous Block Cipher
+            mode.
+endchoice
+
+config CRYPTO_ASYNC_AES
+        bool "---> AES DEU driver in Asynchronous Block Cipher mode"
+        depends on ASYNC_AES
+        select CRYTO_ABLKCIPHER
+        select CRYPTO_DEV_DMA
+        select CRYPTO_ASYNC_AES_DANUBE if DANUBE
+        select CRYPTO_ASYNC_AES_AR9 if AR9
+        select CRYPTO_ASYNC_AES_VR9 if (VR9 || AR10)
+        default n
+
+config CRYPTO_DEV_AES_DANUBE
+        bool "---> DEU driver for DANUBE AES algorithm"
+        depends on (SYNC_AES && DANUBE)
+        default y
+        help
+          Use Infineon DEU for AES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-aes.ko
+
+config CRYPTO_DEV_AES_AR9
+        bool "---> DEU driver for AR9 AES algorithm"
+        depends on (SYNC_AES && AR9)
+        default y
+        help
+          Use Infineon DEU for AES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-aes.ko
+
+config CRYPTO_DEV_AES_VR9
+        bool "---> DEU driver for VR9 AES algorithm"
+        depends on (SYNC_AES && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for AES algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-aes.ko
+
+config CRYPTO_DEV_ARC4
+        bool "Infineon DEU driver for ARC4 algorithm"
+        depends on (CRYPTO_DEV_DEU && !DANUBE)
+        select CRYPTO_BLKCIPHER
+        default y
+        help
+          Use Infineon DEU for ARC4 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-arc4.ko
+
+config CRYPTO_DEV_ARC4_AR9
+	bool
+        #bool "---> DEU driver for AR9 ARC4 algorithm"
+        depends on (CRYPTO_DEV_ARC4 && AR9)
+        default y
+        help
+          Use Infineon DEU for ARC4 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-arc4.ko
+
+config CRYPTO_DEV_ARC4_VR9
+	bool
+        #bool "---> DEU driver for VR9 ARC4 algorithm"
+        depends on (CRYPTO_DEV_ARC4 && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for ARC4 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-arc4.ko
+
+config CRYPTO_DEV_SHA1
+        bool "Infineon DEU driver for SHA1 algorithm"
+        depends on CRYPTO_DEV_DEU
+	select CRYPTO_HASH
+        default y
+        help
+          Use Infineon DEU for SHA1 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1.ko
+
+config CRYPTO_DEV_SHA1_DANUBE
+	bool
+        #bool "---> DEU driver for DANUBE SHA1 algorithm"
+        depends on (CRYPTO_DEV_SHA1 && DANUBE)
+        default y
+        help
+          Use Infineon DEU for SHA1 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1.ko
+
+config CRYPTO_DEV_SHA1_AR9
+	bool
+        #bool "---> DEU driver for AR9 SHA1 algorithm"
+        depends on (CRYPTO_DEV_SHA1 && AR9)
+        default y
+        help
+          Use Infineon DEU for SHA1 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1.ko
+
+config CRYPTO_DEV_SHA1_VR9
+	bool
+        #bool "---> DEU driver for VR9 SHA1 algorithm"
+        depends on (CRYPTO_DEV_SHA1 && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for SHA1 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1.ko
+
+config CRYPTO_DEV_MD5
+        bool "Infineon DEU driver for MD5 algorithms"
+        depends on CRYPTO_DEV_DEU
+	select CRYPTO_HASH
+        default y
+        help
+          Use Infineon DEU for MD5 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5.ko
+
+config CRYPTO_DEV_MD5_DANUBE
+	bool
+        #bool " ---> DEU driver for DANUBE MD5 algorithms"
+        depends on (CRYPTO_DEV_MD5 && DANUBE)
+        default y
+        help
+          Use Infineon DEU for MD5 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5.ko
+
+config CRYPTO_DEV_MD5_AR9
+	bool
+        #bool " ---> DEU driver for AR9 MD5 algorithms"
+        depends on (CRYPTO_DEV_MD5 && AR9)
+        default y
+        help
+          Use Infineon DEU for MD5 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5.ko
+
+config CRYPTO_DEV_MD5_VR9
+	bool
+        #bool " ---> DEU driver for VR9 MD5 algorithms"
+        depends on (CRYPTO_DEV_MD5 && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for MD5 algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5.ko
+
+config CRYPTO_DEV_SHA1_HMAC
+        bool "Infineon DEU driver for SHA1_HMAC algorithm"
+        depends on (CRYPTO_DEV_DEU && !DANUBE)
+	select CRYPTO_HASH
+        default y
+        help
+          Use Infineon DEU for SHA1_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1_hmac.ko
+
+config CRYPTO_DEV_SHA1_HMAC_AR9
+	bool
+        #bool " ---> DEU driver for AR9 SHA1_HMAC algorithm"
+        depends on (CRYPTO_DEV_SHA1_HMAC && AR9)
+        default y
+        help
+          Use Infineon DEU for SHA1_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1_hmac.ko
+
+config CRYPTO_DEV_SHA1_HMAC_VR9
+	bool
+        #bool " ---> DEU driver for VR9 SHA1_HMAC algorithm"
+        depends on (CRYPTO_DEV_SHA1_HMAC && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for SHA1_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-sha1_hmac.ko
+
+config CRYPTO_DEV_MD5_HMAC
+        bool "Infineon DEU driver for MD5_HMAC algorithms"
+        depends on (CRYPTO_DEV_DEU && !DANUBE)
+	select CRYPTO_HASH
+        default y
+        help
+          Use Infineon DEU for MD5_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5_hmac.ko
+
+config CRYPTO_DEV_MD5_HMAC_AR9
+	bool
+        #bool " ---> DEU driver for AR9 MD5_HMAC algorithms"
+        depends on (CRYPTO_DEV_MD5_HMAC && AR9)
+        default y
+        help
+          Use Infineon DEU for MD5_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5_hmac.ko
+
+config CRYPTO_DEV_MD5_HMAC_VR9
+	bool
+        #bool " ---> DEU driver for AR9 MD5_HMAC algorithms"
+        depends on (CRYPTO_DEV_MD5_HMAC && (VR9 || AR10))
+        default y
+        help
+          Use Infineon DEU for MD5_HMAC algorithm.
+          If unsure say N. The compiled module will be
+          called ifxdeu-md5_hmac.ko
+
+config CRYPTO_DEV_DMA_DANUBE
+       bool
+
+config CRYPTO_DEV_DMA_AR9
+       bool
+
+config CRYPTO_DEV_DMA_VR9
+       bool
+
+config CRYPTO_DEV_DMA
+        bool "Run DEU over DMA interface"
+        depends on CRYPTO_DEV_DEU
+        select CRYPTO_BLKCIPHER
+#        select CRYPTO_DEV_POLL_DMA
+        select CRYPTO_DEV_DMA_DANUBE if DANUBE
+        select CRYPTO_DEV_DMA_AR9 if AR9
+        select CRYPTO_DEV_DMA_VR9 if (VR9 || AR10)
+        default n
+        help
+          Use the DMA Interface for all DEU algorithms.
+          Only recommended for large data blocks!
+          If unsure say N.
+
+config CRYPTO_DEV_POLL_DMA
+        bool "Run DEU in DMA Polling mode"
+        depends on CRYPTO_DEV_DMA && !(CRYPTO_ASYNC_AES) && !(CRYPTO_ASYNC_DES)
+        default y
+        help
+          Uses polling mode during DMA transactions. Disable this if
+          interrupt mode is intended to be used.
+
+config CRYPTO_DEV_PWR_SAVE_MODE
+	bool "Enable COC (power save mode) for DEU module"
+	depends on CRYPTO_DEV_DEU
+	default n
+	help
+	   Check this item to run DEU in CoC mode (power saving mode) 
+    
+
+config CRYPTO_DEV_TCRYPT
+        tristate "Infineon modified tcrypt test"
+        depends on CRYPTO_DEV_DEU
+        select CRYPTO_BLKCIPHER
+        select CRYPTO_AEAD2
+        select CRYPTO_HASH2
+        select CRYPTO_BLKCIPHER2
+        select CRYPTO_PCOMP
+        default m
+        help
+          y for testing of DEU algorithms without root filesystem.
+	  m for testing module.
+
+config CRYPTO_DEV_SPEED_TEST
+	bool
+
+config CRYPTO_SPEED_TEST
+        tristate "---> Tcrypt speed test cases"
+        depends on CRYPTO_DEV_TCRYPT
+	select CRYPTO_DEV_SPEED_TEST
+        default n
+        help
+          Extended speed test to measure the performance of DEU drivers.
+
+endif
+
+#endmenu

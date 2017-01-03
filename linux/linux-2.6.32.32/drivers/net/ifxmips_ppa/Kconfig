@@ -1,0 +1,132 @@
+config IFX_PPA
+	bool "PPA Acceleration Package"
+	depends on NET_ETHERNET
+	default n
+	help
+	  Acceleration Package Support
+
+config IFX_PPA_API
+	tristate "PPA Acceleration Package - Kernel APIs"
+	depends on IFX_PPA && IFX_PPA_DATAPATH
+	default y
+	help
+	  PPA APIs and Kernel Hookup
+
+config IFX_PPA_API_DIRECTPATH
+	bool "Direct Path Support for PPA API"
+	depends on IFX_PPA_API
+	default y
+	help
+	  Direct Path Support (e.g. WLAN) for PPA API
+
+config IFX_PPA_API_DIRECTPATH_BRIDGING
+	bool "Bridging Support in Direct Path"
+	depends on IFX_PPA_API && IFX_PPA_API_DIRECTPATH
+	default y
+	help
+	  Let PPA accelerate bridging traffic. (Not good performance in D4/A4)
+
+config IFX_PPA_API_PROC
+	tristate "Proc Filesystem Support for PPA API"
+	depends on IFX_PPA_API
+	default y
+	help
+	  Proc Filesystem Support for PPA API
+
+config IFX_PPA_MFE
+        bool "Multiple Filed Classification and Vlan Editing"
+        depends on IFX_PPA_API 
+        default n
+        help
+          Multiple Field Classification and Vlan Editing feature PPA API
+
+config IFX_PPA_QOS
+        bool "QOS"
+        depends on IFX_PPA_API
+        default n
+        help
+          QOS support
+
+config IFX_PPA_QOS_WFQ
+        bool "QOS WFQ"
+        depends on IFX_PPA_QOS
+        default n
+        help
+          QOS WFQ support
+
+config IFX_PPA_QOS_RATE_SHAPING
+        bool "QOS Rate Shaping"
+        depends on IFX_PPA_QOS
+        default n
+        help
+          QOS Rate Shaping support
+
+config IFX_PPA_DATAPATH
+	tristate "PPA Acceleration Package - Data Path Driver"
+	depends on IFX_PPA
+	default y
+	select IFX_ETH_FRAMEWORK
+	help
+	  PPA Low Level Driver (Data Path)
+
+choice
+	prompt "Package Code"
+	depends on IFX_PPA_DATAPATH && (DANUBE || AMAZON_SE)
+	default IFX_PPA_A4
+
+config IFX_PPA_A4
+	bool "PPA A4 Package <MII0 + ATM>"
+
+config IFX_PPA_D4
+	bool "PPA D4 Package <MII0/1>"
+	depends on DANUBE
+
+config IFX_PPA_E4
+	bool "PPA E4 Package <MII0 + PTM>"
+	depends on AMAZON_SE
+
+endchoice
+
+choice
+	prompt "Package Code"
+	depends on IFX_PPA_DATAPATH && (AR9 || VR9 || AR10)
+	default IFX_PPA_A5
+
+config IFX_PPA_A5
+	bool "PPA A5 Package <MII0/1 + ATM>"
+
+config IFX_PPA_D5
+	bool "PPA D5 Package <MII0/1>"
+
+config IFX_PPA_E5
+	bool "PPA E5 Package <MII0/1 + PTM>"
+	depends on AR9 || VR9 || AR10
+
+endchoice
+
+config IFX_PPE_E5_OFFCHIP_BONDING
+	bool "PPA E5 Off-chip Bonding Support"
+	depends on VR9 && IFX_PPA_E5
+	default n
+
+config IFX_PPA_IPv6_ENABLE
+	bool "PPA IPv6 support"
+	depends on IFX_PPA_DATAPATH
+	default n
+
+
+#ctc
+config ARC_PPA_PKT_CAPTURE
+	bool "Arcadyan packet capturing for Lantiq VR9 PPA"
+	depends on IFX_PPA
+	default y
+	help
+	  Arcadyan packet capturing for Lantiq VR9 PPA
+
+config ARC_PPA_FILTER
+	bool "Arcadyan PPA filter for Lantiq VR9"
+	depends on IFX_PPA
+	default y
+	help
+	  Arcadyan PPA filter for Lantiq VR9
+

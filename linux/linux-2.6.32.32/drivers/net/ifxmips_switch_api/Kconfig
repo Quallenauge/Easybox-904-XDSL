@@ -1,0 +1,66 @@
+#
+# switch api configuration
+#
+config IFX_ETHSW_API
+    tristate "Ethernet SWITCH API"
+    default y
+    help
+    Support for Ethernet SWITCH API.
+
+choice
+    prompt "Support API Setting"
+    depends on (IFX_ETHSW_API && AR9)
+    default EXTERNAL_T3G
+
+config BOTH_INTERFACE
+    bool "Both Internal and External"
+
+config INTERNAL_AR9
+    bool "Internal TANTOS"
+
+config EXTERNAL_T3G
+    bool "External TANTOSxG"
+endchoice
+
+config IFX_ETHSW_API_COC 
+    bool "Switch API CoC support"
+    depends on (IFX_ETHSW_API && (AR9 || DANUBE || AMAZON_SE))
+    default y
+    help
+    Supported AR9/DANUBE/AMAZON_SE platform
+
+config IFX_ETHSW_API_COC_PMCU
+    bool "Switch API CoC PMCU module support"
+    depends on (IFX_ETHSW_API && IFX_PMCU && (AR9 || DANUBE || AMAZON_SE ))
+    default y
+    help
+    Supported AR9/DANUBE/AMAZON_SE platform
+
+config AMAZON_SE_TANTOS0G_GPIO
+    bool "Amazon_SE Tantos0G GPIO access "
+    depends on (AMAZON_SE && IFX_ETHSW_API && ASE_SWITCH_GPIO_ACCESS)
+    default y
+    help
+    Supported AMAZON_SE only
+
+config GPHY_DRIVER 
+#    depends on (IFX_ETHSW_API && VR9)
+    depends on VR9
+    default y
+    tristate "VR9 Internal GPHY support"
+    help
+    Supported Internal GPHY driver for VR9 platform
+
+choice
+    prompt "GE/SE MODE Select"
+    depends on (VR9 && GPHY_DRIVER)
+    default GE_MODE
+
+config GE_MODE
+    bool "Giga Ethernet Mode"
+
+config FE_MODE
+    bool "Fast Ethernet Mode"
+endchoice
+
+

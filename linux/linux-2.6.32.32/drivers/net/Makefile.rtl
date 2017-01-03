@@ -1,0 +1,2 @@
+#obj-$(CONFIG_RTL8367_ETHSW_API) += rtl8367_switch_api/
+obj-y += rtl8367_switch_api/

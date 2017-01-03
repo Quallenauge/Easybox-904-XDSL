@@ -1,0 +1,77 @@
+config IFX_PMCU
+	tristate "IFX PMCU"
+	depends on AR9 || VR9 || DANUBE || AMAZON_SE || AR10
+	default y
+
+config IFX_CPUFREQ
+        tristate "CPU Frequency Control unit"
+        depends on IFX_PMCU && (AR9 || VR9 || AR10)
+        default y
+
+config IFX_PMU
+	tristate "IFX Power Management Unit"
+	depends on AMAZON_SE || DANUBE || AR9 || VR9 || AR10
+	default y
+
+config IFX_PMU_POWER_GATING
+	bool "IFX PMU Power Gating support"
+	depends on IFX_PMU && (VR9 || AR10)
+	default y
+
+config IFX_GPIO
+	bool "IFX GPIO"
+	depends on DANUBE || AMAZON_SE || AR9 || VR9 || AR10
+	default y
+
+config IFX_RCU
+	bool "IFX Reset Control Unit"
+	depends on  AMAZON_SE || DANUBE || AR9 || VR9 || AR10
+	default y
+
+config IFX_SI
+	tristate "IFX Serial In Controller"
+	depends on AR9 || VR9
+	default n
+
+config IFX_LEDC
+	tristate "IFX LED Controller (Serial Out)"
+#	select IFX_GPTU
+	depends on DANUBE || AMAZON_SE || AR9 || VR9 || AR10
+	default y
+
+config IFX_EBU_LED
+	bool
+	depends on DANUBE
+	default n
+
+config IFX_WDT
+	bool "IFX Watchdog Timer"
+	depends on  AMAZON_SE || DANUBE || AR9 || VR9 || AR10
+	default y
+
+config IFXMIPS_DSL_CPE_MEI
+    tristate "DSL Low Level MEI driver"
+	depends on !VR9
+	default n
+	---help---
+      This is the DSL low level driver for CPE platforms.
+
+config DSL_MEI_CPE_DRV
+	tristate "DSL MEI CPE Low Level Driver"
+	default n
+	---help---
+	This is the DSL MEI CPE low level driver for the Vinax/VRx platforms.
+
+config IFX_PMON
+	tristate "IFX Performance Monitor <PMON>"
+	depends on VR9 || AR10
+	default n
+	---help---
+	  PMON should be used with open source pecostat kernel module and pecostat user space tool.
+
+config IFX_DCDC
+        tristate "VR9 DCDC driver"
+        depends on VR9
+        default n
+        ---help---
+          Turn on this option to have DCDC (voltage scaling) feature.

@@ -1,0 +1,24 @@
+config MTD_IFX_NOR
+    tristate "IFX MTD NOR Flash Driver"
+    depends on MTD && (AMAZON_SE || DANUBE || AR9 || VR9)
+    default y
+        
+config MTD_IFX_NOR_FLASH_SIZE
+    int "Maximum size for IFX flash area (MB)"
+    depends on MTD_IFX_NOR
+    default "8"
+
+config MTD_IFX_LESS_WAIT_CYCLE
+	bool "Reduce Wait Cycle from 16x to 4x"
+	depends on MTD_IFX_NOR && (AR9 || VR9)
+	default n
+
+config DANUBE_CHIP_A11
+    bool "Danube A11 chip support"
+    depends on MTD_IFX_NOR && DANUBE && IFX_PCI
+    default n
+    
+config DANUBE_EBU_PCI_SW_ARBITOR
+    bool "Danube EBU PCI Software arbitor support"
+    depends on DANUBE_CHIP_A11
+    default n

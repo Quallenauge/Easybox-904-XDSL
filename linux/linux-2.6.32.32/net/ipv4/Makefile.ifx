@@ -1,0 +1,4 @@
+
+  
+obj-$(CONFIG_IFX_IGMP_PROXY)	+= iproxyd/
+

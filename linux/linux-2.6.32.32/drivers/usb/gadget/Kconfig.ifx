@@ -1,0 +1,44 @@
+
+config USB_GADGET_IFX_0
+	boolean "Infineon USB Gadget Controller Driver" if ( !AMAZON_S && !AR9 && !VR9 && !VR10 && !MIPS_AMAZON_S && !MIPS_AR9 && !MIPS_VR9 && !MIPS_AR10 )
+	depends on ( !AMAZON_S && !AR9 && !VR9 && !AR10 && !MIPS_AMAZON_S && !MIPS_AR9 && !MIPS_VR9 && !MIPS_AR10 )
+	select USB_GADGET_SELECTED
+	help
+	    Infineon USB Gadget Controller
+
+config USB_GADGET_IFX
+	tristate
+	depends on  USB_GADGET_IFX_0
+	default USB_GADGET
+	select USB_GADGET_SELECTED
+	select USB_GADGET_DUALSPEED
+
+
+config USB_GADGET_IFX_1
+	boolean "Amazon-S USB Gadget Controller Driver No 1"  if ( AMAZON_S || AR9 || VR9 || AR10 || MIPS_AMAZON_S || MIPS_AR9 || MIPS_VR9 || MIPS_AR10 )
+	depends on ( AMAZON_S || AR9 || VR9 || AR10 || MIPS_AMAZON_S || MIPS_AR9 || MIPS_VR9 || MIPS_AR10 )
+	select USB_GADGET_SELECTED
+	help
+	    Infineon USB Gadget Controller
+
+config USB_GADGET_IFX
+	tristate
+	depends on  USB_GADGET_IFX_1
+	default USB_GADGET
+	select USB_GADGET_SELECTED
+	select USB_GADGET_DUALSPEED
+
+config USB_GADGET_IFX_2
+	boolean "Amazon-S USB Gadget Controller Driver No 2" if ( AMAZON_S || AR9 || VR9 || AR10 || MIPS_AMAZON_S || MIPS_AR9 || MIPS_VR9 || MIPS_AR10 )
+	depends on ( AMAZON_S || AR9 || VR9 || AR10 || MIPS_AMAZON_S || MIPS_AR9 || MIPS_VR9 || MIPS_AR10 )
+	select USB_GADGET_SELECTED
+	help
+	    Infineon USB Gadget Controller
+
+config USB_GADGET_IFX
+	tristate
+	depends on  USB_GADGET_IFX_2
+	default USB_GADGET
+	select USB_GADGET_SELECTED
+	select USB_GADGET_DUALSPEED
+

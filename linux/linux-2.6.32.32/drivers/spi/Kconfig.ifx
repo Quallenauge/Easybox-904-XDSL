@@ -1,0 +1,62 @@
+config IFX_SPI
+	tristate "IFX SPI/SSC driver"
+	depends on SPI_MASTER && (AMAZON_SE || DANUBE || AR9 || VR9 || AR10)
+	default n
+
+config IFX_SPI_DEBUG
+    bool "IFX SPI/SSC runtime debug support"
+    depends on IFX_SPI
+    default n
+    ----help---
+    Choose this option to enable IFX SPI/SSC runtime debug options. This can be enabled by writing debug options into /proc/sys/dev/ifx_ssc/debug.
+
+config IFX_SPI_ASYNCHRONOUS
+	bool "IFX SPI/SSC tasklet support" 
+	depends on IFX_SPI && (DANUBE || AR9 || VR9)
+	default y
+	---help---
+	Choose this option to support synchronous and asynchronous APIs at the same time. SPI itself will run    in tasklet. If not, only synchronous API is supported. SPI context will in kernel thread mode and bel    -ong to caller's context. 
+
+config IFX_SPI_EEPROM
+	tristate "IFX SPI/SSC EPROM driver"
+	depends on IFX_SPI && !IFX_SPI_FLASH
+	default n
+
+config IFX_SPI_FLASH
+	tristate "IFX SPI/SSC 25 types of serial flash driver"
+	depends on IFX_SPI
+	default n
+
+config IFX_SPI_AT45_FLASH
+	tristate "IFX SPI/SSC atmel45xxx flash driver"
+	depends on IFX_SPI
+	default n
+
+config IFX_USIF_SPI
+	tristate "IFX USIF SPI driver"
+	depends on SPI_MASTER && (VR9 || AR10)
+	default n
+
+config IFX_USIF_SPI_DEBUG
+    bool "IFX USIF SPI runtime debug support"
+    depends on IFX_USIF_SPI
+    default n
+    ----help---
+    Choose this option to enable USIF SPI runtime debug options. This can be enabled by writing debug options into /proc/sys/dev/ifx_usif_spi/debug.
+
+config IFX_USIF_SPI_ASYNCHRONOUS
+    bool "IFX USIF SPI tasklet support"
+    depends on IFX_USIF_SPI
+    default y
+    ---help---
+    Choose this option to support synchronous and asynchronous APIs at the same time. USIF SPI itself will run in tasklet. If not, only synchronous API is supported. SPI context will in kernel thread mode and belong to caller's context.
+
+config IFX_USIF_SPI_FLASH
+	tristate "IFX USIF SPI 25 types of serial flash driver"
+	depends on IFX_USIF_SPI
+	default n
+	
+config IFX_USIF_AT45_FLASH
+    tristate "IFX atmel45xxx flash driver"
+    depends on IFX_USIF_SPI
+    default n
