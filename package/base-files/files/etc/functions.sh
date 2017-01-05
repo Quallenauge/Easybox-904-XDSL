@@ -275,6 +275,41 @@ uci_apply_defaults() {
 	uci commit
 }
 
+add_group_and_user() {
+        local pkgname="$1"
+        local rusers="$(sed -ne 's/^Require-User: *//p' $root/usr/lib/opkg/info/${pkgname}.control 2>/dev/null)"
+
+        if [ -n "$rusers" ]; then
+                local tuple oIFS="$IFS"
+                for tuple in $rusers; do
+                        local uid gid uname gname
+
+                        IFS=":"
+                        set -- $tuple; uname="$1"; gname="$2"
+                        IFS="="
+                        set -- $uname; uname="$1"; uid="$2"
+                        set -- $gname; gname="$1"; gid="$2"
+                        IFS="$oIFS"
+
+                        if [ -n "$gname" ] && [ -n "$gid" ]; then
+                                group_exists "$gname" || group_add "$gname" "$gid"
+                        elif [ -n "$gname" ]; then
+                                group_add_next "$gname"; gid=$?
+                        fi
+
+                        if [ -n "$uname" ]; then
+                                user_exists "$uname" || user_add "$uname" "$uid" "$gid"
+                        fi
+
+                        if [ -n "$uname" ] && [ -n "$gname" ]; then
+                                group_add_user "$gname" "$uname"
+                        fi
+
+                        unset uid gid uname gname
+                done
+        fi
+}
+
 service_kill() {
 	local name="${1}"
 	local pid="${2:-$(pidof "$name")}"
@@ -315,6 +350,74 @@ pi_include() {
 		return 1
 	fi
 	return 0
+}
+
+group_add() {
+        local name="$1"
+        local gid="$2"
+        local rc
+        [ -f "${IPKG_INSTROOT}/etc/group" ] || return 1
+        [ -n "$IPKG_INSTROOT" ] || lock /var/lock/group
+        echo "${name}:x:${gid}:" >> ${IPKG_INSTROOT}/etc/group
+        rc=$?
+        [ -n "$IPKG_INSTROOT" ] || lock -u /var/lock/group
+        return $rc
+}
+
+group_exists() {
+        grep -qs "^${1}:" ${IPKG_INSTROOT}/etc/group
+}
+
+group_add_next() {
+        local gid gids
+        gid=$(grep -s "^${1}:" ${IPKG_INSTROOT}/etc/group | cut -d: -f3)
+        [ -n "$gid" ] && return $gid
+        gids=$(cat ${IPKG_INSTROOT}/etc/group | cut -d: -f3)
+        gid=100
+        while [ -n "$(echo $gids | grep $gid)" ] ; do
+                gid=$((gid + 1))
+        done
+        group_add $1 $gid
+        return $gid
+}
+
+group_add_user() {
+        local grp delim=","
+        grp=$(grep -s "^${1}:" ${IPKG_INSTROOT}/etc/group)
+        [ -z "$(echo $grp | cut -d: -f4 | grep $2)" ] || return
+        [ -n "$(echo $grp | grep ":$")" ] && delim=""
+        [ -n "$IPKG_INSTROOT" ] || lock /var/lock/passwd
+        sed -i "s/$grp/$grp$delim$2/g" ${IPKG_INSTROOT}/etc/group
+        [ -n "$IPKG_INSTROOT" ] || lock -u /var/lock/passwd
+}
+
+user_add() {
+        local name="${1}"
+        local uid="${2}"
+        local gid="${3}"
+        local desc="${4:-$1}"
+        local home="${5:-/var/run/$1}"
+        local shell="${6:-/bin/false}"
+        local rc
+        [ -z "$uid" ] && {
+                uids=$(cat ${IPKG_INSTROOT}/etc/passwd | cut -d: -f3)
+                uid=100
+                while [ -n "$(echo $uids | grep $uid)" ] ; do
+                        uid=$((uid + 1))
+                done
+        }
+        [ -z "$gid" ] && gid=$uid
+        [ -f "${IPKG_INSTROOT}/etc/passwd" ] || return 1
+        [ -n "$IPKG_INSTROOT" ] || lock /var/lock/passwd
+        echo "${name}:x:${uid}:${gid}:${desc}:${home}:${shell}" >> ${IPKG_INSTROOT}/etc/passwd
+        echo "${name}:x:0:0:99999:7:::" >> ${IPKG_INSTROOT}/etc/shadow
+        rc=$?
+        [ -n "$IPKG_INSTROOT" ] || lock -u /var/lock/passwd
+        return $rc
+}
+
+user_exists() {
+        grep -qs "^${1}:" ${IPKG_INSTROOT}/etc/passwd
 }
 
 [ -z "$IPKG_INSTROOT" -a -f /lib/config/uci.sh ] && . /lib/config/uci.sh

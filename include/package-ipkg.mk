@@ -110,6 +110,7 @@ ifeq ($(DUMP),)
 		echo "Maintainer: $(MAINTAINER)"; \
 		echo "Architecture: $(PKGARCH)"; \
 		echo "Installed-Size: 0"; \
+                echo "Require-User: $(USERID)"; \
 		echo -n "Description: "; $(SH_FUNC) getvar $(call shvar,Package/$(1)/description) | sed -e 's,^[[:space:]]*, ,g'; \
  	) > $$(IDIR_$(1))/CONTROL/control
 	chmod 644 $$(IDIR_$(1))/CONTROL/control
