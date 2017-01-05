@@ -55,3 +55,9 @@ nandwrite -p /dev/mtd2 uImage
 
 The memory card should have a partition which contains the rootfs. The partition should correspond
 to the uboot root setting  (e.g. /dev/sda1).
+
+Build Instructions
+------------------
+cp config_template.config .config
+make oldconfig
+make
