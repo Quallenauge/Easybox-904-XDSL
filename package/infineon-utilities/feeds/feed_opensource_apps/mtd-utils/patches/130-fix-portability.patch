@@ -1,0 +1,32 @@
+--- a/include/mtd/ubi-media.h
++++ b/include/mtd/ubi-media.h
+@@ -30,15 +30,11 @@
+ #ifndef __UBI_MEDIA_H__
+ #define __UBI_MEDIA_H__
+ 
+-#ifdef __linux__
+-#include <asm/byteorder.h>
+-#else
+ #include <stdint.h>
+ typedef uint8_t __u8;
+ typedef uint16_t __be16;
+ typedef uint32_t __be32;
+ typedef uint64_t __be64;
+-#endif
+ 
+ /* The version of UBI images supported by this implementation */
+ #define UBI_VERSION 1
+--- a/mkfs.ubifs/ubifs-media.h
++++ b/mkfs.ubifs/ubifs-media.h
+@@ -33,6 +33,11 @@
+ #ifndef __UBIFS_MEDIA_H__
+ #define __UBIFS_MEDIA_H__
+ 
++typedef uint16_t __le16;
++typedef uint32_t __le32;
++typedef uint64_t __le64;
++
++
+ /* UBIFS node magic number (must not have the padding byte first or last) */
+ #define UBIFS_NODE_MAGIC  0x06101831
+ 
