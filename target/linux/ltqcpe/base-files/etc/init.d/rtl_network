@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh /etc/rc.common
 # Copyright (C) 2006 OpenWrt.org
 
 START=12
@@ -30,16 +30,3 @@ stop() {
 restart() {
 	start
 }
-
-case "$1" in
-	"boot")		boot	;;
-	"start")	start	;;
-	"stop")		stop	;;
-	"restart")	restart	;;
-	*)
-				echo $0 'boot    - setup and start network function'
-				echo $0 'start   - start network function'
-				echo $0 'stop    - stop network function'
-				echo $0 'restart - restart network function'
-				;;
-esac

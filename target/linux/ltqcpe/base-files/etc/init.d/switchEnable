@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=12
+
+boot() {
+	start
+}
+
+start() {
+	/usr/sbin/setup_netdev.sh port-enable
+}
+
+restart() {
+	start
+}
+
+stop() {
+	echo "Ports will keep alive..."
+}
