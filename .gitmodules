@@ -1,0 +1,3 @@
+[submodule "linux/linux-2.6.32.32"]
+	path = linux/linux-2.6.32.32
+	url = https://github.com/Quallenauge/Easybox-904-XDSL-Kernel.git
