@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=10
+#STOP=98
+
+start() {
+	# create /dev/root if it doesn't exist
+	[ -e /dev/root -o -h /dev/root ] || {
+		rootdev=$(awk 'BEGIN { RS=" "; FS="="; } $1 == "root" { print $2 }' < /proc/cmdline)
+		[ -n "$rootdev" ] && ln -s "$rootdev" /dev/root
+	}
+
+        ######## ctc #########
+        if [ -e /etc/init.d/boot.ifx ] ; then
+                /etc/init.d/boot.ifx
+        fi
+
+        if [ -e /etc/device_table.txt ] ; then
+                makedevs -d /etc/device_table.txt /
+        fi
+
+        /sbin/depmod &
+        ######################
+}

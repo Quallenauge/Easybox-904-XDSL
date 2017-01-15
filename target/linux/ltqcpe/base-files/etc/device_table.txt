@@ -1,0 +1,44 @@
+# Device table entries take the form of:
+# <name>    <type>      <mode>  <uid>   <gid>   <major> <minor> <start> <inc>   <count>
+# where name is the file name,  type can be one of: 
+#       f       A regular file
+#       d       Directory
+#       c       Character special device file
+#       b       Block special device file
+#       p       Fifo (named pipe)
+# uid is the user id for the target file, gid is the group id for the
+# target file.  The rest of the entries (major, minor, etc) apply only 
+# to device special files.
+
+#<name>			<type>	<mode>	<uid>	<gid>	<major>	<minor>	<start>	<inc>	<count>
+/dev				d	755		0		0		-		-		-		-		-
+/dev/gptu			c	755		0		0		10		63		-		-		-
+/dev/wdt			c	755		0		0		251		0		-		-		-
+/dev/kmem			c	640		0		0		1		2		0		0		-
+/dev/cua			c	630 	0		0		5		64		0		1		2
+/dev/rtc			c	640		0		0		10		135		-		-		-
+/dev/ptmx			c	666		0		0		5		2		-		-		-
+/dev/ttyS			c	666		0		0		4		64		0		1		2
+/dev/vpe1			c	640		0		0		254		1		0		0		-
+/dev/rtsp_conn_dev	c	640		0		0		231		0		- 		-		- 
+/dev/sip_conn_dev	c	640		0		0		234		0		-	 	-		- 
+/dev/sip_dev		c	640		0		0		233		0		- 		-		- 
+/dev/rtsp_dev		c	640		0		0		100		0		- 		-		- 
+/dev/ifx_dsl		c	640		0		0		106		0		-		-		-
+/dev/ifx_mei		c	666		0		0		105		0		-		-		-
+/dev/ifx_ppa		c	666		0		0		181		0		-		-		-
+/dev/vcc			d	755		0		0		-		-		-		-		-
+/dev/vcc/a			c	640		0		0		7		128		-		-		-
+/dev/vcc/			c	640		0		0		7		0		0		0		1
+/dev/vc				d	755		0		0		-		-		-		-		-
+/dev/vc/			c	640		0		0		4		0		0		0		1
+/dev/net			d	755		0		0		-		-		-		-		-
+/dev/net/tun		c	660		0		0		10		200		-		-		-
+/dev/switch_api		d	775		0		0		-		-		-		-		-
+/dev/switch_api/	c	640		0		0		81		0		0		1		2
+#/dev/ifx_ppa_arc	c	777		0		0		182		0		-		-		-
+## change rtl8367 switch device driver, Alvin Hsu #14658 ##
+#/dev/rtl_switch		c	666		0		0		177		0		-		-		-
+/dev/rtl8367_switch c	666		0		0		177		0		-		-		-
+##
+/dev/ttyUSIF0		c	666		0		0		4		66		0		1		2

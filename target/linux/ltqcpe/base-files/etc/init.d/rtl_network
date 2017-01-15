@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=12
+
+include() {
+	local file
+
+	for file in $(ls $1/*.sh 2>/dev/null); do
+		. $file
+	done
+}
+
+boot() {
+	setup_switch() { return 0; }
+
+	### Because rtl8367 kernel driver changes from build-in to external modules
+	### So here, we should insmod module before disable switch-phy-disable
+	insmod /lib/modules/`uname -r`/rtl8367rb.ko
+}
+
+start() {
+	setup_switch() { return 0; }
+}
+
+stop() {
+	ifdown -a
+}
+
+restart() {
+	start
+}
