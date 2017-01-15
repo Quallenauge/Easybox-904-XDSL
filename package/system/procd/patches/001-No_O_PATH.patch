@@ -1,0 +1,13 @@
+diff --git a/utils/utils.c b/utils/utils.c
+index 8f14aad..43d3ae6 100644
+--- a/utils/utils.c
++++ b/utils/utils.c
+@@ -166,7 +166,7 @@ int patch_fd(const char *device, int fd, int flags)
+ 		device = "/dev/null";
+ 
+ 	if (*device != '/') {
+-		dfd = open("/dev", O_PATH|O_DIRECTORY);
++		dfd = open("/dev", O_DIRECTORY);
+ 
+ 		if (dfd < 0)
+ 			return -1;

@@ -1,0 +1,13 @@
+diff --git a/inittab.c b/inittab.c
+index 6dde11a..67a82a0 100644
+--- a/inittab.c
++++ b/inittab.c
+@@ -70,7 +70,7 @@ static int dev_exist(const char *dev)
+ {
+ 	int dfd, fd;
+ 
+-	dfd = open("/dev", O_PATH|O_DIRECTORY);
++	dfd = open("/dev", O_DIRECTORY);
+ 
+ 	if (dfd < 0)
+ 		return 0;
