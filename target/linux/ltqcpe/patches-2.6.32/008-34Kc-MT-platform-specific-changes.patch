@@ -1,0 +1,158 @@
+Index: linux/arch/mips/kernel/irq_cpu.c
+===================================================================
+--- linux.orig/arch/mips/kernel/irq_cpu.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/arch/mips/kernel/irq_cpu.c	2010-11-02 15:17:42.917480000 +0530
+@@ -69,8 +69,13 @@
+ 	unsigned int vpflags = dvpe();
+ 
+ 	clear_c0_cause(0x100 << (irq - MIPS_CPU_IRQ_BASE));
++#if !(defined(CONFIG_AR9) || defined(CONFIG_VR9))
+ 	evpe(vpflags);
++#endif
+ 	unmask_mips_mt_irq(irq);
++#if defined(CONFIG_AR9) || defined(CONFIG_VR9)
++	evpe(vpflags);
++#endif
+ 
+ 	return 0;
+ }
+@@ -115,7 +120,13 @@
+ 			set_irq_chip_and_handler(i, &mips_mt_cpu_irq_controller,
+ 						 handle_percpu_irq);
+ 
++/* Avoid reinitialisation of the 6 hardware interrupts incase of AR9 and VR9 platfoms
++   incase of Danube/ASE initialises 6 hw interrupt.
++   Need to Check ?? 
++*/
++#if !(defined(CONFIG_AR9) || defined(CONFIG_VR9))
+ 	for (i = irq_base + 2; i < irq_base + 8; i++)
+ 		set_irq_chip_and_handler(i, &mips_cpu_irq_controller,
+ 					 handle_percpu_irq);
++#endif
+ }
+Index: linux/arch/mips/kernel/smtc.c
+===================================================================
+--- linux.orig/arch/mips/kernel/smtc.c	2010-10-31 23:39:29.000000000 +0530
++++ linux/arch/mips/kernel/smtc.c	2010-11-02 15:49:10.164401000 +0530
+@@ -503,10 +503,17 @@
+ 			 * Clear ERL/EXL of VPEs other than 0
+ 			 * and set restricted interrupt enable/mask.
+ 			 */
++
++#if defined(CONFIG_AR9) || defined(CONFIG_VR9)  // Enable IE and IM bits for all the intr lines.
++                        write_vpe_c0_status((read_vpe_c0_status()
++                                & ~(ST0_BEV | ST0_ERL | ST0_EXL))
++                                | (ST0_IM | ST0_IE));
++#else
+ 			write_vpe_c0_status((read_vpe_c0_status()
+ 				& ~(ST0_BEV | ST0_ERL | ST0_EXL | ST0_IM))
+ 				| (STATUSF_IP0 | STATUSF_IP1 | STATUSF_IP7
+ 				| ST0_IE));
++#endif
+ 			/*
+ 			 * set config to be the same as vpe0,
+ 			 *  particularly kseg0 coherency alg
+Index: linux/arch/mips/kernel/traps.c
+===================================================================
+--- linux.orig/arch/mips/kernel/traps.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/arch/mips/kernel/traps.c	2010-11-02 15:51:40.786351000 +0530
+@@ -1237,7 +1237,11 @@
+ 	die("NMI", regs);
+ }
+ 
++#if defined(CONFIG_AR9) || defined(CONFIG_VR9)
++#define VECTORSPACING 0x200     /* for EI/VI mode */
++#else
+ #define VECTORSPACING 0x100	/* for EI/VI mode */
++#endif
+ 
+ unsigned long ebase;
+ unsigned long exception_handlers[32];
+Index: linux/include/linux/skbuff.h
+===================================================================
+--- linux.orig/include/linux/skbuff.h	2010-10-31 23:39:18.000000000 +0530
++++ linux/include/linux/skbuff.h	2010-11-02 15:55:08.272255000 +0530
+@@ -1389,8 +1389,12 @@
+  * and wireless, but only for new allocations
+  */
+ #ifndef NET_SKB_PAD
++#if defined (CONFIG_AR9) || defined (CONFIG_VR9)
++#define NET_SKB_PAD     64
++#else
+ #define NET_SKB_PAD	32
+ #endif
++#endif
+ 
+ #ifndef NET_SKB_PAD_ALLOC
+ #define NET_SKB_PAD_ALLOC	64
+Index: linux/arch/mips/kernel/smp-mt.c
+===================================================================
+--- linux.orig/arch/mips/kernel/smp-mt.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/arch/mips/kernel/smp-mt.c	2010-11-02 16:25:59.000389000 +0530
+@@ -157,9 +157,14 @@
+ 	if (gic_present)
+ 		change_c0_status(ST0_IM, STATUSF_IP3 | STATUSF_IP4 |
+ 					 STATUSF_IP6 | STATUSF_IP7);
+-	else
++	else {
++#if defined(CONFIG_AR9) || defined(CONFIG_VR9)
++		set_c0_status(ST0_IM); //enable all the interrupt lines.
++#else
+ 		change_c0_status(ST0_IM, STATUSF_IP0 | STATUSF_IP1 |
+ 					 STATUSF_IP6 | STATUSF_IP7);
++#endif
++	}
+ }
+ 
+ static void __cpuinit vsmp_smp_finish(void)
+Index: linux/arch/mips/kernel/irq_cpu.c
+===================================================================
+--- linux.orig/arch/mips/kernel/irq_cpu.c	2010-11-11 16:25:37.000000000 +0530
++++ linux/arch/mips/kernel/irq_cpu.c	2010-11-11 17:42:06.568891000 +0530
+@@ -48,6 +48,7 @@
+ 	irq_disable_hazard();
+ }
+ 
++#if !(defined(CONFIG_AR9) || defined(CONFIG_VR9))
+ static struct irq_chip mips_cpu_irq_controller = {
+ 	.name		= "MIPS",
+ 	.ack		= mask_mips_irq,
+@@ -56,6 +57,7 @@
+ 	.unmask		= unmask_mips_irq,
+ 	.eoi		= unmask_mips_irq,
+ };
++#endif
+ 
+ /*
+  * Basically the same as above but taking care of all the MT stuff
+Index: linux/arch/mips/kernel/irq_cpu.c
+===================================================================
+--- linux.orig/arch/mips/kernel/irq_cpu.c	2010-11-12 16:12:13.000000000 +0530
++++ linux/arch/mips/kernel/irq_cpu.c	2010-11-12 16:26:35.972726000 +0530
+@@ -36,6 +36,10 @@
+ #include <asm/mipsmtregs.h>
+ #include <asm/system.h>
+ 
++#if defined(CONFIG_AR9) || defined(CONFIG_VR9)
++#include <asm/ifx/irq.h>
++#endif
++
+ static inline void unmask_mips_irq(unsigned int irq)
+ {
+ 	set_c0_status(0x100 << (irq - MIPS_CPU_IRQ_BASE));
+Index: linux/arch/mips/kernel/vpe.c
+===================================================================
+--- linux.orig/arch/mips/kernel/vpe.c	2010-11-12 16:12:13.000000000 +0530
++++ linux/arch/mips/kernel/vpe.c	2010-11-12 16:28:31.506724000 +0530
+@@ -1874,9 +1874,10 @@
+ 
+ 				goto out_reenable;
+ 			}
+-
+ 			v->ntcs = hw_tcs - tclimit;
+ 
++			write_tc_c0_tcbind((read_tc_c0_tcbind() & ~TCBIND_CURVPE) | 1);
++
+ 			/* add the tc to the list of this vpe's tc's. */
+ 			list_add(&t->tc, &v->tc);
+ 

@@ -1,0 +1,276 @@
+Index: linux/drivers/net/pppoe.c
+===================================================================
+--- linux/drivers/net/pppoe.c	(revision 2258)
++++ linux.ltq_patched/drivers/net/pppoe.c	(working copy)
+@@ -1228,6 +1228,111 @@
+ 	unregister_pernet_gen_device(pppoe_net_id, &pppoe_net_ops);
+ }
+ 
++#if (defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE))
++enum{
++	PPPOE_GET_ADDR = 1,
++	PPPOE_GET_SESSION_ID,
++	PPPOE_GET_ETH_ADDR,
++};
++
++int32_t ppa_check_pppoe_addr_valid(struct net_device *dev, struct pppoe_addr *pa)
++{
++	struct pppox_sock *po=NULL;
++	struct pppoe_net *pn;
++    struct net_device *pppoe_netdev;
++	int32_t ret = -EFAULT;
++
++    pn = pppoe_pernet(dev_net(dev));
++    pppoe_netdev = dev_get_by_name(dev_net(dev), pa->dev); 
++	po = get_item(pn, pa->sid, pa->remote, pppoe_netdev->ifindex);
++	if (!po){
++		printk("Cannot find the pppoe addr in hash table \n");
++		goto err;
++	}	
++
++	if (!po->pppoe_dev || 
++		(po->pppoe_pa.remote[0] | po->pppoe_pa.remote[1] | po->pppoe_pa.remote[2] |
++		 po->pppoe_pa.remote[3] | po->pppoe_pa.remote[4] | po->pppoe_pa.remote[5]) == 0){
++		 printk("no pppoe device or remote address is zero\n");
++		goto err;
++	}
++
++	ret = 0;
++
++err:
++	if (po)
++		sock_put(sk_pppox(po));
++
++	return ret;
++}
++
++int32_t ppa_pppoe_get_pppoe_addr(struct net_device *dev, struct pppoe_addr *pa)
++{
++	uint32_t id = (PPPOE_GET_ADDR << PPA_PPP_MASK_LEN) | PPA_PPPOE_ID;
++
++	return ppa_ppp_get_info(dev, id, pa);
++}
++
++__u16 ppa_pppoe_get_pppoe_session_id(struct net_device *dev)
++{
++	uint16_t seid = 0;
++	uint32_t id = (PPPOE_GET_SESSION_ID << PPA_PPP_MASK_LEN) | PPA_PPPOE_ID;
++
++	ppa_ppp_get_info(dev, id, &seid);
++
++	return seid;
++}
++
++__u16 ppa_get_pkt_pppoe_session_id(struct sk_buff *skb)
++{
++	if(!skb)
++		return 0;
++	
++	return ppa_pppoe_get_pppoe_session_id(skb->dev);
++}
++
++int32_t ppa_pppoe_get_eth_netif(struct net_device *dev, char pppoe_eth_ifname[IFNAMSIZ])
++{
++	uint32_t id = (PPPOE_GET_ETH_ADDR << PPA_PPP_MASK_LEN) | PPA_PPPOE_ID;
++
++	return ppa_ppp_get_info(dev, id, pppoe_eth_ifname);
++}
++
++int32_t ppa_get_pppoe_info(struct net_device *dev, void *po, uint32_t pppoe_id, void *value)
++{
++	struct pppoe_addr pa;
++
++	if(!po){
++		printk("No pppoe sock \n");
++		return -1;
++	}
++	
++	pa = pppox_sk(po)->pppoe_pa;
++
++	if(ppa_check_pppoe_addr_valid(dev, &pa) < 0)
++		return -1;
++
++	switch(pppoe_id){
++		case PPPOE_GET_ADDR:
++			*(struct pppoe_addr *)value = pa; break;
++		case PPPOE_GET_SESSION_ID:
++			*(u_int16_t *)value = pa.sid; break;
++		case PPPOE_GET_ETH_ADDR:
++			memcpy(value, pa.dev, sizeof(pa.dev));  break;
++		default:
++			return -1;
++	}
++
++	return 0;
++		
++}
++
++EXPORT_SYMBOL(ppa_pppoe_get_pppoe_addr);
++EXPORT_SYMBOL(ppa_pppoe_get_pppoe_session_id);
++EXPORT_SYMBOL(ppa_get_pkt_pppoe_session_id);
++EXPORT_SYMBOL(ppa_pppoe_get_eth_netif);
++EXPORT_SYMBOL(ppa_get_pppoe_info);
++#endif
+ module_init(pppoe_init);
+ module_exit(pppoe_exit);
+ 
+Index: linux/drivers/net/ppp_generic.c
+===================================================================
+--- linux/drivers/net/ppp_generic.c	(revision 2258)
++++ linux.ltq_patched/drivers/net/ppp_generic.c	(working copy)
+@@ -2896,6 +2896,92 @@
+ 	return idr_find(p, n);
+ }
+ 
++#if (defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE))
++
++#if (defined(CONFIG_PPPOE) || defined(CONFIG_PPPOE_MODULE))
++extern int32_t ppa_get_pppoe_info(struct net_device *dev, void *po, uint32_t pppoe_id, void *value);
++#endif
++#if (defined(CONFIG_PPPOATM) || defined(CONFIG_PPPOATM_MODULE))
++struct pppoatm_vcc;
++extern int32_t ppa_get_pppoa_info(struct net_device *dev, void *pvcc, uint32_t pppoa_id, void *value);
++#endif
++
++/*it's very unlikely we need lock_kernel here to prevent the device being destroyed*/
++int32_t ppa_ppp_get_info(struct net_device *ppp_dev, uint32_t ppp_info_id, void *value)
++{
++	struct ppp *ppp;
++	struct channel *pch;
++	struct list_head *list;
++	int32_t ret = -EFAULT;
++    struct ppp_net *pn;
++	
++	if(unlikely(!ppp_dev || !value)){
++		printk("PPP arg error\n");
++		return ret;
++	}
++
++    ppp = netdev_priv(ppp_dev);
++
++	if (unlikely(!(ppp_dev->flags & IFF_POINTOPOINT) || !ppp)){
++		printk("PPP device in abnormal status!\n");
++		return ret;
++	}
++
++	/*check ppp validity */
++
++	ppp_lock(ppp);
++	if(unlikely(ppp->file.dead || atomic_read(&ppp->file.refcnt) == 0 || !ppp->dev || ppp->n_channels == 0)){
++		printk("PPP device is dead, being destroyed!\n");
++		goto err_unlockppp;
++	}
++
++	/*don't support multipul link*/
++	if(unlikely(ppp->flags & SC_MULTILINK)){
++		printk("Don't support multiple link\n");
++		goto err_unlockppp;
++	}
++
++	list = &ppp->channels;
++	if(unlikely(list_empty(list))){
++		printk("PPP channel list empty!\n");
++		goto err_unlockppp;
++	}
++
++	list = list->next;
++	pch = list_entry(list, struct channel, clist);
++
++	if(unlikely(!pch->chan)){
++		printk("PPP cannot get channel!\n");
++		goto err_unlockppp;
++	}
++
++    pn = ppp_pernet(pch->chan_net);
++
++	spin_lock_bh(&pn->all_channels_lock); /* we only need to guarantee the channel won't be destroyed, release ppp's lock to increase speed */
++	ppp_unlock(ppp);
++	
++	if((ppp_info_id & PPA_PPP_MASK) == PPA_PPPOE_ID){
++#if (defined(CONFIG_PPPOE) || defined(CONFIG_PPPOE_MODULE))
++		ret = ppa_get_pppoe_info(ppp_dev, pch->chan->private, ppp_info_id >>PPA_PPP_MASK_LEN, value);
++#endif
++	}else{
++#if (defined(CONFIG_PPPOATM) || defined(CONFIG_PPPOATM_MODULE))
++		ret = ppa_get_pppoa_info(ppp_dev, pch->chan->private, ppp_info_id >>PPA_PPP_MASK_LEN, value);
++#endif
++	}
++	spin_unlock_bh(&pn->all_channels_lock);
++
++	return ret;
++
++
++err_unlockppp:
++	ppp_unlock(ppp);
++
++	return ret;
++}
++EXPORT_SYMBOL(ppa_ppp_get_info);
++
++#endif
+ /* Module/initialization stuff */
+ 
+ module_init(ppp_init);
+Index: linux/include/linux/if_ppp.h
+===================================================================
+--- linux/include/linux/if_ppp.h	(revision 2256)
++++ linux.ltq_patched/include/linux/if_ppp.h	(working copy)
+@@ -170,4 +170,11 @@
+ #define ifr_mtu	ifr_ifru.ifru_metric
+ #endif
+ 
++#if (defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE))
++#define PPA_PPP_MASK_LEN	2
++#define PPA_PPP_MASK		3
++#define PPA_PPPOE_ID 		0x00000001
++#define PPA_PPPOA_ID		0x00000002
++#endif
++
+ #endif /* _IF_PPP_H_ */
+Index: linux/include/linux/ppp_channel.h
+===================================================================
+--- linux/include/linux/ppp_channel.h	(revision 2256)
++++ linux.ltq_patched/include/linux/ppp_channel.h	(working copy)
+@@ -72,6 +72,10 @@
+ /* Get the unit number associated with a channel, or -1 if none */
+ extern int ppp_unit_number(struct ppp_channel *);
+ 
++#if (defined(CONFIG_IFX_PPA_API) || defined(CONFIG_IFX_PPA_API_MODULE))
++extern int32_t ppa_ppp_get_info(struct net_device *ppp_dev, uint32_t ppp_info_id, void *value);
++#endif
++
+ /*
+  * SMP locking notes:
+  * The channel code must ensure that when it calls ppp_unregister_channel,
+diff -Naur linux/arch/mips/mm/cache.c linux.ltq_patched/arch/mips/mm/cache.c
+--- linux/arch/mips/mm/cache.c	2010-11-30 02:52:09.765624736 +0530
++++ linux.ltq_patched/arch/mips/mm/cache.c	2010-11-30 03:02:42.905624837 +0530
+@@ -52,6 +52,8 @@
+ void (*_dma_cache_inv)(unsigned long start, unsigned long size);
+ 
+ EXPORT_SYMBOL(_dma_cache_wback_inv);
++EXPORT_SYMBOL(_dma_cache_wback);
++EXPORT_SYMBOL(_dma_cache_inv);
+ 
+ #endif /* CONFIG_DMA_NONCOHERENT */
+ 
+diff -Naur linux/fs/proc/root.c linux.ltq_patched/fs/proc/root.c
+--- linux/fs/proc/root.c	2010-11-30 02:51:47.354374809 +0530
++++ linux.ltq_patched/fs/proc/root.c	2010-11-30 02:53:08.294374681 +0530
+@@ -221,6 +221,7 @@
+ 	mntput(ns->proc_mnt);
+ }
+ 
++EXPORT_SYMBOL(proc_root);
+ EXPORT_SYMBOL(proc_symlink);
+ EXPORT_SYMBOL(proc_mkdir);
+ EXPORT_SYMBOL(create_proc_entry);
+diff -Naur linux/kernel/time/timekeeping.c linux.ltq_patched/kernel/time/timekeeping.c
+--- linux/kernel/time/timekeeping.c	2010-11-30 03:06:06.764374722 +0530
++++ linux.ltq_patched/kernel/time/timekeeping.c	2010-11-30 03:06:35.934374551 +0530
+@@ -899,3 +899,5 @@
+ 				now.tv_nsec + mono.tv_nsec);
+ 	return now;
+ }
++
++EXPORT_SYMBOL(xtime);

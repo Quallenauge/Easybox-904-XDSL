@@ -1,0 +1,459 @@
+--- linux/net/atm/br2684.c	2010-11-20 16:40:00.494374634 +0530
++++ linux.ltq_patched/net/atm/br2684.c	2010-11-20 16:48:05.536633412 +0530
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/version.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+@@ -23,6 +24,9 @@
+ #include <linux/seq_file.h>
+ 
+ #include <linux/atmbr2684.h>
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++#include <linux/if_vlan.h>
++#endif
+ 
+ #include "common.h"
+ 
+@@ -78,6 +82,10 @@
+ 	unsigned copies_needed, copies_failed;
+ };
+ 
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++extern struct wan_vlan_struct;
++uint32_t g_br2684_tag_vlan_enable;
++#endif
+ struct br2684_dev {
+ 	struct net_device *net_dev;
+ 	struct list_head br2684_devs;
+@@ -85,6 +93,9 @@
+ 	struct list_head brvccs;	/* one device <=> one vcc (before xmas) */
+ 	int mac_was_set;
+ 	enum br2684_payload payload;
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++	struct wan_vlan_struct vlan;
++#endif
+ };
+ 
+ /*
+@@ -118,6 +129,171 @@
+ 	return list_entry(le, struct br2684_vcc, brvccs);
+ }
+ 
++static inline struct br2684_vcc *pick_outgoing_vcc(const struct sk_buff *skb,
++						   const struct br2684_dev *brdev)
++{
++	return list_empty(&brdev->brvccs) ? NULL : list_entry_brvcc(brdev->brvccs.next);	/* 1 vcc/dev right now */
++}
++
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++static inline void dump_skb(u32 len, char * data)
++{
++	int i;
++#if 0
++	printk("addr = %p\n",data);
++	for(i=0;i<len;i++){
++		 printk("0x%x ",(u8)(data[i]));
++		 if (i % 16 == 15)
++			  printk("\n");
++	}
++	printk("\n");
++#endif
++}
++static int br2684_insert_vlan_tag(struct sk_buff *skb, struct br2684_dev *brdev)
++{
++	struct br2684_vcc *brvcc = pick_outgoing_vcc(skb, brdev);
++	struct vlan_ethhdr *vehdr=NULL;
++
++	//printk("brdev = (%p) payload=(%d) p_bridged=(%d)\n", brdev, brdev->payload, p_bridged);
++	/* cannot be null, as already checked */
++	//if ( brvcc->payload != p_bridged ) {
++	if ( brdev->payload != p_bridged ) {
++		 printk("brvcc is not bridged!Cannot insert VLAN header\n");
++		 return -1;
++	}
++	if ( g_br2684_tag_vlan_enable == 0) {
++		 return -1;
++	}
++	//printk("g_br2684_tag_vlan_enabled!\nProceed to add vlan tag\n");
++	//dump_skb(32, skb->data);
++
++	//if (skb_headroom(skb) < VLAN_HLEN ) {
++	//      struct sk_buff *skb2 = skb_realloc_headroom(skb, VLAN_HLEN);
++	//
++	//      printk("headroom [%d] less than VLAN_HLEN [%d] skb2 [%p]\n",skb_headroom(skb), VLAN_HLEN, skb2);
++	//      brvcc->copies_needed++;
++	//      dev_kfree_skb(skb);
++	//      printk("skb is freed\n");
++	//      if (skb2 == NULL) {
++	//		printk("skb is NULL returning\n");
++	//		brvcc->copies_failed++;
++	//		return 0;
++	//      }
++	//      skb = skb2;
++	//      skb2=NULL;
++	//}
++	vehdr = (struct vlan_ethhdr *)skb_push(skb, VLAN_HLEN);
++    //printk("vehdr = %p\n",vehdr);
++	memmove(skb->data, skb->data+VLAN_HLEN, 2*ETH_ALEN);
++	vehdr->h_vlan_proto = __constant_htons(ETH_P_8021Q);
++	// vehdr->h_vlan_TCI = brdev->vlan.vlan_vci;
++	if(skb->mark==0)
++	{
++		vehdr->h_vlan_TCI = brdev->vlan.vlan_vci;
++	}
++	else
++	{
++		vehdr->h_vlan_TCI = (((skb->mark-1) << 13) |( brdev->vlan.vlan_vci & 0x1FFF ));
++	}
++
++	//printk("\nh_vlan_proto=[%d]   h_vlan_TCI=[%d]\n", vehdr->h_vlan_proto, vehdr->h_vlan_TCI);
++	//printk("VLAN header INSERTED in this skb\n");
++	//dump_skb(32, skb->data);
++
++	return 0;
++}
++
++int br2684_remove_vlan_tag( struct sk_buff *skb, struct br2684_dev *brdev, int f_untag)
++{
++	struct br2684_vcc *brvcc = pick_outgoing_vcc(skb, brdev);
++	struct vlan_ethhdr *vehdr=NULL;
++
++	//printk("brdev = (%p) payload=(%d) p_bridged=(%d)\n", brdev, brdev->payload, p_bridged);
++	/* cannot be null, as already checked */
++	//if ( brvcc->payload != p_bridged ) {
++	if ( brdev->payload != p_bridged ) {
++		 printk("brvcc is not bridged!Cannot insert VLAN header\n");
++		 return -1;
++	}
++	if ( g_br2684_tag_vlan_enable == 0) {
++		 return -1;
++	}
++
++	/* Check if pkt has a VLAN tag. */
++	vehdr = (struct vlan_ethhdr *) (skb->data);
++
++    //printk("vehdr = %p\n",vehdr);
++    //dump_skb(32, skb->data);
++    //printk("(UNTAG):vci [%d] : dev vci [%d] f_untag [%d]\n", vehdr->h_vlan_TCI, brdev->vlan.vlan_vci, f_untag);
++	if ( f_untag || vehdr->h_vlan_TCI == (brdev->vlan.vlan_vci & 0x00FF)) {
++			  char *ptr1 = (char *) &(vehdr->h_vlan_encapsulated_proto);
++			  char *ptr2 = (char *) &(vehdr->h_vlan_proto);
++			  int i=0;
++			  int rem_len=2*ETH_ALEN;
++
++			  skb->protocol = vehdr->h_vlan_encapsulated_proto;
++			  for (i=0; i<rem_len; i++)
++			  {
++					    *(--ptr1) = *(--ptr2);
++			  }
++			  skb_pull(skb, VLAN_HLEN);
++			  skb->protocol = ((u16 *) skb->data)[-1];
++			  //printk("VLAN header REMOVED in this skb\n");
++			  //dump_skb(32, skb->data);
++	}
++	return 0;
++}
++int br2684_remove_vlan_tag_rcv( struct sk_buff *skb, struct br2684_dev *brdev, int f_untag)
++{
++	struct br2684_vcc *brvcc = pick_outgoing_vcc(skb, brdev);
++	struct vlan_ethhdr *vehdr=NULL;
++
++	//printk("\nEntering : (%s)\n", __FUNCTION__);
++
++	//printk("brdev = (%p) payload=(%d) p_bridged=(%d)\n", brdev, brdev->payload, p_bridged);
++	/* cannot be null, as already checked */
++	//if ( brvcc->payload != p_bridged ) {
++	if ( brdev->payload != p_bridged ) {
++		 printk("brvcc is not bridged!Cannot insert VLAN header\n");
++		 return -1;
++	}
++	if ( g_br2684_tag_vlan_enable == 0) {
++		 return -1;
++	}
++
++	/* Check if pkt has a VLAN tag. */
++	vehdr = (struct vlan_ethhdr *) (eth_hdr(skb)); //in RCV path, skb->data is pointing to ntwk hdr.
++
++    //dump_skb(32, skb->data);
++    //printk("(REMOVE):vci [%d] : dev vci [%d] f_untag [%d]\n", vehdr->h_vlan_TCI, brdev->vlan.vlan_vci, f_untag);
++	if ( f_untag || vehdr->h_vlan_TCI == (brdev->vlan.vlan_vci & 0x0FFF)) {
++			  char *ptr1 = (char *) &(vehdr->h_vlan_encapsulated_proto);
++			  char *ptr2 = (char *) &(vehdr->h_vlan_proto);
++			  int i=0;
++			  int rem_len=2*ETH_ALEN;
++
++			  skb->data = eth_hdr(skb);
++
++			  for (i=0; i<rem_len; i++)
++			  {
++					    *(--ptr1) = *(--ptr2);
++					    *(ptr2) = 0x00;
++			  }
++			  skb_pull(skb, VLAN_HLEN);
++			  //printk("VLAN header REMOVED in this skb\n");
++			  //dump_skb(32, skb->data);
++		#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,32)
++			  skb->mac.raw +=VLAN_HLEN;
++		#else
++			  skb->mac_header +=VLAN_HLEN;
++		#endif
++			  skb->data += ETH_HLEN; //again make it point to ntwk hdr
++			  skb->protocol = ((u16 *) skb->data)[-1];
++	}
++	return 0;
++}
++#endif
++
+ /* Caller should hold read_lock(&devs_lock) */
+ static struct net_device *br2684_find_dev(const struct br2684_if_spec *s)
+ {
+@@ -168,7 +344,11 @@
+ {
+ 	struct br2684_dev *brdev = BRPRIV(dev);
+ 	struct atm_vcc *atmvcc;
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++	int minheadroom = (brvcc->encaps == e_llc) ? 14 : 6;
++#else
+ 	int minheadroom = (brvcc->encaps == e_llc) ? 10 : 2;
++#endif // CONFIG_WAN_VLAN_SUPPORT
+ 
+ 	if (skb_headroom(skb) < minheadroom) {
+ 		struct sk_buff *skb2 = skb_realloc_headroom(skb, minheadroom);
+@@ -180,7 +360,16 @@
+ 		}
+ 		skb = skb2;
+ 	}
+-
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++	if(g_br2684_tag_vlan_enable) {
++		if ( brdev->vlan.untag_vlan) {
++			br2684_remove_vlan_tag(skb, brdev, 1);
++		}
++		if ( brdev->vlan.tag_vlan_enable) {
++			br2684_insert_vlan_tag(skb, brdev);
++		}
++	}
++#endif
+ 	if (brvcc->encaps == e_llc) {
+ 		if (brdev->payload == p_bridged) {
+ 			skb_push(skb, sizeof(llc_oui_pid_pad));
+@@ -232,12 +421,6 @@
+ 	return 1;
+ }
+ 
+-static inline struct br2684_vcc *pick_outgoing_vcc(const struct sk_buff *skb,
+-						   const struct br2684_dev *brdev)
+-{
+-	return list_empty(&brdev->brvccs) ? NULL : list_entry_brvcc(brdev->brvccs.next);	/* 1 vcc/dev right now */
+-}
+-
+ static netdev_tx_t br2684_start_xmit(struct sk_buff *skb,
+ 				     struct net_device *dev)
+ {
+@@ -283,6 +466,90 @@
+ 	return err;
+ }
+ 
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++static int br2684_setvlansettings(struct atm_vcc *atmvcc, unsigned long arg)
++{
++	struct br2684_vcc *brvcc=NULL;
++	struct br2684_filter_set fs;
++	struct wan_vlan_struct tmpvlan;
++	struct br2684_dev *brdev;
++	struct net_device *net_dev;
++	struct br2684_dev *brdev1;
++
++	if (copy_from_user(&tmpvlan, (void *)arg, sizeof(struct wan_vlan_struct))) {
++		 printk("Error in copy_from_user for vlan struct\n");
++		 return -EFAULT;
++	}
++	//printk("if [%d] untag [%d] tag [%d] vlanvci [%x]\n", tmpvlan.vlan_if_num, tmpvlan.untag_vlan, tmpvlan.tag_vlan_enable, tmpvlan.vlan_vci);
++	fs.ifspec.spec.devnum = tmpvlan.vlan_if_num+1;
++	//fs.ifspec.method = BR2684_FIND_BYNUM;
++	/* Use BR2684_FIND_BYIFNAME with the interface name copied from user space */
++    //printk("tnpvlan name = %s\n",tmpvlan.vlan_if_name);
++	sprintf(fs.ifspec.spec.ifname, "%s", tmpvlan.vlan_if_name);
++	fs.ifspec.spec.ifname[IFNAMSIZ-1] = '\0';
++	fs.ifspec.method = BR2684_FIND_BYIFNAME;
++	//printk("fs.ifspec.spec.ifname [%s]\n", fs.ifspec.spec.ifname);
++
++	read_lock(&devs_lock);
++#if 0
++	brdev = br2684_find_dev(&fs.ifspec);
++#else
++	net_dev = br2684_find_dev(&fs.ifspec);
++	if (net_dev == NULL) {
++		 //printk(KERN_ERR
++		 //	"br2684: tried to attach to non-existant device\n");
++		 brdev = NULL;
++	}
++	 else
++	{
++		 brdev = BRPRIV(net_dev);
++	}
++#endif
++#if 0
++	if (brdev==NULL)
++		 printk("brdev NULL!\n");
++#endif
++	if (brdev == NULL || list_empty(&brdev->brvccs) ||
++	    brdev->brvccs.next != brdev->brvccs.prev) {  /* >1 VCC */
++		 if (brdev && list_empty(&brdev->brvccs))
++			  printk("list empty brdev->brvccs\n");
++		 else if ( brdev && brdev->brvccs.next != brdev->brvccs.prev)
++			  printk("more than 1 vcc :( \n");
++		 brvcc = NULL;
++	}
++	else {
++		 //printk("getting brvcc !!\n");
++		 brvcc = list_entry_brvcc(brdev->brvccs.next);
++	}
++	read_unlock(&devs_lock);
++
++	if (brvcc == NULL) {
++#if 0
++		 printk("WAN-VLAN configuration : Cannot find brvcc for this atmvcc\n");
++#endif
++		 return -ESRCH;
++	}
++	//brvcc->brdev->vlan = kmalloc(sizeof(struct wan_vlan_struct), GFP_KERNEL);
++	brdev->vlan.vlan_if_num = tmpvlan.vlan_if_num;
++	brdev->vlan.tag_vlan_enable = tmpvlan.tag_vlan_enable;
++	brdev->vlan.untag_vlan = tmpvlan.untag_vlan;
++	brdev->vlan.vlan_vci = tmpvlan.vlan_vci;
++
++	/* Mark br2684 VLAN settings for easy check */
++	if (tmpvlan.tag_vlan_enable /*&& tmpvlan.vlan_vci != 0*/) {
++		/* Could be priority tag with vid = 0 as well */
++		brdev->net_dev->priv_flags |= IFF_BR2684_VLAN;
++	} else {
++		brdev->net_dev->priv_flags &= ~IFF_BR2684_VLAN;
++	}
++
++	pr_debug("For %s vlan is [%d %d %d %u]\n", brdev->net_dev->name, brdev->vlan.vlan_if_num,
++		brdev->vlan.tag_vlan_enable, brdev->vlan.untag_vlan, brdev->vlan.vlan_vci);
++
++	return 0;
++}
++#endif
++
+ #ifdef CONFIG_ATM_BR2684_IPFILTER
+ /* this IOCTL is experimental. */
+ static int br2684_setfilt(struct atm_vcc *atmvcc, void __user * arg)
+@@ -442,6 +709,11 @@
+ 	net_dev->stats.rx_packets++;
+ 	net_dev->stats.rx_bytes += skb->len;
+ 	memset(ATM_SKB(skb), 0, sizeof(struct atm_skb_data));
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++	if(g_br2684_tag_vlan_enable) {
++		br2684_remove_vlan_tag_rcv(skb, brdev, 0);
++	}
++#endif
+ 	netif_rx(skb);
+ 	return;
+ 
+@@ -677,6 +949,32 @@
+ 
+ 		return err;
+ #endif /* CONFIG_ATM_BR2684_IPFILTER */
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++	case ATM_BR2684_VLAN_CONFIG:
++	{
++		int opt=0;
++		//MOD_INC_USE_COUNT;
++		__module_get(THIS_MODULE);
++		err = get_user(opt, (int *) arg);
++		if (err)
++			return -EFAULT;
++		if(opt==1) {
++			g_br2684_tag_vlan_enable = 1;
++		} else {
++			g_br2684_tag_vlan_enable = 0;
++		}
++		//MOD_DEC_USE_COUNT;
++		module_put(THIS_MODULE);
++		return err;
++	}
++	case ATM_BR2684_VLAN_VCC_CONFIG:
++		//MOD_INC_USE_COUNT;
++		__module_get(THIS_MODULE);
++		err = br2684_setvlansettings(atmvcc, arg);
++		//MOD_DEC_USE_COUNT;
++		module_put(THIS_MODULE);
++		return err;
++#endif
+ 	}
+ 	return -ENOIOCTLCMD;
+ }
+@@ -866,6 +1164,34 @@
+     return 0;
+ }
+ #endif
++
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++int br2684_vlan_dev_get_vid(struct net_device *dev, uint16_t *vid)
++{
++	int ret=0;
++	struct br2684_dev *brdev;
++
++	if (!dev || !vid)
++		return -EINVAL;
++
++	dev_hold(dev);
++	brdev = BRPRIV(dev);
++
++	if (brdev->vlan.tag_vlan_enable) {
++		*vid = brdev->vlan.vlan_vci;
++	} else {
++		ret=-EINVAL;
++	}
++
++	pr_debug("(%s) Returning VLAN Id [%d]; VLAN enable [%d] for [%s]\n",
++		__func__, *vid, brdev->vlan.tag_vlan_enable, dev->name);
++
++	dev_put(dev);
++	return ret;
++}
++EXPORT_SYMBOL(br2684_vlan_dev_get_vid);
++#endif
++
+ module_init(br2684_init);
+ module_exit(br2684_exit);
+ 
+--- linux/include/linux/atmdev.h	2010-04-02 04:29:14.000000000 +0530
++++ linux.ltq_patched/include/linux/atmdev.h	2010-11-20 15:29:32.696522976 +0530
+@@ -107,6 +107,18 @@
+ #define ATM_DROPPARTY 	_IOW('a', ATMIOC_SPECIAL+5,int)
+ 					/* drop party from p2mp call */
+ 
++#ifdef CONFIG_WAN_VLAN_SUPPORT
++struct wan_vlan_struct {
++	int vlan_if_num;
++	char vlan_if_name[16]; /* VLAN Enabled WAN-IF name */
++	int8_t tag_vlan_enable;
++	int8_t untag_vlan;
++	uint16_t vlan_vci;
++};
++#define ATM_BR2684_VLAN_CONFIG _IOW('a', ATMIOC_SPECIAL+5,int)
++#define ATM_BR2684_VLAN_VCC_CONFIG _IOW('a', ATMIOC_SPECIAL+6,struct wan_vlan_struct)
++#endif
++
+ /*
+  * These are backend handkers that can be set via the ATM_SETBACKEND call
+  * above.  In the future we may support dynamic loading of these - for now,
+--- linux/include/linux/if.h	2010-04-02 04:29:14.000000000 +0530
++++ linux.ltq_patched/include/linux/if.h	2010-11-20 15:36:33.651556311 +0530
+@@ -64,6 +64,8 @@
+ #define IFF_MASTER_ALB	0x10		/* bonding master, balance-alb.	*/
+ #define IFF_BONDING	0x20		/* bonding master or slave	*/
+ #define IFF_SLAVE_NEEDARP 0x40		/* need ARPs for validation	*/
++#define IFF_BR2684	0x80		/* nas RFC2684 interface	*/
++#define IFF_BR2684_VLAN	0x100		/* nas RFC2684 VLAN i/f		*/
+ #define IFF_ISATAP	0x80		/* ISATAP interface (RFC4214)	*/
+ #define IFF_MASTER_ARPMON 0x100		/* bonding master, ARP mon in use */
+ #define IFF_WAN_HDLC	0x200		/* WAN HDLC device		*/

@@ -1,0 +1,27 @@
+--- linux.orig/include/linux/atm.h	2010-04-02 04:29:14.000000000 +0530
++++ linux.new/include/linux/atm.h	2010-11-09 00:28:16.828877133 +0530
+@@ -130,6 +130,12 @@
+ #define ATM_ABR		4
+ #define ATM_ANYCLASS	5		/* compatible with everything */
+ 
++#define ATM_VBR_NRT     ATM_VBR
++#define ATM_VBR_RT      6
++#define ATM_UBR_PLUS    7
++#define ATM_GFR         8
++
++
+ #define ATM_MAX_PCR	-1		/* maximum available PCR */
+ 
+ struct atm_trafprm {
+@@ -139,6 +145,11 @@
+ 	int		min_pcr;	/* minimum PCR in cells per second */
+ 	int		max_cdv;	/* maximum CDV in microseconds */
+ 	int		max_sdu;	/* maximum SDU in bytes */
++        /* extra params for VBR(NRT-VBR) and RT-VBR */
++        int             scr;            /* sustained rate in cells per second */
++        int             mbs;            /* maximum burst size (MBS) in cells */
++        int             cdv;            /* Cell delay varition */
++
+         /* extra params for ABR */
+         unsigned int 	icr;         	/* Initial Cell Rate (24-bit) */
+         unsigned int	tbe;		/* Transient Buffer Exposure (24-bit) */ 

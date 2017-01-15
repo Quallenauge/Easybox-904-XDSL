@@ -1,0 +1,79 @@
+Index: linux-2.6.32.32/net/ipv4/igmp.c
+===================================================================
+--- linux-2.6.32.32.orig/net/ipv4/igmp.c
++++ linux-2.6.32.32/net/ipv4/igmp.c
+@@ -113,7 +113,11 @@
+ 
+ #define IGMP_V1_Router_Present_Timeout		(400*HZ)
+ #define IGMP_V2_Router_Present_Timeout		(400*HZ)
++#if 0 
+ #define IGMP_Unsolicited_Report_Interval	(10*HZ)
++#else
++#define IGMP_Unsolicited_Report_Interval	(2*HZ)
++#endif
+ #define IGMP_Query_Response_Interval		(10*HZ)
+ #define IGMP_Unsolicited_Report_Count		2
+ 
+@@ -148,6 +152,18 @@ static void ip_mc_clear_src(struct ip_mc
+ static int ip_mc_add_src(struct in_device *in_dev, __be32 *pmca, int sfmode,
+ 			 int sfcount, __be32 *psfsrc, int delta);
+ 
++#ifdef CONFIG_LTQ_NETFILTER_PROCFS
++extern int sysctl_netfilter_output_enable; 
++#endif
++
++#ifdef CONFIG_LTQ_NETFILTER_PROCFS
++extern int sysctl_netfilter_output_enable; 
++#endif
++
++#ifdef CONFIG_LTQ_NETFILTER_PROCFS
++extern int sysctl_netfilter_output_enable; 
++#endif
++
+ static void ip_ma_put(struct ip_mc_list *im)
+ {
+ 	if (atomic_dec_and_test(&im->refcnt)) {
+@@ -1145,8 +1161,13 @@ static void igmp_group_dropped(struct ip
+ 		}
+ 		/* IGMPv3 */
+ 		igmpv3_add_delrec(in_dev, im);
+-
++#if 0 
+ 		igmp_ifc_event(in_dev);
++#endif
++		in_dev->mr_ifc_count = in_dev->mr_qrv ? in_dev->mr_qrv :
++			IGMP_Unsolicited_Report_Count;
++		in_dev_hold(in_dev);
++		igmp_ifc_timer_expire(in_dev);
+ 	}
+ done:
+ #endif
+@@ -1169,16 +1190,28 @@ static void igmp_group_added(struct ip_m
+ 	if (in_dev->dead)
+ 		return;
+ 	if (IGMP_V1_SEEN(in_dev) || IGMP_V2_SEEN(in_dev)) {
++#if 0 
+ 		spin_lock_bh(&im->lock);
+ 		igmp_start_timer(im, IGMP_Initial_Report_Delay);
+ 		spin_unlock_bh(&im->lock);
++#else
++		atomic_inc(&im->refcnt);
++		igmp_timer_expire(im);
++#endif
+ 		return;
+ 	}
+ 	/* else, v3 */
+ 
+ 	im->crcount = in_dev->mr_qrv ? in_dev->mr_qrv :
+ 		IGMP_Unsolicited_Report_Count;
++#if 0 
+ 	igmp_ifc_event(in_dev);
++#else
++	in_dev->mr_ifc_count = in_dev->mr_qrv ? in_dev->mr_qrv :
++		IGMP_Unsolicited_Report_Count;
++	in_dev_hold(in_dev);
++	igmp_ifc_timer_expire(in_dev);
++#endif
+ #endif
+ }
+ 

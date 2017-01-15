@@ -1,0 +1,38 @@
+--- linux/drivers/net/ppp_generic.c	2011-02-14 22:29:36.948663713 +0530
++++ linux_mod/drivers/net/ppp_generic.c	2011-02-15 10:25:29.008664078 +0530
+@@ -1215,6 +1215,17 @@
+ 		/* peek at outbound CCP frames */
+ 		ppp_ccp_peek(ppp, skb, 0);
+ 		break;
++#ifdef CONFIG_IFX_IPQOS
++//LCP prioritization hack	
++	case PPP_LCP:
++	case PPP_IPCP:
++	case PPP_PAP:
++	case PPP_CHAP:
++		/* MARK LCP frames with highest priority */
++		/* hack for QOS: if QOS is enabled, give highest priority to LCP control packets */
++		skb->priority = 7;
++		break;
++#endif
+ 	}
+ 
+ 	/* try to do packet compression */
+@@ -1732,6 +1743,17 @@
+ 	case PPP_CCP:
+ 		ppp_ccp_peek(ppp, skb, 1);
+ 		break;
++#ifdef CONFIG_IFX_IPQOS
++// LCP prioritization hack	
++	case PPP_LCP:
++	case PPP_IPCP:
++	case PPP_PAP:
++	case PPP_CHAP:
++		/* MARK LCP frames with highest priority */
++		/* hack for QOS: if QOS is enabled, give highest priority to LCP control packets */
++		skb->priority = 7;
++		break;
++#endif
+ 	}
+ 
+ 	++ppp->dev->stats.rx_packets;

@@ -1,0 +1,126 @@
+Index: linux/arch/mips/pci/pci.c
+===================================================================
+--- linux.orig/arch/mips/pci/pci.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/arch/mips/pci/pci.c	2011-01-24 12:51:09.535892089 +0530
+@@ -166,6 +166,31 @@
+ 
+ subsys_initcall(pcibios_init);
+ 
++int pcibios_host_nr(void)
++{
++    int count;
++    struct pci_controller *hose;
++    for (count = 0, hose = hose_head; hose; hose = hose->next, count++) {
++        ;
++    }
++    return count;
++}
++EXPORT_SYMBOL(pcibios_host_nr);
++
++int pcibios_1st_host_bus_nr(void)
++{
++    int bus_nr = 0;
++    struct pci_controller *hose = hose_head;
++
++    if (hose != NULL) {
++        if (hose->bus != NULL) {
++            bus_nr = hose->bus->subordinate + 1;
++        }
++    }
++    return bus_nr;
++}
++EXPORT_SYMBOL(pcibios_1st_host_bus_nr);
++
+ static int pcibios_enable_resources(struct pci_dev *dev, int mask)
+ {
+ 	u16 cmd, old_cmd;
+Index: linux/drivers/net/e1000e/param.c
+===================================================================
+--- linux.orig/drivers/net/e1000e/param.c	2010-04-02 04:29:14.000000000 +0530
++++ linux/drivers/net/e1000e/param.c	2011-01-23 20:02:18.724643237 +0530
+@@ -384,8 +384,8 @@
+ 		struct e1000_option opt = {
+ 			.type = range_option,
+ 			.name = "Interrupt Mode",
+-			.err  = "defaulting to 2 (MSI-X)",
+-			.def  = E1000E_INT_MODE_MSIX,
++			.err  = "defaulting to 1 (MSI)",
++			.def  = E1000E_INT_MODE_MSI,
+ 			.arg  = { .r = { .min = MIN_INTMODE,
+ 					 .max = MAX_INTMODE } }
+ 		};
+Index: linux/drivers/pci/pcie/Kconfig
+===================================================================
+--- linux.orig/drivers/pci/pcie/Kconfig	2011-01-23 20:02:18.694643966 +0530
++++ linux/drivers/pci/pcie/Kconfig	2011-01-23 20:02:18.724643237 +0530
+@@ -3,7 +3,7 @@
+ #
+ config PCIEPORTBUS
+ 	bool "PCI Express support"
+-	depends on PCI
++	depends on PCI && VR9
+ 	help
+ 	  This automatically enables PCI Express Port Bus support. Users can
+ 	  choose Native Hot-Plug support, Advanced Error Reporting support,
+Index: linux/drivers/pci/pcie/aer/Kconfig
+===================================================================
+--- linux.orig/drivers/pci/pcie/aer/Kconfig	2010-04-02 04:29:14.000000000 +0530
++++ linux/drivers/pci/pcie/aer/Kconfig	2011-01-23 20:02:18.724643237 +0530
+@@ -5,7 +5,7 @@
+ config PCIEAER
+ 	boolean "Root Port Advanced Error Reporting support"
+ 	depends on PCIEPORTBUS
+-	default y
++	default n
+ 	help
+ 	  This enables PCI Express Root Port Advanced Error Reporting
+ 	  (AER) driver support. Error reporting messages sent to Root
+Index: linux/include/linux/pci.h
+===================================================================
+--- linux.orig/include/linux/pci.h	2010-04-02 04:29:14.000000000 +0530
++++ linux/include/linux/pci.h	2011-01-23 20:02:18.724643237 +0530
+@@ -816,6 +816,8 @@
+ int pci_cfg_space_size_ext(struct pci_dev *dev);
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
++int pcibios_host_nr(void);
++int pcibios_1st_host_bus_nr(void);
+ 
+ int pci_set_vga_state(struct pci_dev *pdev, bool decode,
+ 		      unsigned int command_bits, bool change_bridge);
+Index: linux/include/linux/pci_ids.h
+===================================================================
+--- linux.orig/include/linux/pci_ids.h	2010-04-02 04:29:14.000000000 +0530
++++ linux/include/linux/pci_ids.h	2011-01-23 20:02:18.724643237 +0530
+@@ -1001,6 +1001,10 @@
+ #define PCI_DEVICE_ID_SGI_LITHIUM	0x1002
+ #define PCI_DEVICE_ID_SGI_IOC4		0x100a
+ 
++#define PCI_VENDOR_ID_INFINEON		0x15D1
++#define PCI_DEVICE_ID_INFINEON_DANUBE	0x000F
++#define PCI_DEVICE_ID_INFINEON_PCIE	0x0011
++
+ #define PCI_VENDOR_ID_WINBOND		0x10ad
+ #define PCI_DEVICE_ID_WINBOND_82C105	0x0105
+ #define PCI_DEVICE_ID_WINBOND_83C553	0x0565
+Index: linux/arch/mips/Kconfig
+===================================================================
+--- linux.orig/arch/mips/Kconfig	2011-01-24 12:46:50.000000000 +0530
++++ linux/arch/mips/Kconfig	2011-01-24 12:49:52.764642678 +0530
+@@ -2066,6 +2066,7 @@
+ 	bool "Support for PCI controller"
+ 	depends on HW_HAS_PCI
+ 	select PCI_DOMAINS
++	select ARCH_SUPPORTS_MSI if (VR9 && IFX_PCIE)
+ 	help
+ 	  Find out whether you have a PCI motherboard. PCI is the name of a
+ 	  bus system, i.e. the way the CPU talks to the other stuff inside
+@@ -2075,6 +2076,8 @@
+ config PCI_DOMAINS
+ 	bool
+ 
++source "drivers/pci/pcie/Kconfig"
++
+ source "drivers/pci/Kconfig"
+ 
+ #

@@ -1,0 +1,6 @@
+config TARGET_ROOTFS_JFFS2_BLOCK_SIZE
+	string
+	prompt "jffs2 block size"
+	depends on TARGET_ROOTFS_JFFS2
+	help
+	  jffs2 block size for target images
