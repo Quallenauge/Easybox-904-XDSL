@@ -1,0 +1,13 @@
+diff --git a/log/syslog.c b/log/syslog.c
+index e8b6774..a4a5607 100644
+--- a/log/syslog.c
++++ b/log/syslog.c
+@@ -11,6 +11,8 @@
+  * GNU General Public License for more details.
+  */
+ 
++typedef unsigned short  sa_family_t;
++
+ #include <linux/un.h>
+ 
+ #include <sys/types.h>
