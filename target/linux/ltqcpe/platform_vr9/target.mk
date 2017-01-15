@@ -7,6 +7,7 @@
 
 BOARDNAME:=VR9 Family
 LINUX_VERSION:=2.6.32.32
+KERNEL_PATCHVER:=2.6.32
 
 define Target/Description
 	Build images for Lantiq VR9 CPE device

@@ -15,6 +15,7 @@ SUBTARGETS=platform_vr9
 ###########
 
 LINUX_VERSION:=2.6.32.32
+KERNEL_PATCHVER:=2.6.32
 
 ### ctc ###
 #CFLAGS=-Os -pipe -mips32r2 -mtune=mips32r2 -funit-at-a-time
