@@ -63,7 +63,20 @@ else
 	if [ -d $(LINUX_DIR) ]; then \
 		rmdir $(LINUX_DIR); \
 	fi
-	ln -s $(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR)
+       ###### modified by ctc ######
+#       ln -s $(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR)
+       if [ -d $(subst @PWD,$(shell pwd)/..,$(CONFIG_EXTERNAL_KERNEL_TREE)) ]; then \
+               ln -s $(subst @PWD,$(shell pwd)/..,$(CONFIG_EXTERNAL_KERNEL_TREE)) $(LINUX_DIR); \
+       elif [ -d $(subst @PWD,$(shell pwd)/../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) ]; then \
+               ln -s $(subst @PWD,$(shell pwd)/../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) $(LINUX_DIR); \
+       elif [ -d $(subst @PWD,$(shell pwd)/../../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) ]; then \
+               ln -s $(subst @PWD,$(shell pwd)/../../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) $(LINUX_DIR); \
+       elif [ -d $(subst @PWD,$(shell pwd)/../../../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) ]; then \
+               ln -s $(subst @PWD,$(shell pwd)/../../../..,$(CONFIG_EXTERNAL_KERNEL_TREE)) $(LINUX_DIR); \
+       else \
+               ln -s $(CONFIG_EXTERNAL_KERNEL_TREE) $(LINUX_DIR); \
+       fi
+       ##########################
   endef
 endif
 
