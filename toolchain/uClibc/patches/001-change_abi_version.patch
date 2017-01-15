@@ -1,0 +1,26 @@
+diff --git a/Rules.mak b/Rules.mak
+index 8bd2863..02c69e5 100644
+--- a/Rules.mak
++++ b/Rules.mak
+@@ -130,7 +130,7 @@ MINOR_VERSION := 0
+ SUBLEVEL      := 21
+ EXTRAVERSION  :=
+ VERSION       := $(MAJOR_VERSION).$(MINOR_VERSION).$(SUBLEVEL)
+-ABI_VERSION   := $(MAJOR_VERSION)
++ABI_VERSION   := 0
+ ifneq ($(EXTRAVERSION),)
+ VERSION       := $(VERSION)$(EXTRAVERSION)
+ endif
+diff --git a/ldso/ldso/Makefile.in b/ldso/ldso/Makefile.in
+index 993aeb9..08c442c 100644
+--- a/ldso/ldso/Makefile.in
++++ b/ldso/ldso/Makefile.in
+@@ -81,7 +81,7 @@ $(ldso:.$(ABI_VERSION)=): | $(top_builddir)lib
+ $(ldso:.$(ABI_VERSION)=): $($(UCLIBC_LDSO_NAME)_OUT)/$(UCLIBC_LDSO_NAME)_so.a
+ 	$(call link.so,$(ldso_FULL_NAME),$(ABI_VERSION))
+ 	# link for backward compatibility
+-	(cd $(top_builddir)lib; ln -sf $(UCLIBC_LDSO_NAME).so.$(ABI_VERSION) $(UCLIBC_LDSO_NAME).so.0 )
++	#(cd $(top_builddir)lib; ln -sf $(UCLIBC_LDSO_NAME).so.$(ABI_VERSION) $(UCLIBC_LDSO_NAME).so.0 )
+ ifeq ($(CONFIG_MIPS_NAN_2008),y)
+ 	(cd $(top_builddir)lib; ln -sf $(UCLIBC_LDSO_NAME).so.$(ABI_VERSION) $(UCLIBC_LDSO_NAME)-mipsn8.so.0)
+ endif
