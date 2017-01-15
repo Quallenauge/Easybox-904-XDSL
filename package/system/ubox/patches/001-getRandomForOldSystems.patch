@@ -1,0 +1,34 @@
+diff --git a/getrandom.c b/getrandom.c
+index 9671202..9aa3b1c 100644
+--- a/getrandom.c
++++ b/getrandom.c
+@@ -20,6 +20,20 @@
+ #include <sys/syscall.h>
+ #include <unistd.h>
+ 
++#if defined(__linux__)
++# ifdef HAVE_LINUX_GETRANDOM
++#  include <linux/random.h>
++# else
++#  include <sys/syscall.h>
++#  undef getrandom
++#  if defined(SYS_getrandom)
++#   define getrandom(dst,s,flags) syscall(SYS_getrandom, (void*)dst, (size_t)s, (unsigned int)flags)
++#  else
++#   define getrandom(dst,s,flags) -1
++#  endif
++# endif
++#endif
++
+ #define ERROR_EXIT(fmt, ...) do { \
+         fprintf(stderr, fmt, ## __VA_ARGS__); \
+         return EXIT_FAILURE; \
+@@ -49,7 +63,7 @@ int main(int argc, char *argv[])
+     while (nbtot > 0) {
+         if (nbtot <= sizeof(buf))
+             len = nbtot;
+-        if (syscall(SYS_getrandom, buf, len, 0) == -1)
++        if (getrandom(buf, len, 0) == -1)
+             ERROR_EXIT("getrandom() failed: %s\n", strerror(errno));
+         if (write(STDOUT_FILENO, buf, len) != len)
+             ERROR_EXIT("write() failed: %s\n", strerror(errno));
