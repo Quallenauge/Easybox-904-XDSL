@@ -1,0 +1,37 @@
+diff --git a/include/namespace.h b/include/namespace.h
+index 51324b2..d79f31b 100644
+--- a/include/namespace.h
++++ b/include/namespace.h
+@@ -31,6 +31,7 @@
+ #define MS_SHARED	(1 << 20)
+ #endif
+ 
++#ifdef SETNS_NOT_SUPPORTED
+ #ifndef HAVE_SETNS
+ static inline int setns(int fd, int nstype)
+ {
+@@ -42,6 +43,7 @@ static inline int setns(int fd, int nstype)
+ #endif
+ }
+ #endif /* HAVE_SETNS */
++#endif
+ 
+ int netns_switch(char *netns);
+ int netns_get_fd(const char *netns);
+diff --git a/lib/namespace.c b/lib/namespace.c
+index 2c83031..ba99a7e 100644
+--- a/lib/namespace.c
++++ b/lib/namespace.c
+@@ -56,9 +56,9 @@ int netns_switch(char *name)
+ 		return -1;
+ 	}
+ 
+-	if (setns(netns, CLONE_NEWNET) < 0) {
+-		fprintf(stderr, "setting the network namespace \"%s\" failed: %s\n",
+-			name, strerror(errno));
++//	if (setns(netns, CLONE_NEWNET) < 0) {
++	if (1 == 1) {
++		fprintf(stderr, "setting the network namespace is not supported by this kernel version.");
+ 		close(netns);
+ 		return -1;
+ 	}
