@@ -85,6 +85,10 @@ ifdef CONFIG_BUSYBOX_CONFIG_PAM
   LDLIBS += pam pam_misc pthread
 endif
 
+ifndef CONFIG_BUSYBOX_CONFIG_USE_BB_PWD_GRP
+  TARGET_CFLAGS += -I$(STAGING_DIR)/include
+endif
+
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
 		CC="$(TARGET_CC)" \
