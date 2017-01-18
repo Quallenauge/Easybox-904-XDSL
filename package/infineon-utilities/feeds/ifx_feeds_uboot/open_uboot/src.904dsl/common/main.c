@@ -711,6 +711,57 @@ up_error:
 		disable_ctrlc(prev);	/* restore Control C checking */
 # endif
 
+  #ifdef CONFIG_DRIVER_VR9 /* ctc, power up PHY */
+	#if 1 //defined(UDEBUG)
+	printf("-------------- Current state before activating switch ------\n");
+	printf("[%s:%d]vr9_mdio_read( 0x00, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x00, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x01, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x01, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x11, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x11, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x12, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x12, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x13, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x13, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x14, 0x0 )=0x%x\n\n",__func__,__LINE__,vr9_mdio_read( 0x14, 0x0 ));
+	printf("------------------------------------------------------------\n");
+	#endif
+	do_sleep_msec( 100/*1000*/ );
+	vr9_mdio_write( 0x00, 0x0, vr9_mdio_read( 0x00, 0x0 ) & ~0x0800 );
+	vr9_mdio_write( 0x01, 0x0, vr9_mdio_read( 0x01, 0x0 ) & ~0x0800 );
+	vr9_mdio_write( 0x11, 0x0, vr9_mdio_read( 0x11, 0x0 ) & ~0x0800 );
+	vr9_mdio_write( 0x12, 0x0, vr9_mdio_read( 0x12, 0x0 ) & ~0x0800 );
+	vr9_mdio_write( 0x13, 0x0, vr9_mdio_read( 0x13, 0x0 ) & ~0x0800 );
+	vr9_mdio_write( 0x14, 0x0, vr9_mdio_read( 0x14, 0x0 ) & ~0x0800 );
+	#if 1 //defined(UDEBUG)
+	printf("-------------- Current state after activating switch -------\n");
+	printf("[%s:%d]vr9_mdio_read( 0x00, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x00, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x01, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x01, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x11, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x11, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x12, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x12, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x13, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x13, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x14, 0x0 )=0x%x\n\n",__func__,__LINE__,vr9_mdio_read( 0x14, 0x0 ));
+	printf("------------------------------------------------------------\n");
+	#endif
+	
+	if(0 != rtl_sw_init())
+	{
+			printf("[%s:%d] rtl8367rb init failed!!! ....\n",__func__,__LINE__);	
+	}
+	
+	for(phyNo=0;phyNo<4;phyNo++)
+	{
+			if(0 != (retVal = smi_read(0x2000+(phyNo<<5),&data)))
+			{
+					printf("[%s:%d] read PCS reg[0x%x] failed!!!\n",__func__,__LINE__,0x2000+(phyNo<<5));
+			}
+			else
+			{
+					if(0 != (retVal = rtl8367b_setAsicPHYReg(phyNo,0x2000+(phyNo<<5),(data & (~0x0800)))))
+					{
+							printf("[%s:%d] set PCS reg[0x%x] failed!!!\n",__func__,__LINE__,0x2000+(phyNo<<5));
+					}
+			}
+	}
+	
+	printf("rtl8367rb init successful ....\n");	
+  #endif
 		// Arcadyan Begin
 		// if you come to here, the kernel in current partition is wrong.
 		if (bootnum < BOOT_RETRY_MAX) {
@@ -744,6 +795,7 @@ up_error:
 //		saveenv();
 
 
+
 boot_fail:
 		// booting failed, notice user to enter rescue process
 		lcd_DisplayPage(LCD_IMAGE_BOOT_FAILURE);
@@ -768,7 +820,19 @@ ctrlc_lcd_Init:
 		while(1);
 	}
 	pass_mode = 0;
+  // Arcadyan End
+
   #ifdef CONFIG_DRIVER_VR9 /* ctc, power up PHY */
+	#if 1 //defined(UDEBUG)
+	printf("-------------- Current state before activating switch ------\n");
+	printf("[%s:%d]vr9_mdio_read( 0x00, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x00, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x01, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x01, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x11, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x11, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x12, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x12, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x13, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x13, 0x0 ));
+	printf("[%s:%d]vr9_mdio_read( 0x14, 0x0 )=0x%x\n\n",__func__,__LINE__,vr9_mdio_read( 0x14, 0x0 ));
+	printf("------------------------------------------------------------\n");
+	#endif
 	do_sleep_msec( 100/*1000*/ );
 	vr9_mdio_write( 0x00, 0x0, vr9_mdio_read( 0x00, 0x0 ) & ~0x0800 );
 	vr9_mdio_write( 0x01, 0x0, vr9_mdio_read( 0x01, 0x0 ) & ~0x0800 );
@@ -776,13 +840,15 @@ ctrlc_lcd_Init:
 	vr9_mdio_write( 0x12, 0x0, vr9_mdio_read( 0x12, 0x0 ) & ~0x0800 );
 	vr9_mdio_write( 0x13, 0x0, vr9_mdio_read( 0x13, 0x0 ) & ~0x0800 );
 	vr9_mdio_write( 0x14, 0x0, vr9_mdio_read( 0x14, 0x0 ) & ~0x0800 );
-	#if 0 //defined(UDEBUG)
+	#if 1 //defined(UDEBUG)
+	printf("-------------- Current state after activating switch -------\n");
 	printf("[%s:%d]vr9_mdio_read( 0x00, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x00, 0x0 ));
 	printf("[%s:%d]vr9_mdio_read( 0x01, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x01, 0x0 ));
 	printf("[%s:%d]vr9_mdio_read( 0x11, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x11, 0x0 ));
 	printf("[%s:%d]vr9_mdio_read( 0x12, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x12, 0x0 ));
 	printf("[%s:%d]vr9_mdio_read( 0x13, 0x0 )=0x%x\n",__func__,__LINE__,vr9_mdio_read( 0x13, 0x0 ));
 	printf("[%s:%d]vr9_mdio_read( 0x14, 0x0 )=0x%x\n\n",__func__,__LINE__,vr9_mdio_read( 0x14, 0x0 ));
+	printf("------------------------------------------------------------\n");
 	#endif
 	
 	if(0 != rtl_sw_init())
@@ -805,9 +871,9 @@ ctrlc_lcd_Init:
 			}
 	}
 	
-	//printf("rtl8367rb init successful ....\n");	
+	printf("rtl8367rb init successful ....\n");	
   #endif
-  // Arcadyan End
+
 
 # ifdef CONFIG_MENUKEY
 	if (menukey == CONFIG_MENUKEY) {
