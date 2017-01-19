@@ -694,6 +694,13 @@ define Device/arcadyan_vgv7519-brn
 endef
 TARGET_DEVICES += arcadyan_vgv7519-brn
 
+define Device/VGV952CJW33
+  IMAGE_SIZE := 7424k
+  DEVICE_TITLE := VGV952CJW33 - Lantiq Easybox 904
+  DEVICE_PACKAGES := kmod-rt2800-pci wpad-mini kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
+endef
+TARGET_DEVICES += VGV952CJW33
+
 endif
 
 
