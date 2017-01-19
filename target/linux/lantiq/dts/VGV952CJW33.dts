@@ -229,24 +229,6 @@
 			>;
 			interrupt-parent = <&icu0>;
 			interrupts = <73 72>;
-    		lantiq,wan;
-
-			lan1: interface@0 {
-				compatible = "lantiq,xrx200-pdi";
-				#address-cells = <1>;
-				#size-cells = <0>;
-				reg = <0>;
-				mac-address = [ 00 11 22 33 44 55 ];
-				ethernet@4 {
-
-					compatible = "lantiq,xrx200-pdi-port";
-					reg = <4>; 
-					phy-mode = "rgmii";
-					phy-handle = <&phy13>;
-
-				};
-
-			};
 
 			lan2: interface@1 {
 				compatible = "lantiq,xrx200-pdi";
@@ -254,17 +236,26 @@
 				#address-cells = <1>;
 				#size-cells = <0>;
 				reg = <1>;
-				mac-address = [ 00 11 22 33 44 56 ];
-
+				// mac-address = [ 00 11 22 33 44 56 ];
+				lantiq,switch;
 
                     ethernet@2 {
-
 						compatible = "lantiq,xrx200-pdi-port";
 						reg = <2>;
-						phy-mode = "rgmii";
+						phy-mode = "gmii";
 						phy-handle = <&phy11>;
 
                     };
+					
+					/* wan port */
+					ethernet@4 {
+					
+						compatible = "lantiq,xrx200-pdi-port";
+						reg = <4>; 
+						phy-mode = "gmii";
+						phy-handle = <&phy13>;
+
+					};					
 			};	
 
 			mdio@0 {
