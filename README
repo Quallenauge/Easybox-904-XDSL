@@ -27,3 +27,44 @@ Sunshine!
 	http://www.lede-project.org
 
 
+EasyBox 904 Notes
+=================
+
+The project is intended to use the EasyBox as simple IOT device with only network support.
+It is possible to make use all of the 5 ports of the switch and run some services.
+The kernel contains some USB support to boot the rootfs from a connected usb memory stick.
+The vendor kernel is used as the switch kernel module is needed atm.
+
+There fore it is useful to connect to the board via serial adapter.
+(Of course you need the unlocked uboot, see https://forum.openwrt.org/viewtopic.php?pid=284534#p284534 how to flash).
+
+<!-- WIP:
+The uboot which is built by this project accept all provided passwords in the same way the one at the openwrt post is used.
+As addition the bootnum functionality is disabled to save some uboot settings re-flash cycles at boot.
+Also the network is always switched on, to support boot over tftp per default.
+-->
+
+The uboot environment variables has to be modified in the following way:
+---
+setenv addbootargs setenv bootargs \${bootargs} root=/dev/sda1 rootdelay=7 init=/etc/preinit rootfstype=ext2
+setenv bootflash nand read.e \$(loadaddr) \$(f_kernel_addr) \$(f_kernel_size) \; run addip addmisc addbootargs \; bootm \$(loadaddr)
+setenv bootcmd run bootflash
+saveenv
+---
+
+The kernel is updated via (assume the uImage is in the current path, PLEASE refer to the ToDos at openwrt to avoid bricks
+https://wiki.openwrt.org/inbox/arcadyanastoria/arcadyan_astoria_easybox_904xdsl_r01?s[]=904#installing_openwrt
+):
+--- 
+flash_eraseall /dev/mtd2
+nandwrite -p /dev/mtd2 uImage
+---
+
+The memory card should have a partition which contains the rootfs. The partition should correspond
+to the uboot root setting  (e.g. /dev/sda1).
+
+Build Instructions
+------------------
+cp vr9_default.config .config
+make oldconfig
+make
