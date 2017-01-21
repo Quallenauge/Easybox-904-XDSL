@@ -6,7 +6,7 @@
 	model = "VGV952CJW33-E-IR - EasyBox 904 xDSL";
 
 	chosen {
-		bootargs = "console=ttyLTQ0,115200 init=/etc/preinit ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda3 rootdelay=7";
+		bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda3 rootdelay=7";
 	};
 
 	memory@0 {
@@ -219,45 +219,43 @@
 
 
 		eth@E108000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "lantiq,xrx200-net";
-			reg = <	0xE108000 0x3000		// switch
-				0xE10B100 0x70			// mdio
-				0xE10B1D8 0x30			// mii
-				0xE10B308 0x30			// pmac
-			>;
-			interrupt-parent = <&icu0>;
-			interrupts = <73 72>;
+					lan: interface@0 {
+							compatible = "lantiq,xrx200-pdi";
 
-			lan2: interface@1 {
-				compatible = "lantiq,xrx200-pdi";
+							#address-cells = <1>;
+							#size-cells = <0>;
+							reg = <0>;                                
+							mac-address = [ 00 11 22 33 44 55 ];
+							lantiq,switch;
+							ethernet@2 {
+								compatible = "lantiq,xrx200-pdi-port";
+								reg = <2>;
+								phy-mode = "gmii";
+								phy-handle = <&phy11>;
+							};
+					};
 
-				#address-cells = <1>;
-				#size-cells = <0>;
-				reg = <1>;
-				// mac-address = [ 00 11 22 33 44 56 ];
-				lantiq,switch;
-
-                    ethernet@2 {
-						compatible = "lantiq,xrx200-pdi-port";
-						reg = <2>;
-						phy-mode = "gmii";
-						phy-handle = <&phy11>;
-
-                    };
-					
 					/* wan port */
-					ethernet@4 {
 					
-						compatible = "lantiq,xrx200-pdi-port";
-						reg = <4>; 
-						phy-mode = "gmii";
-						phy-handle = <&phy13>;
+					wan: interface@1 {
+					compatible = "lantiq,xrx200-pdi";
 
-					};					
-			};	
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					mac-address = [ 00 11 22 33 44 56 ];
+					/* Enabling wan mode on this interface causes kernel panics
+					   in case port link isn't up */
+					// lantiq,wan;
+							ethernet@4 {
+									compatible = "lantiq,xrx200-pdi-port";
+									reg = <4>;
+									phy-mode = "rgmii";
+									phy-handle = <&phy13>;
 
+							};
+					};
+					
 			mdio@0 {
 				#address-cells = <1>;
 				#size-cells = <0>;
@@ -277,11 +275,11 @@
 				phy12: ethernet-phy@12 {
 					reg = <0x12>;
 					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};				
+				};
 				phy13: ethernet-phy@13 {
 					reg = <0x13>;
 					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};
+				};				
 				phy14: ethernet-phy@14 {
 					reg = <0x14>;
 					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
