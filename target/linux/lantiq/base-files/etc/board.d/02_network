@@ -18,6 +18,12 @@ lan_mac=""
 wan_mac=""
 interface_wan=""
 
+ucidef_set_interface_lan2() {
+        json_select_object network
+        _ucidef_set_interface lan2 "$@"
+        json_select ..
+}
+
 board=$(lantiq_board_name)
 
 case "$board" in
@@ -145,6 +151,19 @@ VGV7510KW22*)
 	wan_mac=$(macaddr_add "$(mtd_get_mac_binary board_config 22)" 2)
 	ucidef_add_switch "switch0" \
 		"2:lan:2" "3:lan:1" "4:lan:4" "5:lan:3" "0:wan:5" "6t@eth0"
+	;;
+
+VGV952CJW33-E-IR*)
+	echo ">>Configuring network..."
+	lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
+	lan2_mac=$(macaddr_add "$lan_mac" 1)
+	wan_mac=$(macaddr_add "$lan_mac" 2)
+
+	ucidef_set_interface_lan 'eth0'
+	ucidef_set_interface_lan2 'eth1'
+
+	ucidef_set_interface_macaddr "lan2" "$lan2_mac"
+	echo "<<Configuring network..."
 	;;
 
 VGV7519*)
