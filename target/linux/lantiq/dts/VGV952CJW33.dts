@@ -13,6 +13,35 @@
 		reg = <0x0 0x8000000>;
 	};
 
+	mdio: mdio@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "lantiq,xrx200-mdio";
+			phy0: ethernet-phy@0 {
+				reg = <0x0>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};
+			phy1: ethernet-phy@1 {
+				reg = <0x1>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};
+			phy11: ethernet-phy@11 {
+				reg = <0x11>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};
+			phy12: ethernet-phy@12 {
+				reg = <0x12>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};
+			phy13: ethernet-phy@13 {
+				reg = <0x13>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};				
+			phy14: ethernet-phy@14 {
+				reg = <0x14>;
+				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+			};
+		};
 
 	gphy-xrx200 {
 		compatible = "lantiq,phy-xrx200";
@@ -20,8 +49,17 @@
 		firmware2 = "lantiq/vr9_phy11g_a2x.bin";	/*VR9 1.2*/
 		phys = [ 00 01 ];
 	};
-
-
+	
+	rtl8367b {
+		compatible = "realtek,rtl8367b";
+		//gpio-sda = <&gpio0 1 0>;
+		//gpio-sck = <&gpio0 2 0>;
+		//cpu_port = <7>;
+		//realtek,extif1 = <1 0 1 1 1 1 1 1 2>; // default found on other profiles
+		realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
+		mdio = <&mdio>;
+	};	
+	
 	fpi@10000000 {
 		localbus@0 {
 
@@ -236,7 +274,6 @@
 					};
 
 					/* wan port */
-					
 					wan: interface@1 {
 					compatible = "lantiq,xrx200-pdi";
 
@@ -252,39 +289,8 @@
 									reg = <4>;
 									phy-mode = "rgmii";
 									phy-handle = <&phy13>;
-
 							};
 					};
-					
-			mdio@0 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "lantiq,xrx200-mdio";
-				phy0: ethernet-phy@0 {
-					reg = <0x0>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};
-				phy1: ethernet-phy@1 {
-					reg = <0x1>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};
-				phy11: ethernet-phy@11 {
-					reg = <0x11>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};
-				phy12: ethernet-phy@12 {
-					reg = <0x12>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};
-				phy13: ethernet-phy@13 {
-					reg = <0x13>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};				
-				phy14: ethernet-phy@14 {
-					reg = <0x14>;
-					compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
-				};				
-			};
 		};
 	};
 };
