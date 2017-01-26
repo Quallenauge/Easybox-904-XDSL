@@ -6,7 +6,7 @@
 	model = "VGV952CJW33-E-IR - EasyBox 904 xDSL";
 
 	chosen {
-		bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda3 rootdelay=7";
+		bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda2 rootdelay=7";
 	};
 
 	memory@0 {
@@ -55,8 +55,8 @@
 		//gpio-sda = <&gpio0 1 0>;
 		//gpio-sck = <&gpio0 2 0>;
 		//cpu_port = <7>;
-		//realtek,extif1 = <1 0 1 1 1 1 1 1 2>; // default found on other profiles
-		realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
+		realtek,extif1 = <1 0 1 1 1 1 1 1 2>; // default found on other profiles
+		//realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
 		mdio = <&mdio>;
 	};	
 	
@@ -287,7 +287,7 @@
 							ethernet@4 {
 									compatible = "lantiq,xrx200-pdi-port";
 									reg = <4>;
-									phy-mode = "rgmii";
+									phy-mode = "gmii";
 									phy-handle = <&phy13>;
 							};
 					};
