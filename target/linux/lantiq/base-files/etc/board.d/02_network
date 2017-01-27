@@ -205,24 +205,22 @@ arcadyan,vgv7510kw22-nor|arcadyan,vgv7510kw22-brn)
 	;;
 
 VGV952CJW33-E-IR*)
-	echo ">>Configuring network..."
-	lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
-	lan2_mac=$(macaddr_add "$lan_mac" 1)
-	wan_mac=$(macaddr_add "$lan_mac" 2)
-
-	#ucidef_add_switch "switch0" "0:lan:0" "4:lan:4" "6@eth0"
-	#ucidef_add_switch "switch1" "0:lan:0" "1:lan:1" "2:lan:2" "3:lan:3" "4:lan:4" "5:lan:5" "6@eth3"
-	ucidef_add_switch_attr "switch0" "reset"  "1"
-	ucidef_add_switch_attr "switch0" "enable" "0"
+	lan_mac=$(mtd_get_mac_ascii	ubootconfig	ethaddr)
+	lan2_mac=$(macaddr_add	"$lan_mac"	1)
+	wan_mac=$(macaddr_add	"$lan_mac"	2)
 	
-	ucidef_add_switch_attr "switch1" "reset"  "1"
-	ucidef_add_switch_attr "switch1" "enable" "0"
+	ucidef_set_interface_lan2		'eth1'
+	ucidef_set_interface_macaddr	"lan2"	"$lan2_mac"
 
-	ucidef_set_interface_lan 'eth0'
-	ucidef_set_interface_lan2 'eth1'
-	
-	ucidef_set_interface_macaddr "lan2" "$lan2_mac"
-	echo "<<Configuring network..."
+	ucidef_add_switch	"switch0"	\
+	"0:lan"	"4:lan"	"6@eth0"
+
+	ucidef_add_switch	"switch1"	\
+	"0:lan"	"1:lan" "2:lan" "3:lan"	"6@eth0"
+
+	ucidef_add_switch_port_attr	"switch0"	"0"	"pvid"	"1"
+	ucidef_add_switch_port_attr	"switch0"	"4"	"pvid"	"1"
+	ucidef_add_switch_port_attr	"switch0"	"6"	"pvid"	"1"
 	;;
 
 arcadyan,vgv7519-nor|arcadyan,vgv7519-brn)
