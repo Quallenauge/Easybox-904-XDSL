@@ -123,11 +123,6 @@
 #define RTL8367B_CHIP_VER_REG			0x1301 /*GOOD*/
 #define RTL8367B_CHIP_MODE_REG			0x1302
 
-#define RTL8367B_CHIP_DEBUG0_REG		0x1303
-#define   RTL8367B_CHIP_DEBUG0_DUMMY0(_x)	BIT(8 + (_x))
-
-#define RTL8367B_CHIP_DEBUG1_REG		0x1304
-
 #define RTL8367B_DIS_REG			0x1305
 #define RTL8367B_DIS_REG_2			0x13c3
 #define   RTL8367B_DIS_SKIP_MII_RXER(_x)	BIT(12 + (_x))
@@ -574,7 +569,8 @@ static const struct rtl8367b_initval rtl8367r_vb_initvals_1[] = {
 	{0x2206, 0x0405}, {0x220F, 0x0000}, {0x221F, 0x0000}, {0x133E, 0x000E},
 	{0x133F, 0x0010}, {0x13EB, 0x11BB}, {0x207F, 0x0002}, {0x2073, 0x1D22},
 	{0x207F, 0x0000}, {0x133F, 0x0030}, {0x133E, 0x000E}, {0x2200, 0x1340},
-	{0x133E, 0x000E}, {0x133F, 0x0010},
+	{0x133E, 0x000E}, {0x133F, 0x0010}, {0x1303, 0x0778}, {0x1304, 0x7777},
+	{0x13E2, 0x01FE}
 };
 
 static int rtl8367b_write_initvals(struct rtl8366_smi *smi,
@@ -958,6 +954,9 @@ static int rtl8367b_setup(struct rtl8366_smi *smi)
 	/* set maximum packet length to 1536 bytes */
 	REG_RMW(smi, RTL8367B_SWC0_REG, RTL8367B_SWC0_MAX_LENGTH_MASK,
 		RTL8367B_SWC0_MAX_LENGTH_1536);
+
+	/* enable all PHY (if disabled by bootstrap) */
+	REG_RMW(smi, RTL8367B_REG_PHY_AD, BIT(RTL8367B_PDN_PHY_OFFSET), 0);
 
 	/*
 	 * discard VLAN tagged packets if the port is not a member of
