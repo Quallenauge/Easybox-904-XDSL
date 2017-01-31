@@ -22,6 +22,8 @@
 
 #define RTL8367B_RESET_DELAY	1000	/* msecs*/
 
+#define RTL8367B_PHY_NO	5
+#define RTL8367B_PHY_MAX	(RTL8367B_PHY_NO - 1)
 #define RTL8367B_PHY_ADDR_MAX	8
 #define RTL8367B_PHY_REG_MAX	31
 
@@ -216,6 +218,10 @@
 	(RTL8367B_PORT_0 | RTL8367B_PORT_1 | RTL8367B_PORT_2 | \
 	RTL8367B_PORT_3 | RTL8367B_PORT_4)
 
+#define RTL8367B_REG_PHY_AD	0x130f
+#define RTL8367B_PDN_PHY_OFFSET	5
+#define RTL8367B_PHY_PAGE_ADDRESS	0x1F
+
 struct rtl8367b_initval {
 	u16 reg;
 	u16 val;
@@ -308,6 +314,12 @@ rtl8367b_mib_counters[RTL8367B_NUM_MIB_COUNTERS] = {
 		if (err)						\
 			return err;					\
 	} while (0)
+
+#define REG_RD_PHY(_smi, _addr, _reg, _val) \
+	REG_RD(_smi, RTL8367B_INTERNAL_PHY_REG(_addr, _reg), _val);
+
+#define REG_WR_PHY(_smi, _addr, _reg, _val) \
+	REG_WR(_smi, RTL8367B_INTERNAL_PHY_REG(_addr, _reg), _val);
 
 static const struct rtl8367b_initval rtl8367r_vb_initvals_0[] = {
 	{0x1B03, 0x0876}, {0x1200, 0x7FC4}, {0x0301, 0x0026}, {0x1722, 0x0E14},
@@ -667,6 +679,42 @@ static int rtl8367b_write_phy_reg(struct rtl8366_smi *smi,
 
 		udelay(1);
 	} while (1);
+
+	return 0;
+}
+
+static int rtl8367b_port_phy_reg_set(
+				struct rtl8366_smi *smi,
+				u32 phy_addr, u32 phy_reg, u32 value)
+{
+	int err;
+
+	if (phy_addr > RTL8367B_PHY_ADDR_MAX)
+		return -EINVAL;
+
+	if (phy_reg > RTL8367B_PHY_REG_MAX)
+		return -EINVAL;
+
+	REG_WR_PHY(smi, phy_addr, RTL8367B_PHY_PAGE_ADDRESS, 0);
+	REG_WR_PHY(smi, phy_addr, phy_reg, value);
+
+	return 0;
+}
+
+static int rtl8367b_port_phy_reg_get(
+				struct rtl8366_smi *smi,
+				u32 phy_addr, u32 phy_reg, u32 *value)
+{
+	int err;
+
+	if (phy_addr > RTL8367B_PHY_ADDR_MAX)
+		return -EINVAL;
+
+	if (phy_reg > RTL8367B_PHY_REG_MAX)
+		return -EINVAL;
+
+	REG_WR_PHY(smi, phy_addr, RTL8367B_PHY_PAGE_ADDRESS, 0);
+	REG_RD_PHY(smi, phy_addr, phy_reg, value);
 
 	return 0;
 }
