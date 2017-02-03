@@ -6,7 +6,11 @@
 	model = "VGV952CJW33-E-IR - EasyBox 904 xDSL";
 
 	chosen {
-		bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda2 rootdelay=7";
+		// Bootargs when no vpe is used
+		// bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda2 rootdelay=7";
+
+		// Bootargs when vpe is used
+		bootargs = "console=ttyLTQ0,115200 ubi.mtd=12 panic=1 DTS-TEST-SEQNO=77 root=/dev/sda3 rootdelay=7 mem=116M phym=128M vpe1_load_addr=0x87e00000 vpe1_mem=2M maxvpes=1 maxtcs=1";
 	};
 
 	memory@0 {
@@ -59,6 +63,16 @@
 		//realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
 		mdio = <&mdio>;
 	};	
+
+	sram@1F000000 {
+		vmmc@107000 {
+			status = "okay";
+			gpios = <&gpio 29 GPIO_ACTIVE_LOW    //??? - performed by drv_voip.
+				 &gpio 30 GPIO_ACTIVE_HIGH   //fxs relay! - performed by drv_voip.
+				 &gpio 39 GPIO_ACTIVE_LOW    //??? - performed by drv_voip.
+				 &gpio 37 GPIO_ACTIVE_HIGH>; //reset_slic!
+		};
+	};
 	
 	fpi@10000000 {
 		localbus@0 {
@@ -156,8 +170,6 @@
 			};
 		};
 
-
-
 		ifxhcd@E101000 {
 			status = "okay";
 			gpios = <&gpio 33 0>;				// Seems to be needed. Possibly 5, 14, 20, 39 also used by USB
@@ -211,7 +223,6 @@
 			pinctrl-0 = <&state_default>;
 
 			state_default: pinmux {
-
                                 mdio {
                                         lantiq,groups = "mdio";
                                         lantiq,function = "mdio";
@@ -231,7 +242,6 @@
 					lantiq,pull = <0>;
 					lantiq,output = <1>;
 				};
-
 			};
 		};
 
