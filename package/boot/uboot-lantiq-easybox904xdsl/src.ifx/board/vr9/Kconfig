@@ -1,0 +1,511 @@
+
+config DRIVER_VR9
+      bool
+	  default y
+
+config BOARD_NAME
+    string 
+	default "EASY80920"
+	depends on IFX_IMAGE_EXTRA_CHECKS
+
+config BOARD_VERSION
+    string
+	default "1.2"
+	depends on IFX_IMAGE_EXTRA_CHECKS
+
+config CHIP_NAME
+    string
+    default "XRX200"
+    depends on IFX_IMAGE_EXTRA_CHECKS
+
+config CHIP_VERSION
+    string
+    default "1" if VR9_CPU_VERSION_1
+	default "2" if VR9_CHIP_VERSION_2
+    depends on IFX_IMAGE_EXTRA_CHECKS
+
+
+menu "CPU/DDR FREQUENCY"
+
+choice 
+    prompt "PLATFORM"
+    default VRX200
+
+config GRX200
+    bool "GRX200"
+
+config VRX200
+    bool "VRX200"
+
+endchoice
+
+choice 
+    prompt "CRYSTAL CLOCK FREQUENCY"
+	default VR9_CRYSTAL_36M
+    
+config VR9_CRYSTAL_6M
+    bool "6M"
+	depends on VRX200
+
+config VR9_CRYSTAL_CPLD
+    bool "6M change to 36M via CPLD"
+    depends on VRX200
+
+config VR9_CRYSTAL_25M
+    bool "25M"
+	depends on GRX200
+
+config VR9_CRYSTAL_36M
+    bool "36M"
+	depends on VRX200
+
+endchoice
+
+choice 
+    prompt "DDR TYPE SELECTION"
+    default VR9_DDR2
+
+config VR9_DDR1
+    bool "DDR1"
+
+config VR9_DDR2
+    bool "DDR2"
+
+endchoice
+
+choice
+    prompt "CPU AND RAM CONFIGURATION"
+
+
+config VR9_CPU_125M_RAM_125M
+    bool "125M/125M"
+
+config VR9_CPU_333M_RAM_166M
+    bool "333M/166M" 
+
+config VR9_CPU_393M_RAM_196M
+    bool "393M/196M"
+   
+config VR9_CPU_500M_RAM_200M
+    bool "500M/200M"
+    depends on !VR9_CRYSTAL_6M
+
+config VR9_CPU_500M_RAM_250M
+    bool "500M/250M"
+	depends on !VR9_CRYSTAL_6M && VR9_DDR2
+
+config VR9_CPU_600M_RAM_200M
+    bool "600M/200M"
+
+config VR9_CPU_600M_RAM_300M
+    bool "600M/300M"
+	depends on VR9_DDR2
+
+endchoice
+
+config ENABLE_POWER_MANAGEMENT
+    bool "Enable power management(EXPERIMENTAL)"
+	default n
+
+config USE_DEFAULT_LOWPOWER_SETTING
+    bool "USE DEFAULT LOWPOWER SETTING"
+    default y
+    depends on ENABLE_POWER_MANAGEMENT
+
+
+config LOWPOWER_CONTROL
+    hex 'LOWPOWER_CONTROL'
+    default "0x14"
+    depends on !USE_DEFAULT_LOWPOWER_SETTING
+    depends on ENABLE_POWER_MANAGEMENT
+
+config LOWPOWER_AUTO_ENABLE
+    hex 'LOWERPOWER_AUTO_ENABLE'
+    default "0x14"
+    depends on !USE_DEFAULT_LOWPOWER_SETTING
+    depends on ENABLE_POWER_MANAGEMENT
+
+config LOWPOWER_POWER_DOWN_CNT
+    hex 'LOWPOWER_POWER_DOWN_CNT'
+    default "0x40"
+    depends on !USE_DEFAULT_LOWPOWER_SETTING
+	depends on ENABLE_POWER_MANAGEMENT
+
+config LOWPOWER_SELF_REFRESH_CNT
+    hex 'LOWPOWER_SELF_REFRESH_CNT'
+    default "0x80"
+    depends on !USE_DEFAULT_LOWPOWER_SETTING
+    depends on ENABLE_POWER_MANAGEMENT
+
+endmenu
+
+
+menu "SWITCH OPTIONS"
+
+config VR9_SW_PORT_0
+    bool "USE PORT 0"
+
+choice
+   prompt "INTERFACE"
+   depends on VR9_SW_PORT_0
+   default VR9_SW_PORT0_RGMII_MAC
+
+config VR9_SW_PORT0_MII_PHY
+   bool "MII PHY"
+
+config VR9_SW_PORT0_MII_MAC
+   bool "MII MAC"
+
+config VR9_SW_PORT0_RMII_PHY
+   bool "RMII PHY"
+
+config VR9_SW_PORT0_RMII_MAC
+   bool "RMII MAC"
+
+config VR9_SW_PORT0_RGMII_MAC
+   bool "RGMII MAC"
+
+endchoice  
+
+config VR9_SW_PORT0_MIIMODE
+   int
+   depends on VR9_SW_PORT_0
+   default 0 if VR9_SW_PORT0_MII_PHY
+   default 1 if VR9_SW_PORT0_MII_MAC
+   default 2 if VR9_SW_PORT0_RMII_PHY
+   default 3 if VR9_SW_PORT0_RMII_MAC
+   default 4 if VR9_SW_PORT0_RGMII_MAC
+
+   
+choice
+   prompt "xMII CLOCK RATE"
+   depends on VR9_SW_PORT_0
+   default VR9_SW_PORT0_MIIRATE_AUTO
+	
+config VR9_SW_PORT0_MIIRATE_M2P5
+	 bool "2.5MHz"
+	 depends on !VR9_SW_PORT0_RMII_MAC && !VR9_SW_PORT0_RMII_PHY
+	
+config VR9_SW_PORT0_MIIRATE_M25
+    bool "25MHz"
+    depends on !VR9_SW_PORT0_RMII_MAC && !VR9_SW_PORT0_RMII_PHY
+
+config VR9_SW_PORT0_MIIRATE_M125
+    bool "125MHz"
+    depends on !VR9_SW_PORT0_RMII_MAC && !VR9_SW_PORT0_RMII_PHY
+
+config VR9_SW_PORT0_MIIRATE_M50	
+	  bool "50MHz"
+	  
+config VR9_SW_PORT0_MIIRATE_AUTO
+    bool "AUTO"
+    depends on !VR9_SW_PORT0_RMII_MAC && !VR9_SW_PORT0_RMII_PHY
+		
+endchoice
+
+config VR9_SW_PORT0_MIIRATE
+    int 
+	depends on VR9_SW_PORT_0
+	default 0 if VR9_SW_PORT0_MIIRATE_M2P5
+	default 1 if VR9_SW_PORT0_MIIRATE_M25
+	default 2 if VR9_SW_PORT0_MIIRATE_M125
+	default 3 if VR9_SW_PORT0_MIIRATE_M50
+	default 4 if VR9_SW_PORT0_MIIRATE_AUTO
+
+choice 
+    prompt "RMII REF CLOCK DIRECTIOM"
+	  default VR9_SW_PORT0_RMII_CLK_IN
+	  depends on VR9_SW_PORT0_RMII_PHY || VR9_SW_PORT0_RMII_MAC
+
+config VR9_SW_PORT0_RMII_CLK_IN
+    bool "IN"
+
+config VR9_SW_PORT0_RMII_CLK_OUT
+    bool "OUT"
+	
+endchoice
+
+
+config VR9_SW_PORT_1
+    bool "USE PORT 1"
+    
+choice
+   prompt "INTERFACE"
+   depends on VR9_SW_PORT_1
+   default VR9_SW_PORT1_RGMII_MAC
+
+config VR9_SW_PORT1_MII_PHY
+   bool "MII PHY"
+
+config VR9_SW_PORT1_MII_MAC
+   bool "MII MAC"
+
+config VR9_SW_PORT1_RMII_PHY
+   bool "RMII PHY"
+
+config VR9_SW_PORT1_RMII_MAC
+   bool "RMII MAC"
+
+config VR9_SW_PORT1_RGMII_MAC
+   bool "RGMII MAC"
+endchoice  
+
+config VR9_SW_PORT1_MIIMODE
+   int
+   depends on VR9_SW_PORT_1
+   default 0 if VR9_SW_PORT1_MII_PHY
+   default 1 if VR9_SW_PORT1_MII_MAC
+   default 2 if VR9_SW_PORT1_RMII_PHY
+   default 3 if VR9_SW_PORT1_RMII_MAC
+   default 4 if VR9_SW_PORT1_RGMII_MAC
+								   
+   
+choice
+   prompt "xMII CLOCK RATE"
+   depends on VR9_SW_PORT_1
+   default VR9_SW_PORT1_MIIRATE_AUTO
+	
+config VR9_SW_PORT1_MIIRATE_M2P5
+	bool "2.5MHz"
+	depends on !VR9_SW_PORT1_RMII_MAC && !VR9_SW_PORT1_RMII_PHY
+	
+config VR9_SW_PORT1_MIIRATE_M25
+    bool "25MHz"
+    depends on !VR9_SW_PORT1_RMII_MAC && !VR9_SW_PORT1_RMII_PHY
+
+config VR9_SW_PORT1_MIIRATE_M125
+    bool "125MHz"
+    depends on !VR9_SW_PORT1_RMII_MAC && !VR9_SW_PORT1_RMII_PHY
+
+config VR9_SW_PORT1_MIIRATE_M50	
+	  bool "50MHz"
+
+config VR9_SW_PORT1_MIIRATE_AUTO
+    bool "AUTO"
+		depends on !VR9_SW_PORT1_RMII_MAC && !VR9_SW_PORT1_RMII_PHY
+		
+endchoice
+
+config VR9_SW_PORT1_MIIRATE
+    int 
+	depends on VR9_SW_PORT_1
+	default 0 if VR9_SW_PORT1_MIIRATE_M2P5
+	default 1 if VR9_SW_PORT1_MIIRATE_M25
+	default 2 if VR9_SW_PORT1_MIIRATE_M125
+	default 3 if VR9_SW_PORT1_MIIRATE_M50
+	default 4 if VR9_SW_PORT1_MIIRATE_AUTO
+
+choice 
+    prompt "RMII REF CLOCK DIRECTIOM"
+	  default VR9_SW_PORT1_RMII_CLK_IN
+	  depends on VR9_SW_PORT1_RMII_MAC || VR9_SW_PORT1_RMII_PHY
+
+config VR9_SW_PORT1_RMII_CLK_IN
+    bool "IN"
+
+config VR9_SW_PORT1_RMII_CLK_OUT
+    bool "OUT"
+	
+endchoice
+
+config VR9_SW_PORT_2
+    bool "USE PORT 2"
+    default y
+
+choice
+   prompt "INTERFACE FOR PORT 2 AND PORT4"
+   depends on VR9_SW_PORT_2
+   default VR9_SW_PORT2_GMII
+
+config VR9_SW_PORT2_GMII
+   bool "GMII"
+
+config VR9_SW_PORT2_MII
+   bool "MII"
+
+endchoice  
+
+choice
+   prompt "GPHY_LED_MODE"
+   depends on VR9_SW_PORT_2
+   default GPHY_LED_SHIFT_REG
+
+config GPHY_LED_SHIFT_REG   
+   bool "SHIFT REGISTER"
+
+config GPHY_LED_GPIO
+   bool "GPIO"
+
+### ctc ###
+config GPHY_LED_NONE
+   bool "NONE"
+###########
+   
+endchoice
+
+config  VR9_SW_PORT2_MIIRATE
+   int
+   depends on VR9_SW_PORT_2
+   default 4 
+					 
+config VR9_SW_PORT2_MIIMODE
+    int
+	depends on VR9_SW_PORT_2
+	default 1 
+								
+
+config VR9_SW_PORT_3
+    bool "USE PORT 3"
+	default y
+    depends on VR9_SW_PORT2_MII
+    
+choice
+   prompt "INTERFACE"
+   depends on VR9_SW_PORT_3
+   default VR9_SW_PORT3_MII
+
+config VR9_SW_PORT3_MII
+   bool "MII"
+
+endchoice    
+    
+config VR9_SW_PORT3_MIIRATE
+   int
+   depends on VR9_SW_PORT_3
+   default 4 
+					 
+config VR9_SW_PORT3_MIIMODE
+    int
+	depends on VR9_SW_PORT_3
+    default 1 if VR9_SW_PORT3_MII
+
+config VR9_SW_PORT_4
+    bool "USE PORT 4"
+	default y
+	depends on VR9_SW_PORT_2
+
+config VR9_SW_PORT4_GMII
+   bool  
+   default y
+   depends on VR9_SW_PORT2_GMII
+
+config VR9_SW_PORT4_MII
+   bool
+   default y
+   depends on VR9_SW_PORT2_MII
+
+
+config VR9_SW_PORT4_MIIRATE
+   int
+   depends on VR9_SW_PORT_4
+   default 4
+					 
+config VR9_SW_PORT4_MIIMODE
+    int
+	depends on VR9_SW_PORT_4
+	default 1 
+	
+
+config VR9_SW_PORT_5a
+    bool "USE PORT 5a"
+	default y
+    depends on !VR9_SW_PORT_5b
+
+choice
+   prompt "INTERFACE"
+   depends on VR9_SW_PORT_5a
+   default VR9_SW_PORT5a_RGMII
+
+config VR9_SW_PORT5a_RGMII
+   bool "RGMII"
+endchoice
+
+config VR9_SW_PORT5a_MIIMODE
+   int
+   depends on VR9_SW_PORT_5a
+   default 4
+
+config VR9_SW_PORT5a_MIIRATE
+    int
+	depends on VR9_SW_PORT_5a
+	default 4 if VR9_SW_PORT5a_RGMII
+			
+
+config VR9_SW_PORT_5b
+    bool "USE PORT 5b"
+	default y
+    depends on VR9_SW_PORT2_MII
+    
+choice
+   prompt "INTERFACE"
+   depends on VR9_SW_PORT_5b
+   default VR9_SW_PORT5b_MII
+
+config VR9_SW_PORT5b_MII
+   bool "MII"
+
+endchoice       
+
+config VR9_SW_PORT5b_MIIMODE
+   int
+   depends on VR9_SW_PORT_5b
+   default 1 
+
+config VR9_SW_PORT5b_MIIRATE
+    int
+	depends on VR9_SW_PORT_5b
+	default 4
+
+config VR9_GPHY_FW_EMBEDDED
+    bool "gphy firmware embedded"
+	default y
+
+config VR9_GPHY_FW_ADDR
+    hex 'gphy firmware address'
+	default "0xb0010000" if ( BOOT_FROM_NOR )
+	default "0xa0110000" if ( BOOT_FROM_SPI )
+	default "0xa0120000" if ( BOOT_FROM_NAND )
+	depends on VR9_SW_PORT_2 || VR9_SW_PORT_3 || VR9_SW_PORT_4 || VR9_SW_PORT_5b
+    depends on VR9_GPHY_FW_EMBEDDED
+
+config VR9_EXTERN_GPHY_FW_ADDR
+    hex "gphy firmware address"
+	default "0xb0010000"
+	depends on !VR9_GPHY_FW_EMBEDDED
+
+config VR9_GPHY_DEBUG
+    bool "DEBUG GPHY"
+	default y
+    depends on !NAND_FLASH
+	
+endmenu
+
+config TUNE_DDR
+    bool "DDR tuning support"
+	default y
+
+config DDR_TUNING_TEXT_BASE
+    hex 
+    default "0x9e220000"
+    depends on TUNE_DDR
+
+config ENABLE_DCDC
+	bool "ENABLE_DCDC"
+	default y
+
+config POWER_DOWN_REGULATOR
+    bool "POWER DOWN 2.5V REGULATOR"
+	default y
+
+config CHECK_PLL2_LOCK
+    bool "CHECK PLL2 LOCK"
+	default n
+
+config ON_VENUS
+    bool "ON VENUS"
+	default n
+	
+config ON_PALLADIUM
+    bool "ON PALLADIUM"
+	default n
+	

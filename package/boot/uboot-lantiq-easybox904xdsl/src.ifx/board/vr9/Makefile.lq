@@ -1,0 +1,129 @@
+ifdef CONFIG_VR9_GPHY_FW_EMBEDDED
+    GPHY_FIRMWARE = $(TOPDIR)/board/$(BOARD)/gphy_firmware.img
+else
+    GPHY_FIRMWARE = $(TOPDIR)/dummy
+endif
+
+
+ALL +=bootstrap.bin u-boot.lzimg u-boot.lq
+
+
+LDSCRIPT_BOOTSTRAP := $(TOPDIR)/board/$(BOARD)/bootstrap.lds
+ifdef CONFIG_BOOT_FROM_NOR
+OBJS_BOOTSTRAP  = $(TOPDIR)/$(CPUDIR)/$(BOARD)/start_bootstrap.o
+OBJS_BOOTSTRAP  += $(TOPDIR)/board/$(BOARD)/lowlevel_init.o
+else 
+OBJS_BOOTSTRAP  = $(TOPDIR)/$(CPUDIR)/$(BOARD)/start_uncomp.o
+endif
+
+
+
+OBJS_BOOTSTRAP  += $(TOPDIR)/lib/string.o
+OBJS_BOOTSTRAP  += $(CPUDIR)/$(BOARD)/lib$(CPU).a
+LIBS_BOOTSTRAP  = $(TOPDIR)/lib_bootstrap/libbootstrap.a
+LIBS_BOOTSTRAP += $(TOPDIR)/lib/crc32.o
+LIBS_BOOTSTRAP += $(TOPDIR)/drivers/serial/lq_asc.o
+LIBS_BOOTSTRAP += $(TOPDIR)/$(CPUDIR)/$(BOARD)/clock.o
+#LIBS_BOOTSTRAP += $(TOPDIR)/$(CPUDIR)/$(BOARD)/asc.o
+LIBS_BOOTSTRAP += $(TOPDIR)/arch/mips/lib/time.o
+
+
+BOOTSTRAP_LDFLAGS = -Bstatic -T $(LDSCRIPT_BOOTSTRAP) -Ttext $(CONFIG_BOOTSTRAP_TEXT_BASE) 
+
+ifdef CONFIG_BOOT_FROM_NOR
+$(obj)u-boot.lq: $(obj)System.map $(obj)bootstrap.bin $(obj)u-boot.lzimg
+		@touch dummy
+		@cat $(obj)bootstrap.bin > $(obj)u-boot.lq
+		@cat $(obj)u-boot.lzimg >> $(obj)u-boot.lq
+		@scripts_platform/pad2align.sh -n 65536 u-boot.lq 
+		@cat $(GPHY_FIRMWARE) >>u-boot.lq
+		### ctc ###
+		@scripts_platform/pad2align.sh -n 65536 u-boot.lq 
+		###########
+endif
+
+ifdef CONFIG_BOOT_FROM_NAND
+$(obj)u-boot.lq: $(obj)System.map $(obj)bootstrap.bin $(obj)u-boot.lzimg
+		@touch dummy
+		@$(TOPDIR)/scripts_platform/pad2align.sh -n 10240 bootstrap.bin
+		@cat $(obj)bootstrap.bin > $(obj)u-boot.lq
+		@cat $(obj)u-boot.lzimg >> $(obj)u-boot.lq
+		@$(TOPDIR)/scripts_platform/pad2align.sh -n 65536 u-boot.lq
+		@cat $(GPHY_FIRMWARE) >>u-boot.lq
+		### ctc ###
+		@$(TOPDIR)/scripts_platform/pad2align.sh -n 65536 u-boot.lq
+		###########
+endif
+
+ifdef CONFIG_BOOT_FROM_SPI
+$(obj)u-boot.lq: $(obj)System.map $(obj)bootstrap.bin $(obj)u-boot.lzimg sfddr.bin sfpreload.bin
+		@touch dummy
+		@scripts_platform/mk_sf.pl dummy sfpreload.bin 0xbe220000 u-boot.lq
+		@scripts_platform/pad2align.sh -n 1280 u-boot.lq
+		@cat sfddr.bin >>u-boot.lq
+		@scripts_platform/pad2align.sh -n 20480 u-boot.lq
+		@cat u-boot.lzimg >> u-boot.lq
+		@scripts_platform/pad2align.sh -n 65536 u-boot.lq
+		@cat $(GPHY_FIRMWARE) >>u-boot.lq
+endif
+						
+LDFLAGS_SFDDR = -Bstatic -T $(TOPDIR)/board/$(BOARD)/bootstrap.lds -Ttext 0xbe220500 $(PLATFORM_LDFLAGS)
+OBJS_SFDDR = $(TOPDIR)/board/$(BOARD)/start_sfddr.o 
+OBJS_SFDDR +=$(TOPDIR)/board/$(BOARD)/sfddr_board.o 
+OBJS_SFDDR +=$(TOPDIR)/board/$(BOARD)/tune_ddr.o 
+OBJS_SFDDR +=$(TOPDIR)/board/$(BOARD)/lowlevel_init.o
+LIBS_SFDDR = $(TOPDIR)/lib/string.o
+LIBS_SFDDR += $(TOPDIR)/lib/crc32.o
+LIBS_SFDDR += $(TOPDIR)/$(CPUDIR)/$(BOARD)/clock.o
+LIBS_SFDDR += $(TOPDIR)/drivers/serial/lq_asc.o
+LIBS_SFDDR += $(TOPDIR)/arch/mips/lib/time.o
+LIBS_SFDDR += $(TOPDIR)/lib_bootstrap/LzmaDecode.o
+LIBS_SFDDR += $(TOPDIR)/lib_bootstrap/LzmaWrapper.o
+
+
+sfddr.bin:    $(obj)sfddr
+		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
+
+sfddr:  depend $(SUBDIRS) $(OBJS_SFDDR) $(LIBS_SFDDR) bootstrap
+		$(LD) $(LDFLAGS_SFDDR) $(OBJS_SFDDR) $(LIBS_SFDDR) \
+	     -Map sfddr.map -o sfddr
+
+$(OBJS_SFDDR):
+		rm -f $(OBJS_SFDDR)
+		$(MAKE) -C `dirname $@` sfddr
+				
+
+u-boot.lzimg: $(obj)u-boot.bin System.map
+		lzma e $(obj)u-boot.bin $(obj)u-boot.lzma
+		scripts_platform/pad2align.sh -n 16 u-boot.lzma
+		$(TOPDIR)/tools/mkimage -A mips -T firmware -C lzma \
+		-a 0x$(shell grep "T _start" $(TOPDIR)/System.map | awk '{ printf "%s", $$1 }') \
+		-e 0x$(shell grep "T _start" $(TOPDIR)/System.map | awk '{ printf "%s", $$1 }') \
+		-n 'u-boot image' -d $(obj)u-boot.lzma $@
+
+
+LDFLAGS_SFPRELOAD = -Bstatic -T $(TOPDIR)/board/$(BOARD)/sfpreload.lds -Ttext 0xbe220000
+OBJS_SFPRELOAD =  $(TOPDIR)/board/$(BOARD)/start_sfpreload.o
+OBJS_SFPRELOAD += $(TOPDIR)/board/$(BOARD)/sfpreload.o
+
+
+$(OBJS_SFPRELOAD):
+		@$(MAKE) -C `dirname $@` sf_preload
+
+sfpreload.bin: sfpreload
+		@$(OBJCOPY) -O binary $< $@
+
+sfpreload:  $(OBJS_SFPRELOAD)
+		@$(LD) $(LDFLAGS_SFPRELOAD) $(OBJS_SFPRELOAD) -o sfpreload
+
+
+bootstrap.bin:    $(obj)bootstrap
+		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
+		
+bootstrap: $(OBJS_BOOTSTRAP) $(LIBS_BOOTSTRAP)  $(LDSCRIPT_BOOTSTRAP)
+		$(LD) $(BOOTSTRAP_LDFLAGS) $$UNDEF_SYM $(OBJS_BOOTSTRAP) $(LIBS_BOOTSTRAP) \
+		-Map bootstrap.map -o bootstrap
+		
+$(LIBS_BOOTSTRAP):
+		$(MAKE) -C `dirname $@` all
+		
