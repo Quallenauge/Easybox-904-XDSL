@@ -88,88 +88,93 @@
 				#size-cells = <1>;
 				lantiq,cs = <1>;			// Seems to be needed (EASY80920NAND.dts)
 
-				partition@0 {
-					label = "uboot";
-					reg = <0x0 0x40000>;
-				};
+				partitions {
+					compatible = "fixed-partitions";
+					#address-cells = <1>;
+					#size-cells = <1>;
+					partition@0 {
+						label = "uboot";
+						reg = <0x0 0x40000>;
+					};
 
-				partition@40000 {
-					label = "rootfs1";		// Called "rootfs" in u-boot env. Contains orig. squashfs rootfs
-					reg = <0x40000 0x3C00000>;
-				};
+					partition@40000 {
+						label = "rootfs1";		// Called "rootfs" in u-boot env. Contains orig. squashfs rootfs
+						reg = <0x40000 0x3C00000>;
+					};
 
-				partition@3C40000 {
-					label = "kernel1";		// Called "kernel" in u-boot env. Contains orig. kernel
-					reg = <0x3C40000 0x500000>;
-				};
+					partition@3C40000 {
+						label = "kernel1";		// Called "kernel" in u-boot env. Contains orig. kernel
+						reg = <0x3C40000 0x500000>;
+					};
 
-				partition@4140000 {
-					label = "tmp1";
-					reg = <0x4140000 0x100000>;
-				};
+					partition@4140000 {
+						label = "tmp1";
+						reg = <0x4140000 0x100000>;
+					};
 
-				partition@4240000 {
-					label = "tmp2";
-					reg = <0x4240000 0x200000>;
-				};
+					partition@4240000 {
+						label = "tmp2";
+						reg = <0x4240000 0x200000>;
+					};
 
-				partition@4440000 {
-					label = "sysconfig";
-					reg = <0x4440000 0x100000>;
-				};
+					partition@4440000 {
+						label = "sysconfig";
+						reg = <0x4440000 0x100000>;
+					};
 
-				partition@4540000 {
-					label = "ubootconfig";
-					reg = <0x4540000 0x100000>;
-				};
+					partition@4540000 {
+						label = "ubootconfig";
+						reg = <0x4540000 0x100000>;
+					};
 
-				partition@4640000 {
-					label = "fwdiag";
-					reg = <0x4640000 0xC0000>;
-				};
+					partition@4640000 {
+						label = "fwdiag";
+						reg = <0x4640000 0xC0000>;
+					};
 
-				partition@4700000 {
-					label = "lcdimage";
-					reg = <0x4700000 0x300000>;
-				};
+					partition@4700000 {
+						label = "lcdimage";
+						reg = <0x4700000 0x300000>;
+					};
 
-				partition@4A00000 {
-					label = "mfgconfig";
-					reg = <0x4A00000 0x100000>;
-				};
+					partition@4A00000 {
+						label = "mfgconfig";
+						reg = <0x4A00000 0x100000>;
+					};
 
-				partition@4B00000 {
-					label = "sipdata";
-					reg = <0x4B00000 0x100000>;
-				};
+					partition@4B00000 {
+						label = "sipdata";
+						reg = <0x4B00000 0x100000>;
+					};
 
-				partition@4C00000 {
-					label = "voice";
-					reg = <0x4C00000 0x4000000>;
-				};
+					partition@4C00000 {
+						label = "voice";
+						reg = <0x4C00000 0x4000000>;
+					};
 
-				partition@8C00000 {			// Used for our real open OpenWrt system for ubi-squashfs (rootfs) and ubifs (rootfs_data)
-					label = "misc";			// Rename to "firmware" for special squashfs-rootfs/jffs2-rootfs_data treatment by OpenWrt
-					reg = <0x8C00000 0x13200000>;
-				};
+					partition@8C00000 {			// Used for our real open OpenWrt system for ubi-squashfs (rootfs) and ubifs (rootfs_data)
+						label = "misc";			// Rename to "firmware" for special squashfs-rootfs/jffs2-rootfs_data treatment by OpenWrt
+						reg = <0x8C00000 0x13200000>;
+					};
 
-				partition@1BE00000 {
-					label = "rootfs2";
-					reg = <0x1BE00000 0x3c00000>;
-				};
+					partition@1BE00000 {
+						label = "rootfs2";
+						reg = <0x1BE00000 0x3c00000>;
+					};
 
-				partition@1FA00000 {
-					label = "kernel2";
-					reg = <0x1FA00000 0x500000>;
-				};
+					partition@1FA00000 {
+						label = "kernel2";
+						reg = <0x1FA00000 0x500000>;
+					};
 
-				partition@1FF00000 {
-					label = "mystery";		// Missing in original u-boot environment, seems to be empty (erased)
-					reg = <0x1FF00000 0x100000>;
+					partition@1FF00000 {
+						label = "mystery";		// Missing in original u-boot environment, seems to be empty (erased)
+						reg = <0x1FF00000 0x100000>;
+					};
 				};
 			};
 		};
-
+		
 		ifxhcd@E101000 {
 			status = "okay";
 			gpios = <&gpio 33 0>;				// Seems to be needed. Possibly 5, 14, 20, 39 also used by USB
@@ -182,10 +187,9 @@
 			};
 
 
-
-	/*
-	 *  Following is the very experimental part which is broken and requires much more elaboration
-	 */
+		/*
+		*  Following is the very experimental part which is broken and requires much more elaboration
+		*/
 
 		stp: stp@E100BB0 {
 			compatible = "lantiq,gpio-stp-xway";
@@ -193,27 +197,11 @@
 			#gpio-cells = <2>;
 			gpio-controller;
 
-
-		// VGV7519.dtsi:
-		//	lantiq,shadow = <0xffff>;
-		//	lantiq,groups = <0x3>;
-		//	lantiq,dsl = <0x0>;
-		//	lantiq,phy1 = <0x0>;
-		//	lantiq,phy2 = <0x0>;
-
-		// EASY80920.dtsi:
 			lantiq,shadow = <0xffff>;
 			lantiq,groups = <0x7>;
 			lantiq,dsl = <0x3>;
 			lantiq,phy1 = <0x7>;
 			lantiq,phy2 = <0x7>;
-
-		// P2812HNUFX.dtsi:
-		//	lantiq,shadow = <0xffffff>;
-		//	lantiq,groups = <0x7>;
-		//	lantiq,dsl = <0x0>;
-		//	lantiq,phy1 = <0x0>;
-		//	lantiq,phy2 = <0x0>;
 		};
 
 
@@ -244,65 +232,55 @@
 				};
 			};
 		};
+	};
+};
 
-
-
-
-		// Unknown if extra values in addition to the ones in vr0.dtsi are needed.
-		// Is there anything connected to the PCI bus at all?
-		pci0: pci@E105400 {
-			status = "okay";
-		//?	lantiq,bus-clock = <33333333>;					// from P2812HNUFX.dtsi etc
-			//lantiq,external-clock;					// from P2812HNUFX.dtsi etc
-			//lantiq,delay-hi = <0>;		// 0ns delay		// Obsolete? Not found in kernel sources (from P2812HNUFX.dtsi etc)
-			//lantiq,delay-lo = <0>;		// 0.0ns delay		// Obsolete? Not found in kernel sources (from P2812HNUFX.dtsi etc)
-		//?	interrupt-map-mask = <0xf800 0x0 0x0 0x7>;			// from P2812HNUFX.dtsi, EASY80920.dtsi
-		//?	interrupt-map = <						//
-		//?		0x7000 0 0 1 &icu0 30 1 // slot 14, irq 30		// P2812HNUFX.dtsi, VGV7519.dtsi
-		//?	  //	0x7000 0 0 1 &icu0 29 1 // slot 14, irq 29		// EASY80920.tdsi
-		//?		>;
-		//?	gpio-reset = <&gpio 21 0>;					// from P2812HNUFX.dtsi etc
-		//?	req-mask = <0x1>;			// GNT1			// from P2812HNUFX.dtsi etc
+&eth0 {
+	lan: interface@0 {
+		compatible = "lantiq,xrx200-pdi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;                                
+		mac-address = [ 00 11 22 33 44 55 ];
+		lantiq,switch;
+		ethernet@2 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <2>;
+			phy-mode = "gmii";
+			phy-handle = <&phy11>;
 		};
+	};
 
-
-		eth@E108000 {
-					lan: interface@0 {
-							compatible = "lantiq,xrx200-pdi";
-
-							#address-cells = <1>;
-							#size-cells = <0>;
-							reg = <0>;                                
-							mac-address = [ 00 11 22 33 44 55 ];
-							lantiq,switch;
-							ethernet@2 {
-								compatible = "lantiq,xrx200-pdi-port";
-								reg = <2>;
-								phy-mode = "gmii";
-								phy-handle = <&phy11>;
-							};
-					};
-
-					/* wan port */
-					wan: interface@1 {
-					compatible = "lantiq,xrx200-pdi";
-
-					#address-cells = <1>;
-					#size-cells = <0>;
-					reg = <1>;
-					mac-address = [ 00 11 22 33 44 56 ];
-					/* Enabling wan mode on this interface causes kernel panics
-					   in case port link isn't up */
-					// lantiq,wan;
-							ethernet@4 {
-									compatible = "lantiq,xrx200-pdi-port";
-									reg = <4>;
-									phy-mode = "gmii";
-									phy-handle = <&phy13>;
-							};
-					};
+	/* wan port */
+	wan: interface@1 {
+		compatible = "lantiq,xrx200-pdi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <1>;
+		mac-address = [ 00 11 22 33 44 56 ];
+		/* Enabling wan mode on this interface causes kernel panics
+		   in case port link isn't up */
+		// lantiq,wan;
+		ethernet@4 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <4>;
+			phy-mode = "gmii";
+			phy-handle = <&phy13>;
 		};
 	};
 };
 
+&pci0 {
+	status = "okay";
+	gpio-reset = <&gpio 21 GPIO_ACTIVE_HIGH>;
+};
 
+&pcie0 {
+	pcie@0 {
+		reg = <0 0 0 0 0>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		device_type = "pci";
+	};
+};
