@@ -76,8 +76,7 @@
 
 	rtl8367rb {
 		compatible = "realtek,rtl8367b";
-		cpu_port = <7>;
-		realtek,extif2 = <1 0 1 1 1 1 1 1 2>;
+		realtek,extif1 = <1 0 1 1 1 1 1 1 2>;
 		mdio = <&mdio0>;
 	};
 };
