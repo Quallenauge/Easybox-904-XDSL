@@ -2,6 +2,7 @@
  * Platform driver for the Realtek RTL8367R-VB ethernet switches
  *
  * Copyright (C) 2012 Gabor Juhos <juhosg@openwrt.org>
+ * Copyright (C) 2017 Vitaly Chekryzhev <13hakta@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published
@@ -234,6 +235,11 @@
 #define RTL8367B_LEDGROUPNO	3
 #define RTL8367B_LEDGROUPMASK	0x7
 #define RTL8367B_SEL_LEDRATE_MASK	0xE
+
+#define RTL8367B_PHY_POWERSAVING_REG	21
+#define RTL8367B_PHY_POWERSAVING_OFFSET	12
+#define RTL8367B_PHY_POWERSAVING_MASK	0x1000
+#define RTL8367B_PHY_GREEN_OFFSET	6
 
 struct rtl8367b_initval {
 	u16 reg;
@@ -1316,6 +1322,53 @@ static int rtl8367b_sw_set_led(struct switch_dev *dev,
 	return rtl8367b_led_group_set_mode(smi, 0, val->value.i);
 }
 
+static int rtl8367b_sw_get_green(struct switch_dev *dev,
+					const struct switch_attr *attr,
+					struct switch_val *val)
+{
+	u32 data;
+	int err;
+
+	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
+
+	/* Read green flag */
+	REG_RD(smi, RTL8367B_REG_PHY_AD, &data);
+
+	val->value.i = ((data & BIT(RTL8367B_PHY_GREEN_OFFSET)) >> RTL8367B_PHY_GREEN_OFFSET == 1)? 1 : 0;
+
+	return 0;
+}
+
+static int rtl8367b_sw_set_green(struct switch_dev *dev,
+					const struct switch_attr *attr,
+					struct switch_val *val)
+{
+	int i, err;
+	u32 data;
+
+	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
+
+	if (val->value.i > 1)
+		return -EINVAL;
+
+	REG_RMW(smi,
+		RTL8367B_REG_PHY_AD,
+		BIT(RTL8367B_PHY_GREEN_OFFSET),
+		val->value.i << RTL8367B_PHY_GREEN_OFFSET);
+
+	/* Set green mode for all PHY ports */
+	for (i = 0; i < RTL8367B_PHY_MAX; i++) {
+		rtl8367b_port_phy_reg_get(smi, i, RTL8367B_PHY_POWERSAVING_REG, &data);
+
+		data = (data & (~RTL8367B_PHY_POWERSAVING_MASK)) | (val->value.i <<
+							RTL8367B_PHY_POWERSAVING_OFFSET);
+
+		rtl8367b_port_phy_reg_set(smi, i, RTL8367B_PHY_POWERSAVING_REG, data);
+	}
+
+	return 0;
+}
+
 static int rtl8367b_sw_reset_port_mibs(struct switch_dev *dev,
 				       const struct switch_attr *attr,
 				       struct switch_val *val)
@@ -1382,7 +1435,14 @@ static struct switch_attr rtl8367b_globals[] = {
 		.get = rtl8367b_sw_get_led_blink,
 		.set = rtl8367b_sw_set_led_blink,
 		.max = 7,
-	}
+	}, {
+		.type = SWITCH_TYPE_INT,
+		.name = "green",
+		.description = "Set green mode (0 - disable)",
+		.get = rtl8367b_sw_get_green,
+		.set = rtl8367b_sw_set_green,
+		.max = 1,
+	},
 };
 
 static struct switch_attr rtl8367b_port[] = {
