@@ -1381,6 +1381,37 @@ static int rtl8367b_sw_reset_port_mibs(struct switch_dev *dev,
 				RTL8367B_MIB_CTRL0_PORT_RESET_MASK(port % 8));
 }
 
+static int rtl8367b_sw_set_port_disable(struct switch_dev *dev,
+					const struct switch_attr *attr,
+					struct switch_val *val)
+{
+	if (val->port_vlan > RTL8367B_PHY_MAX)
+		return -EINVAL;
+
+	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
+
+	return rtl8367b_enable_port(smi, val->port_vlan, 1 - val->value.i);
+}
+
+static int rtl8367b_sw_get_port_disable(struct switch_dev *dev,
+					const struct switch_attr *attr,
+					struct switch_val *val)
+{
+	int err;
+	u32 data;
+
+	struct rtl8366_smi *smi = sw_to_rtl8366_smi(dev);
+
+	if (val->port_vlan > RTL8367B_PHY_MAX)
+		return -EINVAL;
+
+	err = rtl8367b_port_phy_reg_get(smi, val->port_vlan, 0, &data);
+
+	val->value.i = ((data & (1 << 11)) >> 11);
+
+	return 0;
+}
+
 static struct switch_attr rtl8367b_globals[] = {
 	{
 		.type = SWITCH_TYPE_INT,
@@ -1448,6 +1479,13 @@ static struct switch_attr rtl8367b_port[] = {
 		.max = 33,
 		.set = NULL,
 		.get = rtl8366_sw_get_port_mib,
+	}, {
+		.type = SWITCH_TYPE_INT,
+		.name = "disable",
+		.description = "Get/Set port state (enabled or disabled)",
+		.max = 1,
+		.set = rtl8367b_sw_set_port_disable,
+		.get = rtl8367b_sw_get_port_disable,
 	},
 };
 
