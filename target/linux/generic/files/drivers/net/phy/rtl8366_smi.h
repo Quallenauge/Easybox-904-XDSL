@@ -15,6 +15,11 @@
 #include <linux/switch.h>
 #include <linux/platform_device.h>
 
+#define RTL8366_SMI_ACK_RETRY_COUNT	5
+
+#define RTL8366_SMI_HW_STOP_DELAY	25	/* msecs */
+#define RTL8366_SMI_HW_START_DELAY	100	/* msecs */
+
 struct rtl8366_smi_ops;
 struct rtl8366_vlan_ops;
 struct mii_bus;
