@@ -2,7 +2,6 @@
 # Parent a7538c8429eaa33495bcf1548863a2d0d841fac7
 httpd support
 
-diff --git a/common/cmd_net.c b/common/cmd_net.c
 --- a/common/cmd_net.c
 +++ b/common/cmd_net.c
 @@ -54,6 +54,21 @@ U_BOOT_CMD(
@@ -27,7 +26,6 @@ diff --git a/common/cmd_net.c b/common/cmd_net.c
  int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
  {
  	return netboot_common (RARP, cmdtp, argc, argv);
-diff --git a/include/net.h b/include/net.h
 --- a/include/net.h
 +++ b/include/net.h
 @@ -183,6 +183,7 @@ typedef struct {
@@ -47,7 +45,6 @@ diff --git a/include/net.h b/include/net.h
  
  /* from net/net.c */
  extern char	BootFile[128];			/* Boot File name		*/
-diff --git a/net/Makefile b/net/Makefile
 --- a/net/Makefile
 +++ b/net/Makefile
 @@ -35,6 +35,7 @@ COBJS-$(CONFIG_CMD_NFS)  += nfs.o
@@ -58,8 +55,6 @@ diff --git a/net/Makefile b/net/Makefile
  
  COBJS	:= $(COBJS-y)
  SRCS	:= $(COBJS:.o=.c)
-diff --git a/net/http-strings.h b/net/http-strings.h
-new file mode 100644
 --- /dev/null
 +++ b/net/http-strings.h
 @@ -0,0 +1,111 @@
@@ -174,8 +169,6 @@ new file mode 100644
 +const char http_txt[5] = 
 +/* ".txt" */
 +{0x2e, 0x74, 0x78, 0x74, };
-diff --git a/net/httpd-fsdata.c b/net/httpd-fsdata.c
-new file mode 100644
 --- /dev/null
 +++ b/net/httpd-fsdata.c
 @@ -0,0 +1,324 @@
@@ -503,8 +496,6 @@ new file mode 100644
 +#define HTTPD_FS_ROOT file_wait_html
 +
 +#define HTTPD_FS_NUMFILES 9
-diff --git a/net/httpd-fsdata.h b/net/httpd-fsdata.h
-new file mode 100644
 --- /dev/null
 +++ b/net/httpd-fsdata.h
 @@ -0,0 +1,48 @@
@@ -556,8 +547,6 @@ new file mode 100644
 +  char *data;
 +  int len;
 +};
-diff --git a/net/httpd.c b/net/httpd.c
-new file mode 100644
 --- /dev/null
 +++ b/net/httpd.c
 @@ -0,0 +1,495 @@
@@ -1056,8 +1045,6 @@ new file mode 100644
 +
 +
 +#endif
-diff --git a/net/httpd.h b/net/httpd.h
-new file mode 100644
 --- /dev/null
 +++ b/net/httpd.h
 @@ -0,0 +1,23 @@
@@ -1084,8 +1071,6 @@ new file mode 100644
 +/**********************************************************************/
 +
 +#endif /* __HTTP_H__ */
-diff --git a/net/makefsdata b/net/makefsdata
-new file mode 100644
 --- /dev/null
 +++ b/net/makefsdata
 @@ -0,0 +1,78 @@
@@ -1167,7 +1152,6 @@ new file mode 100644
 +
 +print(OUTPUT "#define HTTPD_FS_ROOT file$fvars[$i - 1]\n\n");
 +print(OUTPUT "#define HTTPD_FS_NUMFILES $i\n");
-diff --git a/net/net.c b/net/net.c
 --- a/net/net.c
 +++ b/net/net.c
 @@ -95,6 +95,10 @@
@@ -1237,8 +1221,6 @@ diff --git a/net/net.c b/net/net.c
  #ifdef CONFIG_NET_MULTI
  			extern int eth_get_dev_index (void);
  			int num = eth_get_dev_index ();
-diff --git a/net/tcp.c b/net/tcp.c
-new file mode 100644
 --- /dev/null
 +++ b/net/tcp.c
 @@ -0,0 +1,741 @@
@@ -1983,8 +1965,6 @@ new file mode 100644
 +	
 +	return;
 +}
-diff --git a/net/tcp.h b/net/tcp.h
-new file mode 100644
 --- /dev/null
 +++ b/net/tcp.h
 @@ -0,0 +1,342 @@

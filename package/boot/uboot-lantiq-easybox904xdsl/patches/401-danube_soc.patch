@@ -2,8 +2,6 @@
 # Parent bc66463e89e4a20be0b8a0870e5eab58daff506c
 add Danube SoC
 
-diff --git a/arch/mips/cpu/danube/Makefile b/arch/mips/cpu/danube/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/Makefile
 @@ -0,0 +1,49 @@
@@ -56,8 +54,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/arch/mips/cpu/danube/boot.c b/arch/mips/cpu/danube/boot.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/boot.c
 @@ -0,0 +1,145 @@
@@ -206,8 +202,6 @@ new file mode 100644
 +}
 +
 +
-diff --git a/arch/mips/cpu/danube/boot.h b/arch/mips/cpu/danube/boot.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/boot.h
 @@ -0,0 +1,88 @@
@@ -299,8 +293,6 @@ new file mode 100644
 +#endif
 +
 +#endif /* #ifdef _BOOT_H */
-diff --git a/arch/mips/cpu/danube/cache.c b/arch/mips/cpu/danube/cache.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/cache.c
 @@ -0,0 +1,211 @@
@@ -515,8 +507,6 @@ new file mode 100644
 +	tlb_write_indexed();
 +}
 +
-diff --git a/arch/mips/cpu/danube/clock.c b/arch/mips/cpu/danube/clock.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/clock.c
 @@ -0,0 +1,95 @@
@@ -615,8 +605,6 @@ new file mode 100644
 +      return get_fpi_clk(); /*ssc clock is the same as fpi clock*/
 +}
 +	  
-diff --git a/arch/mips/cpu/danube/cpu.c b/arch/mips/cpu/danube/cpu.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/cpu.c
 @@ -0,0 +1,33 @@
@@ -653,8 +641,6 @@ new file mode 100644
 +	return 0;
 +}
 +
-diff --git a/arch/mips/cpu/danube/interrupts.c b/arch/mips/cpu/danube/interrupts.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/interrupts.c
 @@ -0,0 +1,33 @@
@@ -691,8 +677,6 @@ new file mode 100644
 +{
 +	return 0;
 +}
-diff --git a/arch/mips/cpu/danube/start.S b/arch/mips/cpu/danube/start.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/start.S
 @@ -0,0 +1,603 @@
@@ -1299,8 +1283,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/danube/start_bootstrap.S b/arch/mips/cpu/danube/start_bootstrap.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/start_bootstrap.S
 @@ -0,0 +1,659 @@
@@ -1963,8 +1945,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/danube/tag.h b/arch/mips/cpu/danube/tag.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/danube/tag.h
 @@ -0,0 +1,31 @@
@@ -1999,8 +1979,6 @@ new file mode 100644
 +
 +#endif /* #ifdef _BOOT_TAG_H */
 +
-diff --git a/arch/mips/include/asm/danube.h b/arch/mips/include/asm/danube.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/danube.h
 @@ -0,0 +1,2036 @@

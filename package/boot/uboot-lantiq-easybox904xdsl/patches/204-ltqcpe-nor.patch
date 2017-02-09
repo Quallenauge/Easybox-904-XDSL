@@ -2,10 +2,9 @@
 # Parent a733c8995f539031d27bd8af87a8a0ac72b50345
 nor flash patch
 
-diff --git a/common/cmd_flash.c b/common/cmd_flash.c
 --- a/common/cmd_flash.c
 +++ b/common/cmd_flash.c
-@@ -205,7 +205,9 @@
+@@ -205,7 +205,9 @@ addr_spec(char *arg1, char *arg2, ulong
  
  static int
  flash_fill_sect_ranges (ulong addr_first, ulong addr_last,
@@ -16,7 +15,7 @@ diff --git a/common/cmd_flash.c b/common/cmd_flash.c
  			int *s_count )
  {
  	flash_info_t *info;
-@@ -243,13 +245,32 @@
+@@ -243,13 +245,32 @@ flash_fill_sect_ranges (ulong addr_first
  				continue;
  			if (addr_last < info->start[sect])
  				continue;
@@ -51,7 +50,7 @@ diff --git a/common/cmd_flash.c b/common/cmd_flash.c
  		}
  		if (s_first[bank] >= 0) {
  			if (s_last[bank] < 0) {
-@@ -431,15 +452,37 @@
+@@ -431,15 +452,37 @@ int flash_sect_erase (ulong addr_first,
  	int erased = 0;
  	int planned;
  	int rcode = 0;
@@ -92,7 +91,7 @@ diff --git a/common/cmd_flash.c b/common/cmd_flash.c
  				erased += s_last[bank] - s_first[bank] + 1;
  				debug ("Erase Flash from 0x%08lx to 0x%08lx "
  					"in Bank # %ld ",
-@@ -449,7 +492,23 @@
+@@ -449,7 +492,23 @@ int flash_sect_erase (ulong addr_first,
  						info->start[s_last[bank]+1] - 1,
  					bank+1);
  				rcode = flash_erase (info, s_first[bank], s_last[bank]);
@@ -116,7 +115,7 @@ diff --git a/common/cmd_flash.c b/common/cmd_flash.c
  		}
  		printf ("Erased %d sectors\n", erased);
  	} else if (rcode == 0) {
-@@ -657,7 +716,7 @@
+@@ -657,7 +716,7 @@ int flash_sect_protect (int p, ulong add
  	int planned;
  	int rcode;
  
@@ -125,7 +124,6 @@ diff --git a/common/cmd_flash.c b/common/cmd_flash.c
  
  	protected = 0;
  
-diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
 --- a/drivers/mtd/cfi_flash.c
 +++ b/drivers/mtd/cfi_flash.c
 @@ -32,7 +32,7 @@
@@ -137,7 +135,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  
  #include <common.h>
  #include <asm/processor.h>
-@@ -85,6 +85,22 @@
+@@ -85,6 +85,22 @@ flash_info_t flash_info[CFI_MAX_FLASH_BA
  #define CONFIG_SYS_FLASH_CFI_WIDTH	FLASH_CFI_8BIT
  #endif
  
@@ -160,7 +158,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  static void __flash_write8(u8 value, void *addr)
  {
  	__raw_writeb(value, addr);
-@@ -264,9 +280,9 @@
+@@ -264,9 +280,9 @@ static inline uchar flash_read_uchar (fl
  
  	cp = flash_map (info, 0, offset);
  #if defined(__LITTLE_ENDIAN) || defined(CONFIG_SYS_WRITE_SWAPPED_DATA)
@@ -172,7 +170,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  #endif
  	flash_unmap (info, 0, offset, cp);
  	return retval;
-@@ -280,7 +296,7 @@
+@@ -280,7 +296,7 @@ static inline ushort flash_read_word (fl
  	ushort *addr, retval;
  
  	addr = flash_map (info, 0, offset);
@@ -181,7 +179,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  	flash_unmap (info, 0, offset, addr);
  	return retval;
  }
-@@ -305,19 +321,28 @@
+@@ -305,19 +321,28 @@ static ulong flash_read_long (flash_info
  	debug ("long addr is at %p info->portwidth = %d\n", addr,
  	       info->portwidth);
  	for (x = 0; x < 4 * info->portwidth; x++) {
@@ -219,7 +217,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  #endif
  	flash_unmap(info, sect, offset, addr);
  
-@@ -338,21 +363,22 @@
+@@ -338,21 +363,22 @@ void flash_write_cmd (flash_info_t * inf
  	flash_make_cmd (info, cmd, &cword);
  	switch (info->portwidth) {
  	case FLASH_CFI_8BIT:
@@ -251,7 +249,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	case FLASH_CFI_64BIT:
  #ifdef DEBUG
-@@ -362,11 +388,11 @@
+@@ -362,11 +388,11 @@ void flash_write_cmd (flash_info_t * inf
  			print_longlong (str, cword.ll);
  
  			debug ("fwrite addr %p cmd %x %s 64 bit x %d bit\n",
@@ -265,7 +263,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	}
  
-@@ -397,16 +423,19 @@
+@@ -397,16 +423,19 @@ static int flash_isequal (flash_info_t *
  	debug ("is= cmd %x(%c) addr %p ", cmd, cmd, addr);
  	switch (info->portwidth) {
  	case FLASH_CFI_8BIT:
@@ -291,7 +289,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	case FLASH_CFI_64BIT:
  #ifdef DEBUG
-@@ -414,12 +443,13 @@
+@@ -414,12 +443,13 @@ static int flash_isequal (flash_info_t *
  			char str1[20];
  			char str2[20];
  
@@ -307,7 +305,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	default:
  		retval = 0;
-@@ -443,16 +473,20 @@
+@@ -443,16 +473,20 @@ static int flash_isset (flash_info_t * i
  	flash_make_cmd (info, cmd, &cword);
  	switch (info->portwidth) {
  	case FLASH_CFI_8BIT:
@@ -332,7 +330,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	default:
  		retval = 0;
-@@ -476,17 +510,22 @@
+@@ -476,17 +510,22 @@ static int flash_toggle (flash_info_t *
  	flash_make_cmd (info, cmd, &cword);
  	switch (info->portwidth) {
  	case FLASH_CFI_8BIT:
@@ -360,7 +358,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  	default:
  		retval = 0;
-@@ -537,14 +576,10 @@
+@@ -537,14 +576,10 @@ static int flash_status_check (flash_inf
  	ulong start;
  
  #if CONFIG_SYS_HZ != 1000
@@ -376,7 +374,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  	start = get_timer (0);
  	while (flash_is_busy (info, sector)) {
  		if (get_timer (start) > tout) {
-@@ -606,64 +641,6 @@
+@@ -606,64 +641,6 @@ static int flash_full_status_check (flas
  	return retcode;
  }
  
@@ -441,7 +439,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  /*-----------------------------------------------------------------------
   */
  static void flash_add_byte (flash_info_t * info, cfiword_t * cword, uchar c)
-@@ -811,12 +788,7 @@
+@@ -811,12 +788,7 @@ static int flash_write_cfiword (flash_in
  	if (!sect_found)
  		sect = find_sector (info, dest);
  
@@ -455,7 +453,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  }
  
  #ifdef CONFIG_SYS_FLASH_USE_BUFFER_WRITE
-@@ -978,15 +950,9 @@
+@@ -978,15 +950,9 @@ static int flash_write_cfibuffer (flash_
  		}
  
  		flash_write_cmd (info, sector, 0, AMD_CMD_WRITE_BUFFER_CONFIRM);
@@ -474,7 +472,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  		break;
  
  	default:
-@@ -1008,7 +974,6 @@
+@@ -1008,7 +974,6 @@ int flash_erase (flash_info_t * info, in
  	int rcode = 0;
  	int prot;
  	flash_sect_t sect;
@@ -482,7 +480,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  
  	if (info->flash_id != FLASH_MAN_CFI) {
  		puts ("Can't erase unknown flash type - aborted\n");
-@@ -1072,20 +1037,10 @@
+@@ -1072,20 +1037,10 @@ int flash_erase (flash_info_t * info, in
  				break;
  			}
  
@@ -506,7 +504,7 @@ diff --git a/drivers/mtd/cfi_flash.c b/drivers/mtd/cfi_flash.c
  				putc ('.');
  		}
  	}
-@@ -2062,15 +2017,15 @@
+@@ -2062,15 +2017,15 @@ unsigned long flash_init (void)
  		}
  #endif /* CONFIG_SYS_FLASH_PROTECTION */
  	}

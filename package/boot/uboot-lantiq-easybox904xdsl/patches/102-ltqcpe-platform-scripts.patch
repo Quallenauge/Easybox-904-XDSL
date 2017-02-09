@@ -2,8 +2,6 @@
 # Parent e02825edc060878724b6037290781147d5bedaf9
 Add platform scripts to generate images for specific boot modes
 
-diff --git a/scripts_platform/Kconfig b/scripts_platform/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/scripts_platform/Kconfig
 @@ -0,0 +1,700 @@
@@ -707,8 +705,6 @@ new file mode 100644
 +
 +source lib/Kconfig
 +source common/Kconfig
-diff --git a/scripts_platform/big_nand_gct b/scripts_platform/big_nand_gct
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/big_nand_gct
 @@ -0,0 +1,52 @@
@@ -764,8 +760,6 @@ new file mode 100755
 +
 +
 +
-diff --git a/scripts_platform/eegct b/scripts_platform/eegct
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/eegct
 @@ -0,0 +1,120 @@
@@ -889,8 +883,6 @@ new file mode 100755
 +
 +
 +
-diff --git a/scripts_platform/gct b/scripts_platform/gct
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/gct
 @@ -0,0 +1,157 @@
@@ -1051,8 +1043,6 @@ new file mode 100755
 +#END
 +
 +
-diff --git a/scripts_platform/gen_ram.pl b/scripts_platform/gen_ram.pl
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/gen_ram.pl
 @@ -0,0 +1,21 @@
@@ -1077,8 +1067,6 @@ new file mode 100755
 +
 +printf OUTFILE pack("H*",$string);
 +
-diff --git a/scripts_platform/mk_eeprom.pl b/scripts_platform/mk_eeprom.pl
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/mk_eeprom.pl
 @@ -0,0 +1,77 @@
@@ -1159,8 +1147,6 @@ new file mode 100755
 +
 +printf OUTFILE pack("H*", $exehead.$start_address);
 +
-diff --git a/scripts_platform/mk_sf.pl b/scripts_platform/mk_sf.pl
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/mk_sf.pl
 @@ -0,0 +1,89 @@
@@ -1253,8 +1239,6 @@ new file mode 100755
 +$exehead=sprintf("%08x",$exehead).sprintf("%08x%08x",0x4,hex($ARGV[2]));
 +
 +printf OUTFILE pack("H*", $exehead);
-diff --git a/scripts_platform/mk_vr9_nand.sh b/scripts_platform/mk_vr9_nand.sh
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/mk_vr9_nand.sh
 @@ -0,0 +1,10 @@
@@ -1268,8 +1252,6 @@ new file mode 100755
 +cat ram_tmp >>u-boot.nand
 +cat u-boot.ifx >>u-boot.nand
 +rm tmp ram_tmp u-boot.ifx
-diff --git a/scripts_platform/mk_vr9_sf.sh b/scripts_platform/mk_vr9_sf.sh
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/mk_vr9_sf.sh
 @@ -0,0 +1,10 @@
@@ -1283,8 +1265,6 @@ new file mode 100755
 +cat ram_tmp >>u-boot.sflash
 +cat u-boot.ifx >>u-boot.sflash
 +rm tmp ram_tmp u-boot.ifx
-diff --git a/scripts_platform/pad2align.sh b/scripts_platform/pad2align.sh
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/pad2align.sh
 @@ -0,0 +1,52 @@
@@ -1340,8 +1320,6 @@ new file mode 100755
 +  cat tmppad >>$ALIGNFILE
 +  rm tmppad
 +fi
-diff --git a/scripts_platform/sgct b/scripts_platform/sgct
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/sgct
 @@ -0,0 +1,131 @@
@@ -1476,8 +1454,6 @@ new file mode 100755
 +
 +
 +
-diff --git a/scripts_platform/vr9_ddr.pl b/scripts_platform/vr9_ddr.pl
-new file mode 100755
 --- /dev/null
 +++ b/scripts_platform/vr9_ddr.pl
 @@ -0,0 +1,101 @@

@@ -2,8 +2,6 @@
 # Parent bf86f909f12a336b0f523cdd47e36f72c6b11c0f
 add Amazon-SE SoC
 
-diff --git a/arch/mips/cpu/amazon_se/Makefile b/arch/mips/cpu/amazon_se/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/Makefile
 @@ -0,0 +1,49 @@
@@ -56,8 +54,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/arch/mips/cpu/amazon_se/cache.c b/arch/mips/cpu/amazon_se/cache.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/cache.c
 @@ -0,0 +1,211 @@
@@ -272,8 +268,6 @@ new file mode 100644
 +	tlb_write_indexed();
 +}
 +
-diff --git a/arch/mips/cpu/amazon_se/clock.c b/arch/mips/cpu/amazon_se/clock.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/clock.c
 @@ -0,0 +1,49 @@
@@ -326,8 +320,6 @@ new file mode 100644
 +}
 +
 +
-diff --git a/arch/mips/cpu/amazon_se/config.mk b/arch/mips/cpu/amazon_se/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/config.mk
 @@ -0,0 +1,39 @@
@@ -370,8 +362,6 @@ new file mode 100644
 +MIPSFLAGS += $(ENDIANNESS)
 +
 +PLATFORM_CPPFLAGS += $(MIPSFLAGS)
-diff --git a/arch/mips/cpu/amazon_se/cpu.c b/arch/mips/cpu/amazon_se/cpu.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/cpu.c
 @@ -0,0 +1,31 @@
@@ -406,8 +396,6 @@ new file mode 100644
 +	return 0;
 +}
 +
-diff --git a/arch/mips/cpu/amazon_se/interrupts.c b/arch/mips/cpu/amazon_se/interrupts.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/interrupts.c
 @@ -0,0 +1,33 @@
@@ -444,8 +432,6 @@ new file mode 100644
 +{
 +	return 0;
 +}
-diff --git a/arch/mips/cpu/amazon_se/start.S b/arch/mips/cpu/amazon_se/start.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/start.S
 @@ -0,0 +1,604 @@
@@ -1053,8 +1039,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/amazon_se/start_bootstrap.S b/arch/mips/cpu/amazon_se/start_bootstrap.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/amazon_se/start_bootstrap.S
 @@ -0,0 +1,622 @@
@@ -1680,8 +1664,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/include/asm/amazon_se.h b/arch/mips/include/asm/amazon_se.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/amazon_se.h
 @@ -0,0 +1,2427 @@

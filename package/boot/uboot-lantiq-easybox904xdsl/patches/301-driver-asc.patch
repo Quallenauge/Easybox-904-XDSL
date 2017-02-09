@@ -2,8 +2,6 @@
 # Parent 3d190e4b8e94ff536fd254cb4233ba40dbfe703a
 Add ASC driver
 
-diff --git a/arch/mips/include/asm/lq_asc.h b/arch/mips/include/asm/lq_asc.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/lq_asc.h
 @@ -0,0 +1,220 @@
@@ -227,7 +225,6 @@ new file mode 100644
 +int asc_getc (void);
 +
 +#endif /* __ASC_H */
-diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
 --- a/drivers/serial/Makefile
 +++ b/drivers/serial/Makefile
 @@ -30,6 +30,7 @@ COBJS-$(CONFIG_ALTERA_JTAG_UART) += alte
@@ -238,8 +235,6 @@ diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile
  COBJS-$(CONFIG_MCFUART) += mcfuart.o
  COBJS-$(CONFIG_NS9750_UART) += ns9750_serial.o
  COBJS-$(CONFIG_OPENCORES_YANU) += opencores_yanu.o
-diff --git a/drivers/serial/lq_asc.c b/drivers/serial/lq_asc.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/serial/lq_asc.c
 @@ -0,0 +1,294 @@

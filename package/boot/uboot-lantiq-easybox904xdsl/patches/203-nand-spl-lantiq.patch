@@ -2,8 +2,6 @@
 # Parent 35e0a4da01bca2e43f5770a3dd9d34e22f0f8d0a
 add nand-spl for Lantiq target
 
-diff --git a/nand_spl/board/lantiq/Makefile b/nand_spl/board/lantiq/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/Makefile
 @@ -0,0 +1,153 @@
@@ -160,8 +158,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/nand_spl/board/lantiq/config.mk b/nand_spl/board/lantiq/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/config.mk
 @@ -0,0 +1,40 @@
@@ -205,8 +201,6 @@ new file mode 100644
 +ifeq ($(debug),1)
 +PLATFORM_CPPFLAGS += -DDEBUG
 +endif
-diff --git a/nand_spl/board/lantiq/nand_preload.c b/nand_spl/board/lantiq/nand_preload.c
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/nand_preload.c
 @@ -0,0 +1,77 @@
@@ -287,8 +281,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/nand_spl/board/lantiq/nandpreload.lds b/nand_spl/board/lantiq/nandpreload.lds
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/nandpreload.lds
 @@ -0,0 +1,47 @@
@@ -339,8 +331,6 @@ new file mode 100644
 +  .bss  : { *(.bss) }
 +	
 +}
-diff --git a/nand_spl/board/lantiq/start_nandpreload.S b/nand_spl/board/lantiq/start_nandpreload.S
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/start_nandpreload.S
 @@ -0,0 +1,46 @@
@@ -390,8 +380,6 @@ new file mode 100644
 +    j    t9
 +    nop
 +    
-diff --git a/nand_spl/board/lantiq/u-boot.lds b/nand_spl/board/lantiq/u-boot.lds
-new file mode 100644
 --- /dev/null
 +++ b/nand_spl/board/lantiq/u-boot.lds
 @@ -0,0 +1,70 @@

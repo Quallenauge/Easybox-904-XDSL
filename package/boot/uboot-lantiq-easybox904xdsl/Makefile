@@ -200,12 +200,6 @@ endif
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
-	cp -r ./files/* $(PKG_BUILD_DIR)
-    ##### 20100726 ctc added to customize ######
-	if [ -d "./src.ifx" ] ; then \
-		$(CP) ./src.ifx/* $(PKG_BUILD_DIR)/. ; \
-	fi
-    ###################################################
 	# modify DDR column
 	if [ "$(DDR_SIZE)" == "128M" ] ; then \
 		if [ "$(CONFIG_UBOOT_CONFIG_VR9_DDR2)" = "y" ] ; then \
@@ -246,35 +240,7 @@ define Build/Prepare
 			sed -i -e 's/0x3000401/0x2000401/' $(PKG_BUILD_DIR)/board/vr9/ddr2/xrx200_ddr2_300M_lp_settings.h ; \
 		fi ; \
 	fi
-	# enable "loady"
-#	sed -i -e 's/CFG_CMD_LOADB/0x0/' $(PKG_BUILD_DIR)/include/configs/$(UBOOT_PLATFORM).h
-	# disable "askenv"
-#	sed -i -e 's/CFG_CMD_ASKENV/0x0/' $(PKG_BUILD_DIR)/include/configs/$(UBOOT_PLATFORM).h
-    ##### 20100920 ctc added to support writable JFFS2 ######
-	if [ -d "./$(UBJ_DIR)" ] ; then \
-		$(CP) ./$(UBJ_DIR)/* $(PKG_BUILD_DIR)/. ; \
-	fi
-    ###################################################
-    ##### 20100920 ctc added to support embedded-supertask ######
-	if [ -d "./$(UBS_DIR)" ] ; then \
-		$(CP) ./$(UBS_DIR)/* $(PKG_BUILD_DIR)/. ; \
-	fi
-    ###################################################
-    ##### 20100920 ctc added to support embedded-supertask ######
-	if [ -d "./$(UBN_DIR)" ] ; then \
-		$(CP) ./$(UBN_DIR)/* $(PKG_BUILD_DIR)/. ; \
-	fi
-    ###################################################
-    ##### 20100726 ctc added to support DT 723 model ######
-	if [ -d "./$(UB_DIR)" ] ; then \
-		$(CP) ./$(UB_DIR)/* $(PKG_BUILD_DIR)/. ; \
-	fi
-    ###################################################
 endef
-
-#define Build/Configure
-#endef
-
 
 ### ctc ###
 #UBOOT_IMAGE :=$(PKG_BUILD_DIR)/u-boot.lq

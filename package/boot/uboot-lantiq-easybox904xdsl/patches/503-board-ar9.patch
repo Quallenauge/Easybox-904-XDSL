@@ -2,8 +2,6 @@
 # Parent 2edc0b8663f8b574db40b161c068a247f5300e97
 Add AR9 Board
 
-diff --git a/board/ar9/Kconfig b/board/ar9/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/Kconfig
 @@ -0,0 +1,140 @@
@@ -147,8 +145,6 @@ new file mode 100644
 +        depends on NOR_FLASH
 +
 +					
-diff --git a/board/ar9/Makefile b/board/ar9/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/Makefile
 @@ -0,0 +1,56 @@
@@ -208,8 +204,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/board/ar9/Makefile.lq b/board/ar9/Makefile.lq
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/Makefile.lq
 @@ -0,0 +1,130 @@
@@ -343,8 +337,6 @@ new file mode 100644
 +$(LIBS_BOOTSTRAP):
 +		$(MAKE) -C `dirname $@` all
 +		
-diff --git a/board/ar9/ar9.c b/board/ar9/ar9.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/ar9.c
 @@ -0,0 +1,252 @@
@@ -600,8 +592,6 @@ new file mode 100644
 +#endif
 +#endif
 +
-diff --git a/board/ar9/ar9_ddr111_boot.cmm b/board/ar9/ar9_ddr111_boot.cmm
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/ar9_ddr111_boot.cmm
 @@ -0,0 +1,206 @@
@@ -811,8 +801,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/ar9/board.c b/board/ar9/board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/board.c
 @@ -0,0 +1,208 @@
@@ -1024,8 +1012,6 @@ new file mode 100644
 +	puts ("### ERROR ### Please RESET the board ###\n");
 +	for (;;);
 +}
-diff --git a/board/ar9/bootstrap.lds b/board/ar9/bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/bootstrap.lds
 @@ -0,0 +1,72 @@
@@ -1101,8 +1087,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/board/ar9/config.mk b/board/ar9/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/config.mk
 @@ -0,0 +1,27 @@
@@ -1133,8 +1117,6 @@ new file mode 100644
 +
 +TEXT_BASE = $(CONFIG_RAM_TEXT_BASE)
 +
-diff --git a/board/ar9/ether_board.c b/board/ar9/ether_board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/ether_board.c
 @@ -0,0 +1,177 @@
@@ -1315,8 +1297,6 @@ new file mode 100644
 +    return;  
 +
 +}
-diff --git a/board/ar9/etherdl.c b/board/ar9/etherdl.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/etherdl.c
 @@ -0,0 +1,442 @@
@@ -1762,8 +1742,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/ar9/etron_166_settings.h b/board/ar9/etron_166_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/etron_166_settings.h
 @@ -0,0 +1,49 @@
@@ -1816,8 +1794,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x600
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/etron_196_settings.h b/board/ar9/etron_196_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/etron_196_settings.h
 @@ -0,0 +1,49 @@
@@ -1870,8 +1846,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x600
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/hynix_166_settings.h b/board/ar9/hynix_166_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/hynix_166_settings.h
 @@ -0,0 +1,49 @@
@@ -1924,8 +1898,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x500
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/hynix_196_settings.h b/board/ar9/hynix_196_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/hynix_196_settings.h
 @@ -0,0 +1,49 @@
@@ -1978,8 +1950,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x600
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/lowlevel_init.S b/board/ar9/lowlevel_init.S
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/lowlevel_init.S
 @@ -0,0 +1,598 @@
@@ -2581,8 +2551,6 @@ new file mode 100644
 +	      nop
 +
 +	.end	lowlevel_init
-diff --git a/board/ar9/nand_spl_board.c b/board/ar9/nand_spl_board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/nand_spl_board.c
 @@ -0,0 +1,173 @@
@@ -2759,8 +2727,6 @@ new file mode 100644
 +     nand_boot();
 +	
 +}
-diff --git a/board/ar9/nanya_ddr166_settings.h b/board/ar9/nanya_ddr166_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/nanya_ddr166_settings.h
 @@ -0,0 +1,51 @@
@@ -2815,8 +2781,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/qimonda_166_settings.h b/board/ar9/qimonda_166_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/qimonda_166_settings.h
 @@ -0,0 +1,49 @@
@@ -2869,8 +2833,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x600
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/qimonda_196_settings.h b/board/ar9/qimonda_196_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/qimonda_196_settings.h
 @@ -0,0 +1,49 @@
@@ -2923,8 +2885,6 @@ new file mode 100644
 +#define MC_DC44_VALUE	0x0
 +#define MC_DC45_VALUE	0x600
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/ar9/ram.conf b/board/ar9/ram.conf
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/ram.conf
 @@ -0,0 +1,57 @@
@@ -2985,8 +2945,6 @@ new file mode 100644
 +    0xbf800060 0x0d
 +    
 +    0xbf801030 0x100    
-diff --git a/board/ar9/rgmii_download.sh b/board/ar9/rgmii_download.sh
-new file mode 100755
 --- /dev/null
 +++ b/board/ar9/rgmii_download.sh
 @@ -0,0 +1,20 @@
@@ -3010,8 +2968,6 @@ new file mode 100755
 +   sleep 3  
 +done
 +
-diff --git a/board/ar9/sf_board.c b/board/ar9/sf_board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/sf_board.c
 @@ -0,0 +1,278 @@
@@ -3293,8 +3249,6 @@ new file mode 100644
 +   (*fn)();
 +
 +}
-diff --git a/board/ar9/start_ether.S b/board/ar9/start_ether.S
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/start_ether.S
 @@ -0,0 +1,89 @@
@@ -3387,8 +3341,6 @@ new file mode 100644
 +	j	loop
 +	nop
 +
-diff --git a/board/ar9/start_sf.S b/board/ar9/start_sf.S
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/start_sf.S
 @@ -0,0 +1,530 @@
@@ -3922,8 +3874,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/board/ar9/u-boot.lds b/board/ar9/u-boot.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/ar9/u-boot.lds
 @@ -0,0 +1,70 @@
@@ -3997,8 +3947,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/include/configs/ar9.h b/include/configs/ar9.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/ar9.h
 @@ -0,0 +1,255 @@
@@ -4257,8 +4205,6 @@ new file mode 100644
 +
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/configs/ar9_cfg.h b/include/configs/ar9_cfg.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/ar9_cfg.h
 @@ -0,0 +1,1512 @@

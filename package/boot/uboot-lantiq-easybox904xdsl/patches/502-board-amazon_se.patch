@@ -2,8 +2,6 @@
 # Parent baae5ed014c1bfb85abb8a44b758a867b7cf9f4f
 Add Amazon-SE Board
 
-diff --git a/board/amazon_se/Kconfig b/board/amazon_se/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/Kconfig
 @@ -0,0 +1,79 @@
@@ -86,8 +84,6 @@ new file mode 100644
 +	   depends on BOOT_FROM_SPI
 +
 +	
-diff --git a/board/amazon_se/Makefile b/board/amazon_se/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/Makefile
 @@ -0,0 +1,63 @@
@@ -154,8 +150,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/board/amazon_se/Makefile.lq b/board/amazon_se/Makefile.lq
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/Makefile.lq
 @@ -0,0 +1,78 @@
@@ -237,8 +231,6 @@ new file mode 100644
 +$(LIBS_BOOTSTRAP):
 +		$(MAKE) -C `dirname $@` all
 +		
-diff --git a/board/amazon_se/README b/board/amazon_se/README
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/README
 @@ -0,0 +1,55 @@
@@ -297,8 +289,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/amazon_se/amazon_se.c b/board/amazon_se/amazon_se.c
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/amazon_se.c
 @@ -0,0 +1,225 @@
@@ -527,8 +517,6 @@ new file mode 100644
 +}
 +				   
 +
-diff --git a/board/amazon_se/amse2.cmm b/board/amazon_se/amse2.cmm
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/amse2.cmm
 @@ -0,0 +1,91 @@
@@ -623,8 +611,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/amazon_se/bootstrap.lds b/board/amazon_se/bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/bootstrap.lds
 @@ -0,0 +1,72 @@
@@ -700,8 +686,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/board/amazon_se/config.mk b/board/amazon_se/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/config.mk
 @@ -0,0 +1,27 @@
@@ -732,8 +716,6 @@ new file mode 100644
 +
 +TEXT_BASE = $(CONFIG_RAM_TEXT_BASE)
 +
-diff --git a/board/amazon_se/lowlevel_init.S b/board/amazon_se/lowlevel_init.S
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/lowlevel_init.S
 @@ -0,0 +1,269 @@
@@ -1006,8 +988,6 @@ new file mode 100644
 +	j	ra
 +	nop
 +	.end	lowlevel_init
-diff --git a/board/amazon_se/partition.c b/board/amazon_se/partition.c
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/partition.c
 @@ -0,0 +1,121 @@
@@ -1132,8 +1112,6 @@ new file mode 100644
 +
 +#endif
 +#endif
-diff --git a/board/amazon_se/pmuenable.S b/board/amazon_se/pmuenable.S
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/pmuenable.S
 @@ -0,0 +1,48 @@
@@ -1185,8 +1163,6 @@ new file mode 100644
 +	nop
 +
 +
-diff --git a/board/amazon_se/ram.conf b/board/amazon_se/ram.conf
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/ram.conf
 @@ -0,0 +1,28 @@
@@ -1218,8 +1194,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/amazon_se/u-boot-bootstrap.lds b/board/amazon_se/u-boot-bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/u-boot-bootstrap.lds
 @@ -0,0 +1,73 @@
@@ -1296,8 +1270,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end_bootstrap = .;
 +}
-diff --git a/board/amazon_se/u-boot.lds b/board/amazon_se/u-boot.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/amazon_se/u-boot.lds
 @@ -0,0 +1,70 @@
@@ -1371,8 +1343,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/include/configs/amazon_se.h b/include/configs/amazon_se.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/amazon_se.h
 @@ -0,0 +1,210 @@
@@ -1586,8 +1556,6 @@ new file mode 100644
 +#define CONFIG_TUNING_SP     0x9e1a7f00 
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/configs/amazon_se_cfg.h b/include/configs/amazon_se_cfg.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/amazon_se_cfg.h
 @@ -0,0 +1,770 @@

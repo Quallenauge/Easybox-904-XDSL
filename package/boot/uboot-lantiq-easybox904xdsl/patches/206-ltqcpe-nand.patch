@@ -2,10 +2,9 @@
 # Parent c7a41a4e1298a4f76088946170b7c55fbbfd7d36
 nand flash patch
 
-diff --git a/arch/mips/include/asm/types.h b/arch/mips/include/asm/types.h
 --- a/arch/mips/include/asm/types.h
 +++ b/arch/mips/include/asm/types.h
-@@ -27,6 +27,13 @@
+@@ -27,6 +27,13 @@ typedef unsigned short __u16;
  typedef __signed__ int __s32;
  typedef unsigned int __u32;
  
@@ -19,7 +18,7 @@ diff --git a/arch/mips/include/asm/types.h b/arch/mips/include/asm/types.h
  #if (_MIPS_SZLONG == 64)
  
  typedef __signed__ long __s64;
-@@ -61,6 +68,8 @@
+@@ -61,6 +68,8 @@ typedef unsigned short u16;
  typedef __signed int s32;
  typedef unsigned int u32;
  
@@ -28,7 +27,6 @@ diff --git a/arch/mips/include/asm/types.h b/arch/mips/include/asm/types.h
  #if (_MIPS_SZLONG == 64)
  
  typedef __signed__ long s64;
-diff --git a/common/cmd_nand.c b/common/cmd_nand.c
 --- a/common/cmd_nand.c
 +++ b/common/cmd_nand.c
 @@ -7,7 +7,7 @@
@@ -40,7 +38,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  #include <common.h>
  #include <linux/mtd/mtd.h>
  #include <command.h>
-@@ -89,8 +89,15 @@
+@@ -89,8 +89,15 @@ static inline int str2long(char *p, ulon
  	return (*p != '\0' && *endptr == '\0') ? 1 : 0;
  }
  
@@ -57,7 +55,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  {
  	int idx = nand_curr_device;
  #if defined(CONFIG_CMD_MTDPARTS)
-@@ -124,7 +131,7 @@
+@@ -124,7 +131,7 @@ arg_off_size(int argc, char *argv[], nan
  #endif
  
  	if (argc >= 1) {
@@ -66,7 +64,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  			printf("'%s' is not a number\n", argv[0]);
  			return -1;
  		}
-@@ -133,7 +140,7 @@
+@@ -133,7 +140,7 @@ arg_off_size(int argc, char *argv[], nan
  	}
  
  	if (argc >= 2) {
@@ -75,7 +73,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  			printf("'%s' is not a number\n", argv[1]);
  			return -1;
  		}
-@@ -148,7 +155,7 @@
+@@ -148,7 +155,7 @@ out:
  	if (*size == nand->size)
  		puts("whole chip\n");
  	else
@@ -84,7 +82,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  	return 0;
  }
  
-@@ -207,8 +214,8 @@
+@@ -207,8 +214,8 @@ static void nand_print_info(int idx)
  int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
  {
  	int i, dev, ret = 0;
@@ -95,7 +93,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  	char *cmd, *s;
  	nand_info_t *nand;
  #ifdef CONFIG_SYS_NAND_QUIET
-@@ -287,7 +294,7 @@
+@@ -287,7 +294,7 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  		printf("\nDevice %d bad blocks:\n", nand_curr_device);
  		for (off = 0; off < nand->size; off += nand->erasesize)
  			if (nand_block_isbad(nand, off))
@@ -104,7 +102,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  		return 0;
  	}
  
-@@ -374,26 +381,28 @@
+@@ -374,26 +381,28 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  		printf("\nNAND %s: ", read ? "read" : "write");
  		if (arg_off_size(argc - 3, argv + 3, nand, &off, &size) != 0)
  			return 1;
@@ -139,7 +137,7 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  			else
  				ret = nand->write_oob(nand, off, &ops);
  		} else {
-@@ -401,9 +410,10 @@
+@@ -401,9 +410,10 @@ int do_nand(cmd_tbl_t * cmdtp, int flag,
  			return 1;
  		}
  
@@ -152,10 +150,9 @@ diff --git a/common/cmd_nand.c b/common/cmd_nand.c
  		return ret == 0 ? 0 : 1;
  	}
  
-diff --git a/common/env_nand.c b/common/env_nand.c
 --- a/common/env_nand.c
 +++ b/common/env_nand.c
-@@ -234,6 +234,8 @@
+@@ -234,6 +234,8 @@ int saveenv(void)
  int saveenv(void)
  {
  	int ret = 0;
@@ -164,7 +161,7 @@ diff --git a/common/env_nand.c b/common/env_nand.c
  	nand_erase_options_t nand_erase_options;
  
  	nand_erase_options.length = CONFIG_ENV_RANGE;
-@@ -253,6 +255,13 @@
+@@ -253,6 +255,13 @@ int saveenv(void)
  		puts("FAILED!\n");
  		return 1;
  	}
@@ -178,7 +175,7 @@ diff --git a/common/env_nand.c b/common/env_nand.c
  
  	puts ("done\n");
  	return ret;
-@@ -262,20 +271,25 @@
+@@ -262,20 +271,25 @@ int saveenv(void)
  
  int readenv (size_t offset, u_char * buf)
  {
@@ -208,7 +205,7 @@ diff --git a/common/env_nand.c b/common/env_nand.c
  			if (nand_read(&nand_info[0], offset, &len, char_ptr))
  				return 1;
  			offset += blocksize;
-@@ -356,11 +370,10 @@
+@@ -356,11 +370,10 @@ void env_relocate_spec (void)
  {
  #if !defined(ENV_IS_EMBEDDED)
  	int ret;
@@ -221,10 +218,9 @@ diff --git a/common/env_nand.c b/common/env_nand.c
  	if (crc32(0, env_ptr->data, ENV_SIZE) != env_ptr->crc)
  		return use_default();
  #endif /* ! ENV_IS_EMBEDDED */
-diff --git a/drivers/mtd/nand/nand.c b/drivers/mtd/nand/nand.c
 --- a/drivers/mtd/nand/nand.c
 +++ b/drivers/mtd/nand/nand.c
-@@ -55,10 +55,9 @@
+@@ -55,10 +55,9 @@ static void nand_init_chip(struct mtd_in
  			if (!mtd->name)
  				mtd->name = (char *)default_nand_name;
  #ifndef CONFIG_RELOC_FIXUP_WORKS
@@ -236,14 +232,12 @@ diff --git a/drivers/mtd/nand/nand.c b/drivers/mtd/nand/nand.c
  #ifdef CONFIG_MTD_DEVICE
  			/*
  			 * Add MTD device so that we can reference it later
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
 --- a/drivers/mtd/nand/nand_base.c
 +++ b/drivers/mtd/nand/nand_base.c
-@@ -133,7 +133,85 @@
+@@ -133,7 +133,85 @@ static struct nand_ecclayout nand_oob_12
  		{.offset = 2,
  		 .length = 78}}
  };
--
 +/*
 +static struct nand_ecclayout nand_oob_224 = {
 +        .eccbytes = 48,
@@ -303,7 +297,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
 +		{.offset = 2,
 +		 .length = 338}}
 +};
-+
+ 
 +static struct nand_ecclayout nand_oob_448 = {
 +	.eccbytes = 96,
 +	.eccpos = {
@@ -326,7 +320,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  
  static int nand_get_device(struct nand_chip *chip, struct mtd_info *mtd,
  			   int new_state);
-@@ -980,10 +1058,12 @@
+@@ -980,10 +1058,12 @@ static int nand_read_page_swecc(struct m
  		int stat;
  
  		stat = chip->ecc.correct(mtd, p, &ecc_code[i], &ecc_calc[i]);
@@ -341,7 +335,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	}
  	return 0;
  }
-@@ -1416,8 +1496,8 @@
+@@ -1416,8 +1496,8 @@ static int nand_do_read_ops(struct mtd_i
   *
   * Get hold of the chip and call nand_do_read
   */
@@ -352,7 +346,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  {
  	struct nand_chip *chip = mtd->priv;
  	int ret;
-@@ -1512,14 +1592,14 @@
+@@ -1512,14 +1592,14 @@ static int nand_write_oob_std(struct mtd
  	int status = 0;
  	const uint8_t *buf = chip->oob_poi;
  	int length = mtd->oobsize;
@@ -369,7 +363,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	return status & NAND_STATUS_FAIL ? -EIO : 0;
  }
  
-@@ -2053,16 +2133,19 @@
+@@ -2053,16 +2133,19 @@ static int nand_do_write_ops(struct mtd_
  
  		if (unlikely(oob))
  			oob = nand_fill_oob(chip, oob, ops);
@@ -394,7 +388,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  		column = 0;
  		buf += bytes;
  		realpage++;
-@@ -2075,7 +2158,7 @@
+@@ -2075,7 +2158,7 @@ static int nand_do_write_ops(struct mtd_
  			chip->select_chip(mtd, chipnr);
  		}
  	}
@@ -403,7 +397,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	ops->retlen = ops->len - writelen;
  	if (unlikely(oob))
  		ops->oobretlen = ops->ooblen;
-@@ -2092,8 +2175,8 @@
+@@ -2092,8 +2175,8 @@ static int nand_do_write_ops(struct mtd_
   *
   * NAND write with ECC
   */
@@ -414,7 +408,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  {
  	struct nand_chip *chip = mtd->priv;
  	int ret;
-@@ -2119,6 +2202,66 @@
+@@ -2119,6 +2202,66 @@ static int nand_write(struct mtd_info *m
  	return ret;
  }
  
@@ -481,7 +475,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  /**
   * nand_do_write_oob - [MTD Interface] NAND write out-of-band
   * @mtd:	MTD device structure
-@@ -2598,16 +2741,127 @@
+@@ -2598,12 +2741,378 @@ static void nand_set_defaults(struct nan
  }
  
  /*
@@ -596,10 +590,6 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  						  struct nand_chip *chip,
  						  int busw, int *maf_id)
  {
--	struct nand_flash_dev *type = NULL;
--	int i, dev_id, maf_idx;
--	int tmp_id, tmp_manf;
--
 +	int i, maf_idx,dev_id_value; 
 +	int *dev_id;
 +	u8 id_data[8];
@@ -610,26 +600,32 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
 +  dev_id = &dev_id_value;
 +	
 +	
- 	/* Select the device */
- 	chip->select_chip(mtd, 0);
- 
-@@ -2622,8 +2876,10 @@
- 
- 	/* Read manufacturer and device IDs */
- 	*maf_id = chip->read_byte(mtd);
--	dev_id = chip->read_byte(mtd);
--
++	/* Select the device */
++	chip->select_chip(mtd, 0);
++
++	/*
++	 * Reset the chip, required by some chips (e.g. Micron MT29FxGxxxxx)
++	 * after power-up
++	 */
++	chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
++
++	/* Send the command for reading device ID */
++	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
++
++	/* Read manufacturer and device IDs */
++	*maf_id = chip->read_byte(mtd);
 +	*dev_id = chip->read_byte(mtd);
 +
 +
 +    //printf("%02x, %02x\n",*maf_id,*dev_id);
- 	/* Try again to make sure, as some systems the bus-hold or other
- 	 * interface concerns can cause random data which looks like a
- 	 * possibly credible NAND flash to appear. If the two results do
-@@ -2632,10 +2888,268 @@
- 
- 	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
- 
++	/* Try again to make sure, as some systems the bus-hold or other
++	 * interface concerns can cause random data which looks like a
++	 * possibly credible NAND flash to appear. If the two results do
++	 * not match, ignore the device completely.
++	 */
++
++	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
++
 +	for (i = 0; i < 2; i++)
 +		id_data[i] = chip->read_byte(mtd);
 +
@@ -855,35 +851,31 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
 +		
 +		return type;
 +#if 0	
-+	struct nand_flash_dev *type = NULL;
-+	int i, dev_id, maf_idx;
-+	int tmp_id, tmp_manf;
+ 	struct nand_flash_dev *type = NULL;
+ 	int i, dev_id, maf_idx;
+ 	int tmp_id, tmp_manf;
+@@ -2617,13 +3126,15 @@ static struct nand_flash_dev *nand_get_f
+ 	 */
+ 	chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
+ 
 +
-+	/* Select the device */
-+	chip->select_chip(mtd, 0);
-+
-+	/*
-+	 * Reset the chip, required by some chips (e.g. Micron MT29FxGxxxxx)
-+	 * after power-up
-+	 */
-+	chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
-+
-+
-+	/* Send the command for reading device ID */
-+	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
+ 	/* Send the command for reading device ID */
+ 	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
+-
 +  
-+	/* Read manufacturer and device IDs */
-+	*maf_id = chip->read_byte(mtd);
-+	dev_id = chip->read_byte(mtd);
+ 	/* Read manufacturer and device IDs */
+ 	*maf_id = chip->read_byte(mtd);
+ 	dev_id = chip->read_byte(mtd);
+ 
 +
-+
-+	/* Try again to make sure, as some systems the bus-hold or other
-+	 * interface concerns can cause random data which looks like a
-+	 * possibly credible NAND flash to appear. If the two results do
-+	 * not match, ignore the device completely.
-+	 */
-+
-+	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
+ 	/* Try again to make sure, as some systems the bus-hold or other
+ 	 * interface concerns can cause random data which looks like a
+ 	 * possibly credible NAND flash to appear. If the two results do
+@@ -2631,11 +3142,14 @@ static struct nand_flash_dev *nand_get_f
+ 	 */
+ 
+ 	chip->cmdfunc(mtd, NAND_CMD_READID, 0x00, -1);
+-
 +  
 +   
  	/* Read manufacturer and device IDs */
@@ -895,7 +887,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  
  	if (tmp_manf != *maf_id || tmp_id != dev_id) {
  		printk(KERN_INFO "%s: second ID read did not match "
-@@ -2644,6 +3158,7 @@
+@@ -2644,6 +3158,7 @@ static struct nand_flash_dev *nand_get_f
  		return ERR_PTR(-ENODEV);
  	}
  
@@ -903,7 +895,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	/* Lookup the flash id */
  	for (i = 0; nand_flash_ids[i].name != NULL; i++) {
  		if (dev_id == nand_flash_ids[i].id) {
-@@ -2755,6 +3270,8 @@
+@@ -2755,6 +3270,8 @@ static struct nand_flash_dev *nand_get_f
  	          nand_manuf_ids[maf_idx].name, type->name);
  
  	return type;
@@ -912,7 +904,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  }
  
  /**
-@@ -2852,6 +3369,15 @@
+@@ -2852,6 +3369,15 @@ int nand_scan_tail(struct mtd_info *mtd)
  		case 128:
  			chip->ecc.layout = &nand_oob_128;
  			break;
@@ -928,7 +920,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  		default:
  			printk(KERN_WARNING "No oob scheme defined for "
  			       "oobsize %d\n", mtd->oobsize);
-@@ -2877,7 +3403,7 @@
+@@ -2877,7 +3403,7 @@ int nand_scan_tail(struct mtd_info *mtd)
  		}
  		if (!chip->ecc.read_page)
  			chip->ecc.read_page = nand_read_page_hwecc_oob_first;
@@ -937,7 +929,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	case NAND_ECC_HW:
  		/* Use standard hwecc read page function ? */
  		if (!chip->ecc.read_page)
-@@ -2892,7 +3418,7 @@
+@@ -2892,7 +3418,7 @@ int nand_scan_tail(struct mtd_info *mtd)
  			chip->ecc.read_oob = nand_read_oob_std;
  		if (!chip->ecc.write_oob)
  			chip->ecc.write_oob = nand_write_oob_std;
@@ -946,7 +938,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	case NAND_ECC_HW_SYNDROME:
  		if ((!chip->ecc.calculate || !chip->ecc.correct ||
  		     !chip->ecc.hwctl) &&
-@@ -2924,10 +3450,10 @@
+@@ -2924,10 +3450,10 @@ int nand_scan_tail(struct mtd_info *mtd)
  		       "%d byte page size, fallback to SW ECC\n",
  		       chip->ecc.size, mtd->writesize);
  		chip->ecc.mode = NAND_ECC_SOFT;
@@ -960,7 +952,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  		chip->ecc.read_page = nand_read_page_swecc;
  		chip->ecc.read_subpage = nand_read_subpage;
  		chip->ecc.write_page = nand_write_page_swecc;
-@@ -2935,8 +3461,8 @@
+@@ -2935,8 +3461,8 @@ int nand_scan_tail(struct mtd_info *mtd)
  		chip->ecc.write_page_raw = nand_write_page_raw;
  		chip->ecc.read_oob = nand_read_oob_std;
  		chip->ecc.write_oob = nand_write_oob_std;
@@ -971,7 +963,7 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  		break;
  
  	case NAND_ECC_NONE:
-@@ -3016,6 +3542,7 @@
+@@ -3016,6 +3542,7 @@ int nand_scan_tail(struct mtd_info *mtd)
  	mtd->unpoint = NULL;
  	mtd->read = nand_read;
  	mtd->write = nand_write;
@@ -979,7 +971,6 @@ diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
  	mtd->read_oob = nand_read_oob;
  	mtd->write_oob = nand_write_oob;
  	mtd->sync = nand_sync;
-diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
 --- a/drivers/mtd/nand/nand_ecc.c
 +++ b/drivers/mtd/nand/nand_ecc.c
 @@ -58,7 +58,7 @@
@@ -991,7 +982,7 @@ diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
  /*
   * Pre-calculated 256-way 1 byte column parity
   */
-@@ -144,7 +144,7 @@
+@@ -144,7 +144,7 @@ int nand_calculate_ecc(struct mtd_info *
  #if 0
  EXPORT_SYMBOL(nand_calculate_ecc);
  #endif
@@ -1000,10 +991,9 @@ diff --git a/drivers/mtd/nand/nand_ecc.c b/drivers/mtd/nand/nand_ecc.c
  
  static inline int countbits(uint32_t byte)
  {
-diff --git a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
 --- a/drivers/mtd/nand/nand_ids.c
 +++ b/drivers/mtd/nand/nand_ids.c
-@@ -110,6 +110,37 @@
+@@ -110,6 +110,37 @@ struct nand_flash_dev nand_flash_ids[] =
  	{"NAND 2GiB 1,8V 16-bit",	0xB5, 0, 2048, 0, LP_OPTIONS16},
  	{"NAND 2GiB 3,3V 16-bit",	0xC5, 0, 2048, 0, LP_OPTIONS16},
  
@@ -1041,10 +1031,9 @@ diff --git a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
  	/*
  	 * Renesas AND 1 Gigabit. Those chips do not support extended id and
  	 * have a strange page/block layout !  The chosen minimum erasesize is
-diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
 --- a/drivers/mtd/nand/nand_util.c
 +++ b/drivers/mtd/nand/nand_util.c
-@@ -69,7 +69,7 @@
+@@ -69,7 +69,7 @@ int nand_erase_opts(nand_info_t *meminfo
  {
  	struct jffs2_unknown_node cleanmarker;
  	erase_info_t erase;
@@ -1053,7 +1042,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  	int bbtest = 1;
  	int result;
  	int percent_complete = -1;
-@@ -109,7 +109,7 @@
+@@ -109,7 +109,7 @@ int nand_erase_opts(nand_info_t *meminfo
  	}
  
  	if (erase_length < meminfo->erasesize) {
@@ -1062,7 +1051,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  		       "erase block 0x%08x\n",erase_length, meminfo->erasesize);
  		printf("         Erasing 0x%08x instead\n", meminfo->erasesize);
  		erase_length = meminfo->erasesize;
-@@ -118,7 +118,6 @@
+@@ -118,7 +118,6 @@ int nand_erase_opts(nand_info_t *meminfo
  	for (;
  	     erase.addr < opts->offset + erase_length;
  	     erase.addr += meminfo->erasesize) {
@@ -1070,7 +1059,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  		WATCHDOG_RESET ();
  
  		if (!opts->scrub && bbtest) {
-@@ -165,12 +164,13 @@
+@@ -165,12 +164,13 @@ int nand_erase_opts(nand_info_t *meminfo
  		}
  
  		if (!opts->quiet) {
@@ -1089,7 +1078,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  			percent = (int)n;
  
  			/* output progress message only at whole percent
-@@ -433,7 +433,7 @@
+@@ -433,7 +433,7 @@ int nand_unlock(struct mtd_info *mtd, ul
   * @return image length including bad blocks
   */
  static size_t get_len_incl_bad (nand_info_t *nand, loff_t offset,
@@ -1098,7 +1087,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  {
  	size_t len_incl_bad = 0;
  	size_t len_excl_bad = 0;
-@@ -469,12 +469,12 @@
+@@ -469,12 +469,12 @@ static size_t get_len_incl_bad (nand_inf
   * @param buf           buffer to read from
   * @return		0 in case of success
   */
@@ -1114,7 +1103,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  	u_char *p_buffer = buffer;
  
  	/* Reject writes, which are not page aligned */
-@@ -502,7 +502,7 @@
+@@ -502,7 +502,7 @@ int nand_write_skip_bad(nand_info_t *nan
  
  	while (left_to_write > 0) {
  		size_t block_offset = offset & (nand->erasesize - 1);
@@ -1123,7 +1112,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  
  		WATCHDOG_RESET ();
  
-@@ -548,12 +548,12 @@
+@@ -548,12 +548,12 @@ int nand_write_skip_bad(nand_info_t *nan
   * @param buffer buffer to write to
   * @return 0 in case of success
   */
@@ -1139,7 +1128,7 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  	u_char *p_buffer = buffer;
  
  	len_incl_bad = get_len_incl_bad (nand, offset, *length);
-@@ -574,7 +574,7 @@
+@@ -574,7 +574,7 @@ int nand_read_skip_bad(nand_info_t *nand
  
  	while (left_to_read > 0) {
  		size_t block_offset = offset & (nand->erasesize - 1);
@@ -1148,7 +1137,6 @@ diff --git a/drivers/mtd/nand/nand_util.c b/drivers/mtd/nand/nand_util.c
  
  		WATCHDOG_RESET ();
  
-diff --git a/include/linux/ctype.h b/include/linux/ctype.h
 --- a/include/linux/ctype.h
 +++ b/include/linux/ctype.h
 @@ -15,7 +15,7 @@
@@ -1160,10 +1148,9 @@ diff --git a/include/linux/ctype.h b/include/linux/ctype.h
  
  #define __ismask(x) (_ctype[(int)(unsigned char)(x)])
  
-diff --git a/include/linux/mtd/bbm.h b/include/linux/mtd/bbm.h
 --- a/include/linux/mtd/bbm.h
 +++ b/include/linux/mtd/bbm.h
-@@ -88,6 +88,13 @@
+@@ -88,6 +88,13 @@ struct nand_bbt_descr {
  #define NAND_BBT_SAVECONTENT	0x00002000
  /* Search good / bad pattern on the first and the second page */
  #define NAND_BBT_SCAN2NDPAGE	0x00004000
@@ -1177,10 +1164,9 @@ diff --git a/include/linux/mtd/bbm.h b/include/linux/mtd/bbm.h
  
  /* The maximum number of blocks to scan for a bbt */
  #define NAND_BBT_SCAN_MAXBLOCKS	4
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
 --- a/include/linux/mtd/mtd.h
 +++ b/include/linux/mtd/mtd.h
-@@ -163,9 +163,9 @@
+@@ -163,9 +163,9 @@ struct mtd_info {
  	void (*unpoint) (struct mtd_info *mtd, loff_t from, size_t len);
  
  
@@ -1193,10 +1179,9 @@ diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
  	/* In blackbox flight recorder like scenarios we want to make successful
  	   writes in interrupt context. panic_write() is only intended to be
  	   called when its known the kernel is about to panic and we need the
-diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
 --- a/include/linux/mtd/nand.h
 +++ b/include/linux/mtd/nand.h
-@@ -50,8 +50,8 @@
+@@ -50,8 +50,8 @@ extern void nand_wait_ready(struct mtd_i
   * is supported now. If you add a chip with bigger oobsize/page
   * adjust this accordingly.
   */
@@ -1207,7 +1192,7 @@ diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
  
  /*
   * Constants for hardware specific CLE/ALE/NCE function
-@@ -85,6 +85,7 @@
+@@ -85,6 +85,7 @@ extern void nand_wait_ready(struct mtd_i
  #define NAND_CMD_RNDIN		0x85
  #define NAND_CMD_READID		0x90
  #define NAND_CMD_ERASE2		0xd0
@@ -1215,7 +1200,7 @@ diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
  #define NAND_CMD_RESET		0xff
  
  /* Extended commands for large page devices */
-@@ -214,6 +215,71 @@
+@@ -214,6 +215,71 @@ typedef enum {
  /* Keep gcc happy */
  struct nand_chip;
  
@@ -1287,7 +1272,7 @@ diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
  /**
   * struct nand_hw_control - Control structure for hardware controller (e.g ECC generator) shared among independent devices
   * @lock:               protection lock
-@@ -380,6 +446,8 @@
+@@ -380,6 +446,8 @@ struct nand_chip {
  	int		(*block_markbad)(struct mtd_info *mtd, loff_t ofs);
  	void		(*cmd_ctrl)(struct mtd_info *mtd, int dat,
  				    unsigned int ctrl);
@@ -1296,7 +1281,7 @@ diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
  	int		(*dev_ready)(struct mtd_info *mtd);
  	void		(*cmdfunc)(struct mtd_info *mtd, unsigned command, int column, int page_addr);
  	int		(*waitfunc)(struct mtd_info *mtd, struct nand_chip *this);
-@@ -404,6 +472,9 @@
+@@ -404,6 +472,9 @@ struct nand_chip {
  	uint8_t		cellinfo;
  	int		badblockpos;
  
@@ -1306,10 +1291,9 @@ diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
  	int 		state;
  
  	uint8_t		*oob_poi;
-diff --git a/include/linux/types.h b/include/linux/types.h
 --- a/include/linux/types.h
 +++ b/include/linux/types.h
-@@ -131,7 +131,9 @@
+@@ -131,7 +131,9 @@ typedef		__s64		int64_t;
  #endif
  
  typedef __u16 __bitwise __le16;
@@ -1320,10 +1304,9 @@ diff --git a/include/linux/types.h b/include/linux/types.h
  typedef __u32 __bitwise __le32;
  typedef __u32 __bitwise __be32;
  #if defined(__GNUC__)
-diff --git a/include/nand.h b/include/nand.h
 --- a/include/nand.h
 +++ b/include/nand.h
-@@ -37,16 +37,22 @@
+@@ -37,16 +37,22 @@ typedef struct mtd_info nand_info_t;
  extern int nand_curr_device;
  extern nand_info_t nand_info[];
  
@@ -1350,7 +1333,7 @@ diff --git a/include/nand.h b/include/nand.h
  static inline int nand_block_isbad(nand_info_t *info, loff_t ofs)
  {
  	return info->block_isbad(info, ofs);
-@@ -98,8 +104,8 @@
+@@ -98,8 +104,8 @@ struct nand_read_options {
  typedef struct nand_read_options nand_read_options_t;
  
  struct nand_erase_options {
@@ -1361,7 +1344,7 @@ diff --git a/include/nand.h b/include/nand.h
  	int quiet;		/* don't display progress messages */
  	int jffs2;		/* if true: format for jffs2 usage
  				 * (write appropriate cleanmarker blocks) */
-@@ -109,9 +115,9 @@
+@@ -109,9 +115,9 @@ struct nand_erase_options {
  
  typedef struct nand_erase_options nand_erase_options_t;
  
@@ -1373,10 +1356,9 @@ diff --git a/include/nand.h b/include/nand.h
  			u_char *buffer);
  int nand_erase_opts(nand_info_t *meminfo, const nand_erase_options_t *opts);
  
-diff --git a/lib/string.c b/lib/string.c
 --- a/lib/string.c
 +++ b/lib/string.c
-@@ -214,6 +214,51 @@
+@@ -214,6 +214,51 @@ char * strrchr(const char * s, int c)
  }
  #endif
  

@@ -1,10 +1,9 @@
 # HG changeset patch
 # Parent b33a8e7af146d5dc206e27b5d6a4750f7dcce352
 
-diff --git a/drivers/mtd/ubi/scan.c b/drivers/mtd/ubi/scan.c
 --- a/drivers/mtd/ubi/scan.c
 +++ b/drivers/mtd/ubi/scan.c
-@@ -793,7 +793,9 @@
+@@ -793,7 +793,9 @@ static int process_eb(struct ubi_device
  		bitflips = 1;
  	}
  

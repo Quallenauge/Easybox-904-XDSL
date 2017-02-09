@@ -2,7 +2,6 @@
 # Parent 0fe37019480ae72a8230feadfa422d0f41b0b1b4
 misc changes to common files
 
-diff --git a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
 @@ -24,7 +24,7 @@
@@ -14,7 +13,7 @@ diff --git a/Makefile b/Makefile
  ifneq "$(SUBLEVEL)" ""
  U_BOOT_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
  else
-@@ -63,6 +63,26 @@
+@@ -63,6 +63,26 @@ else
  XECHO = :
  endif
  
@@ -41,7 +40,7 @@ diff --git a/Makefile b/Makefile
  #########################################################################
  #
  # U-boot build supports producing a object files to the separate external
-@@ -147,8 +167,8 @@
+@@ -145,8 +165,8 @@ ifeq ($(obj)include/config.mk,$(wildcard
  # to all top level build files.  We need the dummy all: target to prevent the
  # dependency target in autoconf.mk.dep from being the default.
  all:
@@ -52,7 +51,7 @@ diff --git a/Makefile b/Makefile
  
  # load ARCH, BOARD, and CPU configuration
  include $(obj)include/config.mk
-@@ -165,7 +185,7 @@
+@@ -163,7 +183,7 @@ include $(TOPDIR)/config.mk
  #########################################################################
  # U-Boot objects....order is important (i.e. start must be first)
  
@@ -61,7 +60,7 @@ diff --git a/Makefile b/Makefile
  ifeq ($(CPU),i386)
  OBJS += $(CPUDIR)/start16.o
  OBJS += $(CPUDIR)/resetvec.o
-@@ -184,7 +204,7 @@
+@@ -182,7 +202,7 @@ LIBS += lib/lzma/liblzma.a
  LIBS += lib/lzo/liblzo.a
  LIBS += $(shell if [ -f board/$(VENDOR)/common/Makefile ]; then echo \
  	"board/$(VENDOR)/common/lib$(VENDOR).a"; fi)
@@ -70,7 +69,7 @@ diff --git a/Makefile b/Makefile
  ifdef SOC
  LIBS += $(CPUDIR)/$(SOC)/lib$(SOC).a
  endif
-@@ -290,6 +310,7 @@
+@@ -288,6 +308,7 @@ __LIBS := $(subst $(obj),,$(LIBS)) $(sub
  
  # Always append ALL so that arch config.mk's can add custom ones
  ALL += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map $(U_BOOT_NAND) $(U_BOOT_ONENAND)
@@ -78,7 +77,7 @@ diff --git a/Makefile b/Makefile
  
  all:		$(ALL)
  
-@@ -297,7 +318,7 @@
+@@ -295,7 +316,7 @@ $(obj)u-boot.hex:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O ihex $< $@
  
  $(obj)u-boot.srec:	$(obj)u-boot
@@ -87,29 +86,27 @@ diff --git a/Makefile b/Makefile
  
  $(obj)u-boot.bin:	$(obj)u-boot
  		$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
-@@ -367,13 +388,14 @@
+@@ -365,13 +386,14 @@ $(LDSCRIPT):	depend
  $(obj)u-boot.lds: $(LDSCRIPT)
  		$(CPP) $(CPPFLAGS) $(LDPPFLAGS) -ansi -D__ASSEMBLY__ -P - <$^ >$@
  
 -$(NAND_SPL):	$(TIMESTAMP_FILE) $(VERSION_FILE) $(obj)include/autoconf.mk
 -		$(MAKE) -C nand_spl/board/$(BOARDDIR) all
--
--$(U_BOOT_NAND):	$(NAND_SPL) $(obj)u-boot.bin
--		cat $(obj)nand_spl/u-boot-spl-16k.bin $(obj)u-boot.bin > $(obj)u-boot-nand.bin
--
--$(ONENAND_IPL):	$(TIMESTAMP_FILE) $(VERSION_FILE) $(obj)include/autoconf.mk
 +$(NAND_SPL):	$(TIMESTAMP_FILE) $(VERSION_FILE) 
 +		$(MAKE) -C nand_spl/board/lantiq all
-+
+ 
+-$(U_BOOT_NAND):	$(NAND_SPL) $(obj)u-boot.bin
+-		cat $(obj)nand_spl/u-boot-spl-16k.bin $(obj)u-boot.bin > $(obj)u-boot-nand.bin
 +$(U_BOOT_NAND):	$(NAND_SPL) $(obj)u-boot.lq
 +		cp nand_spl/u-boot-spl-16k.bin u-boot-nand.bin
 +		cat u-boot.lq >> u-boot-nand.bin
-+
+ 
+-$(ONENAND_IPL):	$(TIMESTAMP_FILE) $(VERSION_FILE) $(obj)include/autoconf.mk
 +$(ONENAND_IPL):	$(TIMESTAMP_FILE) $(VERSION_FILE) 
  		$(MAKE) -C onenand_ipl/board/$(BOARDDIR) all
  
  $(U_BOOT_ONENAND):	$(ONENAND_IPL) $(obj)u-boot.bin
-@@ -399,7 +421,7 @@
+@@ -397,7 +419,7 @@ env:
  
  # Explicitly make _depend in subdirs containing multiple targets to prevent
  # parallel sub-makes creating .depend files simultaneously.
@@ -118,7 +115,7 @@ diff --git a/Makefile b/Makefile
  		for dir in $(SUBDIRS) $(CPUDIR) $(dir $(LDSCRIPT)) ; do \
  			$(MAKE) -C $$dir _depend ; done
  
-@@ -425,28 +447,7 @@
+@@ -423,28 +445,7 @@ SYSTEM_MAP = \
  $(obj)System.map:	$(obj)u-boot
  		@$(call SYSTEM_MAP,$<) > $(obj)System.map
  
@@ -142,13 +139,12 @@ diff --git a/Makefile b/Makefile
 -	$(CPP) $(CFLAGS) -DDO_DEPS_ONLY -dM include/common.h | \
 -		sed -n -f tools/scripts/define2mk.sed > $@.tmp && \
 -	mv $@.tmp $@
--
+ 
 -#########################################################################
-+
  else	# !config.mk
  all $(obj)u-boot.hex $(obj)u-boot.srec $(obj)u-boot.bin \
  $(obj)u-boot.img $(obj)u-boot.dis $(obj)u-boot \
-@@ -473,7 +474,9 @@
+@@ -471,7 +472,9 @@ include/license.h: tools/bin2header COPY
  unconfig:
  	@rm -f $(obj)include/config.h $(obj)include/config.mk \
  		$(obj)board/*/config.tmp $(obj)board/*/*/config.tmp \
@@ -159,7 +155,7 @@ diff --git a/Makefile b/Makefile
  
  %: %_config
  	$(MAKE)
-@@ -3387,6 +3390,32 @@
+@@ -3385,6 +3388,32 @@ incaip_config: unconfig
  		}
  	@$(MKCONFIG) -a $(call xtract_incaip,$@) mips mips incaip
  
@@ -192,7 +188,7 @@ diff --git a/Makefile b/Makefile
  tb0229_config: unconfig
  	@$(MKCONFIG) $(@:_config=) mips mips tb0229
  
-@@ -3723,6 +3752,14 @@
+@@ -3721,6 +3750,14 @@ clean:
  		\( -name 'core' -o -name '*.bak' -o -name '*~' \
  		-o -name '*.o'	-o -name '*.a' -o -name '*.exe'	\) -print \
  		| xargs rm -f
@@ -207,7 +203,7 @@ diff --git a/Makefile b/Makefile
  
  clobber:	clean
  	@find $(OBJTREE) -type f \( -name .depend \
-@@ -3739,6 +3776,9 @@
+@@ -3737,6 +3774,9 @@ clobber:	clean
  	@rm -f $(obj)include/asm/proc $(obj)include/asm/arch $(obj)include/asm
  	@[ ! -d $(obj)nand_spl ] || find $(obj)nand_spl -name "*" -type l -print | xargs rm -f
  	@[ ! -d $(obj)onenand_ipl ] || find $(obj)onenand_ipl -name "*" -type l -print | xargs rm -f
@@ -217,7 +213,6 @@ diff --git a/Makefile b/Makefile
  
  ifeq ($(OBJTREE),$(SRCTREE))
  mrproper \
-diff --git a/arch/mips/include/asm/u-boot.h b/arch/mips/include/asm/u-boot.h
 --- a/arch/mips/include/asm/u-boot.h
 +++ b/arch/mips/include/asm/u-boot.h
 @@ -31,6 +31,10 @@
@@ -231,7 +226,6 @@ diff --git a/arch/mips/include/asm/u-boot.h b/arch/mips/include/asm/u-boot.h
  typedef struct bd_info {
  	int		bi_baudrate;	/* serial console baudrate */
  	unsigned long	bi_ip_addr;	/* IP Address */
-diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
 --- a/arch/mips/lib/board.c
 +++ b/arch/mips/lib/board.c
 @@ -39,13 +39,7 @@
@@ -248,7 +242,7 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  
  #undef DEBUG
  
-@@ -154,7 +148,9 @@
+@@ -154,7 +148,9 @@ init_fnc_t *init_sequence[] = {
  	incaip_set_cpuclk,	/* set cpu clock according to environment variable */
  #endif
  	init_baudrate,		/* initialze baudrate settings */
@@ -258,7 +252,7 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  	console_init_f,
  	display_banner,		/* say that we are here */
  	checkboard,
-@@ -168,7 +164,8 @@
+@@ -168,7 +164,8 @@ void board_init_f(ulong bootflag)
  	gd_t gd_data, *id;
  	bd_t *bd;
  	init_fnc_t **init_fnc_ptr;
@@ -268,7 +262,7 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  	ulong *s;
  #ifdef CONFIG_PURPLE
  	void copy_code (ulong);
-@@ -203,10 +200,10 @@
+@@ -203,10 +200,10 @@ void board_init_f(ulong bootflag)
  	debug ("Top of RAM usable for U-Boot at: %08lx\n", addr);
  
  	/* Reserve memory for U-Boot code, data & bss
@@ -281,7 +275,7 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  
  	debug ("Reserving %ldk for U-Boot at: %08lx\n", len >> 10, addr);
  
-@@ -350,7 +347,6 @@
+@@ -350,7 +347,6 @@ void board_init_r (gd_t *id, ulong dest_
  	display_flash_config (size);
  	bd->bi_flashsize = size;
  #endif
@@ -289,13 +283,13 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  	bd->bi_flashstart = CONFIG_SYS_FLASH_BASE;
  #if CONFIG_SYS_MONITOR_BASE == CONFIG_SYS_FLASH_BASE
  	bd->bi_flashoffset = monitor_flash_len;	/* reserved area for U-Boot */
-@@ -388,12 +384,13 @@
+@@ -388,12 +384,13 @@ void board_init_r (gd_t *id, ulong dest_
  
  	/* Initialize the console (after the relocation and devices init) */
  	console_init_r ();
-+
- /** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **/
--
+-/** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **/
+ 
++/** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **/
  	/* Initialize from environment */
  	if ((s = getenv ("loadaddr")) != NULL) {
  		load_addr = simple_strtoul (s, NULL, 16);
@@ -304,7 +298,7 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  #if defined(CONFIG_CMD_NET)
  	if ((s = getenv ("bootfile")) != NULL) {
  		copy_filename (BootFile, s, sizeof (BootFile));
-@@ -414,6 +411,13 @@
+@@ -414,6 +411,13 @@ void board_init_r (gd_t *id, ulong dest_
  #ifdef CONFIG_BITBANGMII
  	bb_miiphy_init();
  #endif
@@ -318,10 +312,9 @@ diff --git a/arch/mips/lib/board.c b/arch/mips/lib/board.c
  #if defined(CONFIG_CMD_NET)
  #if defined(CONFIG_NET_MULTI)
  	puts ("Net:   ");
-diff --git a/arch/mips/lib/time.c b/arch/mips/lib/time.c
 --- a/arch/mips/lib/time.c
 +++ b/arch/mips/lib/time.c
-@@ -55,12 +55,16 @@
+@@ -55,12 +55,16 @@ ulong get_timer(ulong base)
  
  	/* Check to see if we have missed any timestamps. */
  	count = read_c0_count();
@@ -342,7 +335,7 @@ diff --git a/arch/mips/lib/time.c b/arch/mips/lib/time.c
  	return (timestamp - base);
  }
  
-@@ -79,6 +83,18 @@
+@@ -79,6 +83,18 @@ void __udelay(unsigned long usec)
  		/*NOP*/;
  }
  
@@ -361,10 +354,9 @@ diff --git a/arch/mips/lib/time.c b/arch/mips/lib/time.c
  /*
   * This function is derived from PowerPC code (read timebase as long long).
   * On MIPS it just returns the timer value.
-diff --git a/common/Makefile b/common/Makefile
 --- a/common/Makefile
 +++ b/common/Makefile
-@@ -157,7 +157,7 @@
+@@ -157,7 +157,7 @@ COBJS-$(CONFIG_VFD) += cmd_vfd.o
  COBJS-$(CONFIG_DDR_SPD) += ddr_spd.o
  COBJS-$(CONFIG_HWCONFIG) += hwconfig.o
  COBJS-$(CONFIG_CONSOLE_MUX) += iomux.o
@@ -373,10 +365,9 @@ diff --git a/common/Makefile b/common/Makefile
  COBJS-$(CONFIG_CMD_KGDB) += kgdb.o kgdb_stubs.o
  COBJS-$(CONFIG_KALLSYMS) += kallsyms.o
  COBJS-$(CONFIG_LCD) += lcd.o
-diff --git a/common/env_common.c b/common/env_common.c
 --- a/common/env_common.c
 +++ b/common/env_common.c
-@@ -134,7 +134,7 @@
+@@ -134,7 +134,7 @@ uchar default_environment[] = {
  	"pcidelay="	MK_STR(CONFIG_PCI_BOOTDELAY)	"\0"
  #endif
  #ifdef  CONFIG_EXTRA_ENV_SETTINGS
@@ -385,10 +376,9 @@ diff --git a/common/env_common.c b/common/env_common.c
  #endif
  	"\0"
  };
-diff --git a/config.mk b/config.mk
 --- a/config.mk
 +++ b/config.mk
-@@ -116,7 +116,8 @@
+@@ -116,7 +116,8 @@ RANLIB	= $(CROSS_COMPILE)RANLIB
  #########################################################################
  
  # Load generated board configuration
@@ -398,7 +388,7 @@ diff --git a/config.mk b/config.mk
  
  # Some architecture config.mk files need to know what CPUDIR is set to,
  # so calculate CPUDIR before including ARCH/SOC/CPU config.mk files.
-@@ -154,11 +155,11 @@
+@@ -154,11 +155,11 @@ DBGFLAGS= -g # -DDEBUG
  OPTFLAGS= -Os #-fomit-frame-pointer
  ifndef LDSCRIPT
  #LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds.debug
@@ -414,7 +404,6 @@ diff --git a/config.mk b/config.mk
  endif
  OBJCFLAGS += --gap-fill=0xff
  
-diff --git a/include/config_defaults.h b/include/config_defaults.h
 --- a/include/config_defaults.h
 +++ b/include/config_defaults.h
 @@ -14,7 +14,4 @@
@@ -425,7 +414,6 @@ diff --git a/include/config_defaults.h b/include/config_defaults.h
 -#define CONFIG_ZLIB 1
 -
  #endif
-diff --git a/include/image.h b/include/image.h
 --- a/include/image.h
 +++ b/include/image.h
 @@ -156,6 +156,7 @@
@@ -436,7 +424,7 @@ diff --git a/include/image.h b/include/image.h
  
  /*
   * Compression Types
-@@ -281,6 +282,11 @@
+@@ -281,6 +282,11 @@ typedef struct bootm_headers {
  #define CHUNKSZ_SHA1 (64 * 1024)
  #endif
  
@@ -448,7 +436,6 @@ diff --git a/include/image.h b/include/image.h
  #define uimage_to_cpu(x)		be32_to_cpu(x)
  #define cpu_to_uimage(x)		cpu_to_be32(x)
  
-diff --git a/post/Makefile b/post/Makefile
 --- a/post/Makefile
 +++ b/post/Makefile
 @@ -22,7 +22,6 @@

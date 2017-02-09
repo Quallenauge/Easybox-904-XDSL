@@ -2,7 +2,6 @@
 # Parent 061fc969b273f0d834bda7d07bb61c25d365e9a3
 Add network driver for Amazon-SE (switch??)
 
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
 --- a/drivers/net/Makefile
 +++ b/drivers/net/Makefile
 @@ -35,6 +35,7 @@ COBJS-$(CONFIG_BFIN_MAC) += bfin_mac.o
@@ -13,8 +12,6 @@ diff --git a/drivers/net/Makefile b/drivers/net/Makefile
  COBJS-$(CONFIG_DRIVER_DM9000) += dm9000x.o
  COBJS-$(CONFIG_DNET) += dnet.o
  COBJS-$(CONFIG_E1000) += e1000.o
-diff --git a/drivers/net/amazon_se_sw.c b/drivers/net/amazon_se_sw.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/net/amazon_se_sw.c
 @@ -0,0 +1,724 @@
