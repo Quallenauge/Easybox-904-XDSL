@@ -2,8 +2,6 @@
 # Parent 4b88d80fa8cf00a1006422f5d4dacb17675bb4fa
 Add lib_bootstrap
 
-diff --git a/lib_bootstrap/LzmaDecode.c b/lib_bootstrap/LzmaDecode.c
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/LzmaDecode.c
 @@ -0,0 +1,621 @@
@@ -628,8 +626,6 @@ new file mode 100644
 +  return LZMA_RESULT_OK;
 +}
 +
-diff --git a/lib_bootstrap/LzmaDecode.h b/lib_bootstrap/LzmaDecode.h
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/LzmaDecode.h
 @@ -0,0 +1,113 @@
@@ -746,8 +742,6 @@ new file mode 100644
 +    unsigned char *outStream, SizeT outSize, SizeT *outSizeProcessed);
 +
 +#endif
-diff --git a/lib_bootstrap/LzmaTypes.h b/lib_bootstrap/LzmaTypes.h
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/LzmaTypes.h
 @@ -0,0 +1,45 @@
@@ -796,8 +790,6 @@ new file mode 100644
 +#endif
 +
 +#endif
-diff --git a/lib_bootstrap/LzmaWrapper.c b/lib_bootstrap/LzmaWrapper.c
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/LzmaWrapper.c
 @@ -0,0 +1,226 @@
@@ -1027,8 +1019,6 @@ new file mode 100644
 +  return res;
 +}
 +
-diff --git a/lib_bootstrap/LzmaWrapper.h b/lib_bootstrap/LzmaWrapper.h
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/LzmaWrapper.h
 @@ -0,0 +1,36 @@
@@ -1068,8 +1058,6 @@ new file mode 100644
 +extern int lzma_inflate(unsigned char *source, int s_len, unsigned char *dest, int *d_len);
 +
 +#endif /*__LZMA_WRAPPER_H__*/
-diff --git a/lib_bootstrap/Makefile b/lib_bootstrap/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/Makefile
 @@ -0,0 +1,60 @@
@@ -1133,8 +1121,6 @@ new file mode 100644
 +sinclude .depend
 +
 +#########################################################################
-diff --git a/lib_bootstrap/bootstrap_board.c b/lib_bootstrap/bootstrap_board.c
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/bootstrap_board.c
 @@ -0,0 +1,337 @@
@@ -1475,8 +1461,6 @@ new file mode 100644
 +	
 +	 for(;;);
 +}
-diff --git a/lib_bootstrap/nand_spl_board.c b/lib_bootstrap/nand_spl_board.c
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/nand_spl_board.c
 @@ -0,0 +1,143 @@
@@ -1624,8 +1608,6 @@ new file mode 100644
 +	 for(;;);
 +}
 \ No newline at end of file
-diff --git a/lib_bootstrap/tune_ddr.c b/lib_bootstrap/tune_ddr.c
-new file mode 100644
 --- /dev/null
 +++ b/lib_bootstrap/tune_ddr.c
 @@ -0,0 +1,1158 @@

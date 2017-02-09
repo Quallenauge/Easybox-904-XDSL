@@ -2,8 +2,6 @@
 # Parent 8a12c8ecd7929166d00ec8ac4d565bb5d243a5f1
 Add menuconfig feature
 
-diff --git a/Makefile.menu b/Makefile.menu
-new file mode 100644
 --- /dev/null
 +++ b/Makefile.menu
 @@ -0,0 +1,1663 @@
@@ -1670,8 +1668,6 @@ new file mode 100644
 +# Declare the contents of the .PHONY variable as phony.  We keep that
 +# information in a variable se we can use it in if_changed and friends.
 +.PHONY: $(PHONY)
-diff --git a/common/Kconfig b/common/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/common/Kconfig
 @@ -0,0 +1,212 @@
@@ -1887,8 +1883,6 @@ new file mode 100644
 +     bool "YAFFS2"
 +	 
 +endmenu
-diff --git a/lib/Kconfig b/lib/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/lib/Kconfig
 @@ -0,0 +1,40 @@
@@ -1932,8 +1926,6 @@ new file mode 100644
 +   default y
 +
 +endmenu
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Kbuild.include
 @@ -0,0 +1,217 @@
@@ -2154,15 +2146,11 @@ new file mode 100644
 +
 +echo-why = $(call escsq, $(strip $(why)))
 +endif
-diff --git a/scripts/Lindent b/scripts/Lindent
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Lindent
 @@ -0,0 +1,2 @@
 +#!/bin/sh
 +indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs "$@"
-diff --git a/scripts/Makefile b/scripts/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile
 @@ -0,0 +1,25 @@
@@ -2191,8 +2179,6 @@ new file mode 100644
 +
 +# Let clean descend into subdirs
 +subdir-	+= basic kconfig package
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.build
 @@ -0,0 +1,350 @@
@@ -2546,8 +2532,6 @@ new file mode 100644
 +# information in a variable se we can use it in if_changed and friends.
 +
 +.PHONY: $(PHONY)
-diff --git a/scripts/Makefile.clean b/scripts/Makefile.clean
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.clean
 @@ -0,0 +1,102 @@
@@ -2653,8 +2637,6 @@ new file mode 100644
 +# information in a variable se we can use it in if_changed and friends.
 +
 +.PHONY: $(PHONY)
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.headersinst
 @@ -0,0 +1,194 @@
@@ -2852,8 +2834,6 @@ new file mode 100644
 +.PHONY: $(subdir-y)
 +$(subdir-y):
 +	$(Q)$(MAKE) $(hdrinst)=$(obj)/$@ dst=$(_dst)/$@ rel=../$(rel)
-diff --git a/scripts/Makefile.host b/scripts/Makefile.host
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.host
 @@ -0,0 +1,170 @@
@@ -3027,8 +3007,6 @@ new file mode 100644
 +targets += $(host-csingle)  $(host-cmulti) $(host-cobjs)\
 +	   $(host-cxxmulti) $(host-cxxobjs) $(host-cshlib) $(host-cshobjs) 
 +
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.lib
 @@ -0,0 +1,165 @@
@@ -3197,8 +3175,6 @@ new file mode 100644
 +cmd_gzip = gzip -f -9 < $< > $@
 +
 +
-diff --git a/scripts/Makefile.modinst b/scripts/Makefile.modinst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.modinst
 @@ -0,0 +1,35 @@
@@ -3237,8 +3213,6 @@ new file mode 100644
 +# information in a variable se we can use it in if_changed and friends.
 +
 +.PHONY: $(PHONY)
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-new file mode 100644
 --- /dev/null
 +++ b/scripts/Makefile.modpost
 @@ -0,0 +1,132 @@
@@ -3374,8 +3348,6 @@ new file mode 100644
 +# information in a variable se we can use it in if_changed and friends.
 +
 +.PHONY: $(PHONY)
-diff --git a/scripts/basic/Makefile b/scripts/basic/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/basic/Makefile
 @@ -0,0 +1,16 @@
@@ -3395,8 +3367,6 @@ new file mode 100644
 +
 +# fixdep is needed to compile other host programs
 +$(addprefix $(obj)/,$(filter-out fixdep,$(always))): $(obj)/fixdep
-diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/basic/docproc.c
 @@ -0,0 +1,399 @@
@@ -3799,8 +3769,6 @@ new file mode 100644
 +	return exitstatus;
 +}
 +
-diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/basic/fixdep.c
 @@ -0,0 +1,399 @@
@@ -4203,8 +4171,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/bin2c.c b/scripts/bin2c.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/bin2c.c
 @@ -0,0 +1,36 @@
@@ -4244,8 +4210,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/binoffset.c b/scripts/binoffset.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/binoffset.c
 @@ -0,0 +1,163 @@
@@ -4412,8 +4376,6 @@ new file mode 100644
 +}
 +
 +/* end binoffset.c */
-diff --git a/scripts/bloat-o-meter b/scripts/bloat-o-meter
-new file mode 100644
 --- /dev/null
 +++ b/scripts/bloat-o-meter
 @@ -0,0 +1,59 @@
@@ -4476,8 +4438,6 @@ new file mode 100644
 +print "%-40s %7s %7s %+7s" % ("function", "old", "new", "delta")
 +for d, n in delta:
 +    if d: print "%-40s %7s %7s %+7d" % (n, old.get(n,"-"), new.get(n,"-"), d)
-diff --git a/scripts/checkincludes.pl b/scripts/checkincludes.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/checkincludes.pl
 @@ -0,0 +1,24 @@
@@ -4505,8 +4465,6 @@ new file mode 100644
 +
 +	close(FILE);
 +}
-diff --git a/scripts/checkstack.pl b/scripts/checkstack.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/checkstack.pl
 @@ -0,0 +1,135 @@
@@ -4645,8 +4603,6 @@ new file mode 100644
 +}
 +
 +print sort bysize @stack;
-diff --git a/scripts/checkversion.pl b/scripts/checkversion.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/checkversion.pl
 @@ -0,0 +1,71 @@
@@ -4721,8 +4677,6 @@ new file mode 100644
 +
 +    close(FILE);
 +}
-diff --git a/scripts/conmakehash.c b/scripts/conmakehash.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/conmakehash.c
 @@ -0,0 +1,293 @@
@@ -5019,8 +4973,6 @@ new file mode 100644
 +
 +  exit(EX_OK);
 +}
-diff --git a/scripts/export_report.pl b/scripts/export_report.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/export_report.pl
 @@ -0,0 +1,169 @@
@@ -5193,8 +5145,6 @@ new file mode 100644
 +	}
 +	print_depends_on(\%depends);
 +}
-diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
-new file mode 100644
 --- /dev/null
 +++ b/scripts/extract-ikconfig
 @@ -0,0 +1,78 @@
@@ -5276,8 +5226,6 @@ new file mode 100644
 +
 +clean_up
 +exit 1
-diff --git a/scripts/gcc-version.sh b/scripts/gcc-version.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/gcc-version.sh
 @@ -0,0 +1,14 @@
@@ -5295,8 +5243,6 @@ new file mode 100644
 +MINOR=$(echo __GNUC_MINOR__ | $compiler -E -xc - | tail -n 1)
 +printf "%02d%02d\\n" $MAJOR $MINOR
 +
-diff --git a/scripts/gcc-x86_64-has-stack-protector.sh b/scripts/gcc-x86_64-has-stack-protector.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/gcc-x86_64-has-stack-protector.sh
 @@ -0,0 +1,6 @@
@@ -5306,8 +5252,6 @@ new file mode 100644
 +if [ "$?" -eq "0" ] ; then
 +	echo $2
 +fi
-diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/gen_initramfs_list.sh
 @@ -0,0 +1,287 @@
@@ -5598,8 +5542,6 @@ new file mode 100644
 +	[ -z ${cpio_file} ] && rm ${cpio_tfile}
 +fi
 +exit 0
-diff --git a/scripts/genksyms/Makefile b/scripts/genksyms/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/Makefile
 @@ -0,0 +1,49 @@
@@ -5652,8 +5594,6 @@ new file mode 100644
 +endif
 +
 +targets += keywords.c lex.c parse.c parse.h
-diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/genksyms.c
 @@ -0,0 +1,559 @@
@@ -6216,8 +6156,6 @@ new file mode 100644
 +
 +	return errors != 0;
 +}
-diff --git a/scripts/genksyms/genksyms.h b/scripts/genksyms/genksyms.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/genksyms.h
 @@ -0,0 +1,82 @@
@@ -6303,8 +6241,6 @@ new file mode 100644
 +	__str; })
 +
 +#endif				/* genksyms.h */
-diff --git a/scripts/genksyms/keywords.c b/scripts/genksyms/keywords.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/keywords.c
 @@ -0,0 +1,212 @@
@@ -6520,8 +6456,6 @@ new file mode 100644
 +    }
 +  return 0;
 +}
-diff --git a/scripts/genksyms/keywords.c_shipped b/scripts/genksyms/keywords.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/keywords.c_shipped
 @@ -0,0 +1,212 @@
@@ -6737,8 +6671,6 @@ new file mode 100644
 +    }
 +  return 0;
 +}
-diff --git a/scripts/genksyms/keywords.gperf b/scripts/genksyms/keywords.gperf
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/keywords.gperf
 @@ -0,0 +1,51 @@
@@ -6793,8 +6725,6 @@ new file mode 100644
 +volatile, VOLATILE_KEYW
 +typeof, TYPEOF_KEYW
 +__typeof__, TYPEOF_KEYW
-diff --git a/scripts/genksyms/lex.c b/scripts/genksyms/lex.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/lex.c
 @@ -0,0 +1,2166 @@
@@ -8964,8 +8894,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/scripts/genksyms/lex.c_shipped b/scripts/genksyms/lex.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/lex.c_shipped
 @@ -0,0 +1,2166 @@
@@ -11135,8 +11063,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/scripts/genksyms/lex.l b/scripts/genksyms/lex.l
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/lex.l
 @@ -0,0 +1,407 @@
@@ -11547,8 +11473,6 @@ new file mode 100644
 +
 +  return token;
 +}
-diff --git a/scripts/genksyms/parse.c b/scripts/genksyms/parse.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/parse.c
 @@ -0,0 +1,2051 @@
@@ -13603,8 +13527,6 @@ new file mode 100644
 +  error_with_pos("%s", e);
 +}
 +
-diff --git a/scripts/genksyms/parse.c_shipped b/scripts/genksyms/parse.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/parse.c_shipped
 @@ -0,0 +1,2051 @@
@@ -15659,8 +15581,6 @@ new file mode 100644
 +  error_with_pos("%s", e);
 +}
 +
-diff --git a/scripts/genksyms/parse.h b/scripts/genksyms/parse.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/parse.h
 @@ -0,0 +1,128 @@
@@ -15792,8 +15712,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/scripts/genksyms/parse.h_shipped b/scripts/genksyms/parse.h_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/parse.h_shipped
 @@ -0,0 +1,128 @@
@@ -15925,8 +15843,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/scripts/genksyms/parse.y b/scripts/genksyms/parse.y
-new file mode 100644
 --- /dev/null
 +++ b/scripts/genksyms/parse.y
 @@ -0,0 +1,470 @@
@@ -16400,8 +16316,6 @@ new file mode 100644
 +{
 +  error_with_pos("%s", e);
 +}
-diff --git a/scripts/hdrcheck.sh b/scripts/hdrcheck.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/hdrcheck.sh
 @@ -0,0 +1,10 @@
@@ -16415,8 +16329,6 @@ new file mode 100644
 +done
 +# FIXME: List dependencies into $3
 +touch $3
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kallsyms.c
 @@ -0,0 +1,525 @@
@@ -16945,8 +16857,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/Makefile
 @@ -0,0 +1,281 @@
@@ -17231,8 +17141,6 @@ new file mode 100644
 +	cp $@ $@_shipped
 +
 +endif
-diff --git a/scripts/kconfig/POTFILES.in b/scripts/kconfig/POTFILES.in
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/POTFILES.in
 @@ -0,0 +1,5 @@
@@ -17241,8 +17149,6 @@ new file mode 100644
 +scripts/kconfig/confdata.c
 +scripts/kconfig/gconf.c
 +scripts/kconfig/qconf.cc
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/conf.c
 @@ -0,0 +1,627 @@
@@ -17873,8 +17779,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/confdata.c
 @@ -0,0 +1,794 @@
@@ -18672,8 +18576,6 @@ new file mode 100644
 +{
 +	conf_changed_callback = fn;
 +}
-diff --git a/scripts/kconfig/expr.c b/scripts/kconfig/expr.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/expr.c
 @@ -0,0 +1,1100 @@
@@ -19777,8 +19679,6 @@ new file mode 100644
 +{
 +	expr_print(e, expr_print_gstr_helper, gs, E_NONE);
 +}
-diff --git a/scripts/kconfig/expr.h b/scripts/kconfig/expr.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/expr.h
 @@ -0,0 +1,202 @@
@@ -19984,8 +19884,6 @@ new file mode 100644
 +#endif
 +
 +#endif /* EXPR_H */
-diff --git a/scripts/kconfig/gconf.c b/scripts/kconfig/gconf.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/gconf.c
 @@ -0,0 +1,1636 @@
@@ -21625,8 +21523,6 @@ new file mode 100644
 +	gtk_widget_set_sensitive(save_btn, changed);
 +	gtk_widget_set_sensitive(save_menu_item, changed);
 +}
-diff --git a/scripts/kconfig/gconf.glade b/scripts/kconfig/gconf.glade
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/gconf.glade
 @@ -0,0 +1,648 @@
@@ -22278,8 +22174,6 @@ new file mode 100644
 +</widget>
 +
 +</glade-interface>
-diff --git a/scripts/kconfig/images.c b/scripts/kconfig/images.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/images.c
 @@ -0,0 +1,326 @@
@@ -22609,8 +22503,6 @@ new file mode 100644
 +"            ",
 +"            ",
 +"            "};
-diff --git a/scripts/kconfig/kconfig_load.c b/scripts/kconfig/kconfig_load.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/kconfig_load.c
 @@ -0,0 +1,35 @@
@@ -22649,8 +22541,6 @@ new file mode 100644
 +#include "lkc_proto.h"
 +#undef P
 +}
-diff --git a/scripts/kconfig/kxgettext.c b/scripts/kconfig/kxgettext.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/kxgettext.c
 @@ -0,0 +1,227 @@
@@ -22881,8 +22771,6 @@ new file mode 100644
 +	menu__xgettext();
 +	return 0;
 +}
-diff --git a/scripts/kconfig/lex.zconf.c_shipped b/scripts/kconfig/lex.zconf.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lex.zconf.c_shipped
 @@ -0,0 +1,2350 @@
@@ -25236,8 +25124,6 @@ new file mode 100644
 +	return current_pos.file ? current_pos.file->name : "<none>";
 +}
 +
-diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lkc.h
 @@ -0,0 +1,153 @@
@@ -25394,8 +25280,6 @@ new file mode 100644
 +#endif
 +
 +#endif /* LKC_H */
-diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lkc_proto.h
 @@ -0,0 +1,43 @@
@@ -25442,8 +25326,6 @@ new file mode 100644
 +/* expr.c */
 +P(expr_compare_type,int,(enum expr_type t1, enum expr_type t2));
 +P(expr_print,void,(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, int prevtoken));
-diff --git a/scripts/kconfig/lxdialog/BIG.FAT.WARNING b/scripts/kconfig/lxdialog/BIG.FAT.WARNING
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/BIG.FAT.WARNING
 @@ -0,0 +1,4 @@
@@ -25451,8 +25333,6 @@ new file mode 100644
 +significantly modified from the original.  It is for use by the Linux
 +kernel configuration script.  Please do not bother Savio Lam with 
 +questions about this program.
-diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/kconfig/lxdialog/check-lxdialog.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
 @@ -0,0 +1,84 @@
@@ -25540,8 +25420,6 @@ new file mode 100644
 +		exit 1
 +		;;
 +esac
-diff --git a/scripts/kconfig/lxdialog/checklist.c b/scripts/kconfig/lxdialog/checklist.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/checklist.c
 @@ -0,0 +1,325 @@
@@ -25870,8 +25748,6 @@ new file mode 100644
 +	delwin(dialog);
 +	return key;		/* ESC pressed */
 +}
-diff --git a/scripts/kconfig/lxdialog/dialog.h b/scripts/kconfig/lxdialog/dialog.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/dialog.h
 @@ -0,0 +1,224 @@
@@ -26099,8 +25975,6 @@ new file mode 100644
 + *   -- uppercase chars are used to invoke the button (M_EVENT + 'O')
 + */
 +#define M_EVENT (KEY_MAX+1)
-diff --git a/scripts/kconfig/lxdialog/inputbox.c b/scripts/kconfig/lxdialog/inputbox.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/inputbox.c
 @@ -0,0 +1,238 @@
@@ -26342,8 +26216,6 @@ new file mode 100644
 +	delwin(dialog);
 +	return KEY_ESC;		/* ESC pressed */
 +}
-diff --git a/scripts/kconfig/lxdialog/menubox.c b/scripts/kconfig/lxdialog/menubox.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/menubox.c
 @@ -0,0 +1,434 @@
@@ -26781,8 +26653,6 @@ new file mode 100644
 +	delwin(dialog);
 +	return key;		/* ESC pressed */
 +}
-diff --git a/scripts/kconfig/lxdialog/textbox.c b/scripts/kconfig/lxdialog/textbox.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/textbox.c
 @@ -0,0 +1,391 @@
@@ -27177,8 +27047,6 @@ new file mode 100644
 +	wmove(win, getmaxy(win) - 3, getmaxx(win) - 9);
 +	wprintw(win, "(%3d%%)", percent);
 +}
-diff --git a/scripts/kconfig/lxdialog/util.c b/scripts/kconfig/lxdialog/util.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/util.c
 @@ -0,0 +1,640 @@
@@ -27822,8 +27690,6 @@ new file mode 100644
 +{
 +	return (item_cur->node.tag == tag);
 +}
-diff --git a/scripts/kconfig/lxdialog/yesno.c b/scripts/kconfig/lxdialog/yesno.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/lxdialog/yesno.c
 @@ -0,0 +1,114 @@
@@ -27941,8 +27807,6 @@ new file mode 100644
 +	delwin(dialog);
 +	return key;		/* ESC pressed */
 +}
-diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/mconf.c
 @@ -0,0 +1,925 @@
@@ -28871,8 +28735,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/menu.c
 @@ -0,0 +1,419 @@
@@ -29295,8 +29157,6 @@ new file mode 100644
 +	return menu;
 +}
 +
-diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/qconf.cc
 @@ -0,0 +1,1743 @@
@@ -31043,8 +30903,6 @@ new file mode 100644
 +
 +	return 0;
 +}
-diff --git a/scripts/kconfig/qconf.h b/scripts/kconfig/qconf.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/qconf.h
 @@ -0,0 +1,334 @@
@@ -31382,8 +31240,6 @@ new file mode 100644
 +	QSplitter* split1;
 +	QSplitter* split2;
 +};
-diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/symbol.c
 @@ -0,0 +1,881 @@
@@ -32268,8 +32124,6 @@ new file mode 100644
 +	}
 +	return "unknown";
 +}
-diff --git a/scripts/kconfig/util.c b/scripts/kconfig/util.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/util.c
 @@ -0,0 +1,111 @@
@@ -32384,8 +32238,6 @@ new file mode 100644
 +	return gs->s;
 +}
 +
-diff --git a/scripts/kconfig/zconf.gperf b/scripts/kconfig/zconf.gperf
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/zconf.gperf
 @@ -0,0 +1,46 @@
@@ -32435,8 +32287,6 @@ new file mode 100644
 +modules,	T_OPT_MODULES,	TF_OPTION
 +defconfig_list,	T_OPT_DEFCONFIG_LIST,TF_OPTION
 +%%
-diff --git a/scripts/kconfig/zconf.hash.c_shipped b/scripts/kconfig/zconf.hash.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/zconf.hash.c_shipped
 @@ -0,0 +1,242 @@
@@ -32682,8 +32532,6 @@ new file mode 100644
 +  return 0;
 +}
 +
-diff --git a/scripts/kconfig/zconf.l b/scripts/kconfig/zconf.l
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/zconf.l
 @@ -0,0 +1,350 @@
@@ -33037,8 +32885,6 @@ new file mode 100644
 +{
 +	return current_pos.file ? current_pos.file->name : "<none>";
 +}
-diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/zconf.tab.c_shipped
 @@ -0,0 +1,2345 @@
@@ -35387,8 +35233,6 @@ new file mode 100644
 +#include "menu.c"
 +
 +
-diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kconfig/zconf.y
 @@ -0,0 +1,712 @@
@@ -36104,8 +35948,6 @@ new file mode 100644
 +#include "expr.c"
 +#include "symbol.c"
 +#include "menu.c"
-diff --git a/scripts/kernel-doc b/scripts/kernel-doc
-new file mode 100644
 --- /dev/null
 +++ b/scripts/kernel-doc
 @@ -0,0 +1,1920 @@
@@ -38029,8 +37871,6 @@ new file mode 100644
 +	}
 +    }
 +}
-diff --git a/scripts/ksymoops/README b/scripts/ksymoops/README
-new file mode 100644
 --- /dev/null
 +++ b/scripts/ksymoops/README
 @@ -0,0 +1,8 @@
@@ -38042,8 +37882,6 @@ new file mode 100644
 +debugging.
 +
 +Keith Owens <kaos@ocs.com.au> Sat Jun 19 10:30:34 EST 1999
-diff --git a/scripts/makelst b/scripts/makelst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/makelst
 @@ -0,0 +1,31 @@
@@ -38078,8 +37916,6 @@ new file mode 100644
 +  t7=0
 +fi
 +$3 -r --source --adjust-vma=$t7 $1
-diff --git a/scripts/mkcompile_h b/scripts/mkcompile_h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mkcompile_h
 @@ -0,0 +1,82 @@
@@ -38165,8 +38001,6 @@ new file mode 100644
 +   mv -f .tmpcompile $TARGET
 +fi
 +rm -f .tmpver.1 .tmpver.2
-diff --git a/scripts/mkmakefile b/scripts/mkmakefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mkmakefile
 @@ -0,0 +1,36 @@
@@ -38206,8 +38040,6 @@ new file mode 100644
 +\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
 +	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
 +EOF
-diff --git a/scripts/mksysmap b/scripts/mksysmap
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mksysmap
 @@ -0,0 +1,44 @@
@@ -38255,8 +38087,6 @@ new file mode 100644
 +
 +$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
 +
-diff --git a/scripts/mkuboot.sh b/scripts/mkuboot.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mkuboot.sh
 @@ -0,0 +1,16 @@
@@ -38276,8 +38106,6 @@ new file mode 100644
 +
 +# Call "mkimage" to create U-Boot image
 +${MKIMAGE} "$@"
-diff --git a/scripts/mkversion b/scripts/mkversion
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mkversion
 @@ -0,0 +1,6 @@
@@ -38287,8 +38115,6 @@ new file mode 100644
 +else
 +    expr 0`cat .version` + 1
 +fi
-diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/Makefile
 @@ -0,0 +1,16 @@
@@ -38308,14 +38134,10 @@ new file mode 100644
 +	$(call if_changed,elfconfig)
 +
 +targets += elfconfig.h
-diff --git a/scripts/mod/empty.c b/scripts/mod/empty.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/empty.c
-@@ -0,0 +1,1 @@
+@@ -0,0 +1 @@
 +/* empty file to figure out endianness / word size */
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/file2alias.c
 @@ -0,0 +1,570 @@
@@ -38889,8 +38711,6 @@ new file mode 100644
 +	buf_write(buf, mod->dev_table_buf.p, mod->dev_table_buf.pos);
 +	free(mod->dev_table_buf.p);
 +}
-diff --git a/scripts/mod/mk_elfconfig.c b/scripts/mod/mk_elfconfig.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/mk_elfconfig.c
 @@ -0,0 +1,65 @@
@@ -38959,8 +38779,6 @@ new file mode 100644
 +	return 0;
 +}
 +
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/modpost.c
 @@ -0,0 +1,1514 @@
@@ -40478,8 +40296,6 @@ new file mode 100644
 +
 +	return err;
 +}
-diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/modpost.h
 @@ -0,0 +1,147 @@
@@ -40630,8 +40446,6 @@ new file mode 100644
 +
 +void fatal(const char *fmt, ...);
 +void warn(const char *fmt, ...);
-diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/mod/sumversion.c
 @@ -0,0 +1,496 @@
@@ -41131,8 +40945,6 @@ new file mode 100644
 +	if (strip_rcs_crap(version))
 +		write_version(modfilename, version, version_offset);
 +}
-diff --git a/scripts/namespace.pl b/scripts/namespace.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/namespace.pl
 @@ -0,0 +1,454 @@
@@ -41590,8 +41402,6 @@ new file mode 100644
 +		}
 +	}
 +}
-diff --git a/scripts/package/Makefile b/scripts/package/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/scripts/package/Makefile
 @@ -0,0 +1,99 @@
@@ -41694,8 +41504,6 @@ new file mode 100644
 +	@echo '  targz-pkg       - Build the kernel as a gzip compressed tarball'
 +	@echo '  tarbz2-pkg      - Build the kernel as a bzip2 compressed tarball'
 +
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-new file mode 100644
 --- /dev/null
 +++ b/scripts/package/builddeb
 @@ -0,0 +1,123 @@
@@ -41822,8 +41630,6 @@ new file mode 100644
 +
 +exit 0
 +
-diff --git a/scripts/package/buildtar b/scripts/package/buildtar
-new file mode 100644
 --- /dev/null
 +++ b/scripts/package/buildtar
 @@ -0,0 +1,106 @@
@@ -41933,8 +41739,6 @@ new file mode 100644
 +
 +exit 0
 +
-diff --git a/scripts/package/mkspec b/scripts/package/mkspec
-new file mode 100644
 --- /dev/null
 +++ b/scripts/package/mkspec
 @@ -0,0 +1,96 @@
@@ -42034,8 +41838,6 @@ new file mode 100644
 +echo "/lib/modules/$KERNELRELEASE"
 +echo "/boot/*"
 +echo ""
-diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/pnmtologo.c
 @@ -0,0 +1,508 @@
@@ -42547,8 +42349,6 @@ new file mode 100644
 +    exit(0);
 +}
 +
-diff --git a/scripts/profile2linkerlist.pl b/scripts/profile2linkerlist.pl
-new file mode 100644
 --- /dev/null
 +++ b/scripts/profile2linkerlist.pl
 @@ -0,0 +1,21 @@
@@ -42573,8 +42373,6 @@ new file mode 100644
 +    print "*(.text.$1)\n";
 +  }
 +}
-diff --git a/scripts/rt-tester/check-all.sh b/scripts/rt-tester/check-all.sh
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/check-all.sh
 @@ -0,0 +1,22 @@
@@ -42600,8 +42398,6 @@ new file mode 100644
 +testit t5-l4-pi-boost-deboost.tst
 +testit t5-l4-pi-boost-deboost-setsched.tst
 +
-diff --git a/scripts/rt-tester/rt-tester.py b/scripts/rt-tester/rt-tester.py
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/rt-tester.py
 @@ -0,0 +1,222 @@
@@ -42827,8 +42623,6 @@ new file mode 100644
 +sys.exit(0)
 +
 +
-diff --git a/scripts/rt-tester/t2-l1-2rt-sameprio.tst b/scripts/rt-tester/t2-l1-2rt-sameprio.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t2-l1-2rt-sameprio.tst
 @@ -0,0 +1,99 @@
@@ -42931,8 +42725,6 @@ new file mode 100644
 +C: unlock:		0: 	0
 +W: unlocked:		0: 	0
 +
-diff --git a/scripts/rt-tester/t2-l1-pi.tst b/scripts/rt-tester/t2-l1-pi.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t2-l1-pi.tst
 @@ -0,0 +1,82 @@
@@ -43018,8 +42810,6 @@ new file mode 100644
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
 +
-diff --git a/scripts/rt-tester/t2-l1-signal.tst b/scripts/rt-tester/t2-l1-signal.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t2-l1-signal.tst
 @@ -0,0 +1,77 @@
@@ -43100,8 +42890,6 @@ new file mode 100644
 +# Unlock and exit
 +C: unlock:		0: 	0
 +W: unlocked:		0: 	0
-diff --git a/scripts/rt-tester/t2-l2-2rt-deadlock.tst b/scripts/rt-tester/t2-l2-2rt-deadlock.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t2-l2-2rt-deadlock.tst
 @@ -0,0 +1,89 @@
@@ -43194,8 +42982,6 @@ new file mode 100644
 +C: unlock:		1: 	1
 +W: unlocked:		1: 	1
 +
-diff --git a/scripts/rt-tester/t3-l1-pi-1rt.tst b/scripts/rt-tester/t3-l1-pi-1rt.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l1-pi-1rt.tst
 @@ -0,0 +1,92 @@
@@ -43291,8 +43077,6 @@ new file mode 100644
 +
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
-diff --git a/scripts/rt-tester/t3-l1-pi-2rt.tst b/scripts/rt-tester/t3-l1-pi-2rt.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l1-pi-2rt.tst
 @@ -0,0 +1,93 @@
@@ -43389,8 +43173,6 @@ new file mode 100644
 +
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
-diff --git a/scripts/rt-tester/t3-l1-pi-3rt.tst b/scripts/rt-tester/t3-l1-pi-3rt.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l1-pi-3rt.tst
 @@ -0,0 +1,92 @@
@@ -43486,8 +43268,6 @@ new file mode 100644
 +
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
-diff --git a/scripts/rt-tester/t3-l1-pi-signal.tst b/scripts/rt-tester/t3-l1-pi-signal.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l1-pi-signal.tst
 @@ -0,0 +1,98 @@
@@ -43589,8 +43369,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/scripts/rt-tester/t3-l1-pi-steal.tst b/scripts/rt-tester/t3-l1-pi-steal.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l1-pi-steal.tst
 @@ -0,0 +1,96 @@
@@ -43690,8 +43468,6 @@ new file mode 100644
 +W: locked:		1: 	0
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
-diff --git a/scripts/rt-tester/t3-l2-pi.tst b/scripts/rt-tester/t3-l2-pi.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t3-l2-pi.tst
 @@ -0,0 +1,92 @@
@@ -43787,8 +43563,6 @@ new file mode 100644
 +
 +C: unlock:		1: 	0
 +W: unlocked:		1: 	0
-diff --git a/scripts/rt-tester/t4-l2-pi-deboost.tst b/scripts/rt-tester/t4-l2-pi-deboost.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t4-l2-pi-deboost.tst
 @@ -0,0 +1,123 @@
@@ -43915,8 +43689,6 @@ new file mode 100644
 +C: unlock:		0:	0
 +W: unlocked:		0:	0
 +
-diff --git a/scripts/rt-tester/t5-l4-pi-boost-deboost-setsched.tst b/scripts/rt-tester/t5-l4-pi-boost-deboost-setsched.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t5-l4-pi-boost-deboost-setsched.tst
 @@ -0,0 +1,183 @@
@@ -44103,8 +43875,6 @@ new file mode 100644
 +W: unlocked:		1:	1
 +W: unlocked:		0:	0
 +
-diff --git a/scripts/rt-tester/t5-l4-pi-boost-deboost.tst b/scripts/rt-tester/t5-l4-pi-boost-deboost.tst
-new file mode 100644
 --- /dev/null
 +++ b/scripts/rt-tester/t5-l4-pi-boost-deboost.tst
 @@ -0,0 +1,143 @@
@@ -44251,8 +44021,6 @@ new file mode 100644
 +W: unlocked:		1:	1
 +W: unlocked:		0:	0
 +
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-new file mode 100644
 --- /dev/null
 +++ b/scripts/setlocalversion
 @@ -0,0 +1,22 @@
@@ -44278,8 +44046,6 @@ new file mode 100644
 +		printf '%s' -dirty
 +	fi
 +fi
-diff --git a/scripts/show_delta b/scripts/show_delta
-new file mode 100644
 --- /dev/null
 +++ b/scripts/show_delta
 @@ -0,0 +1,129 @@
@@ -44412,8 +44178,6 @@ new file mode 100644
 +
 +main()
 +
-diff --git a/scripts/unifdef.c b/scripts/unifdef.c
-new file mode 100644
 --- /dev/null
 +++ b/scripts/unifdef.c
 @@ -0,0 +1,1005 @@
@@ -45422,8 +45186,6 @@ new file mode 100644
 +		    filename, linenum, msg, stifline[depth], depth);
 +	errx(2, "output may be truncated");
 +}
-diff --git a/scripts/ver_linux b/scripts/ver_linux
-new file mode 100644
 --- /dev/null
 +++ b/scripts/ver_linux
 @@ -0,0 +1,105 @@

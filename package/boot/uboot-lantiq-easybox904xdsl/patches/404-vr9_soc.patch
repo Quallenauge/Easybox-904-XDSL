@@ -2,8 +2,6 @@
 # Parent 86e3cf9c51b6ba57e6c5a8ecbf7ff5b5dc169daa
 add VR9 SoC
 
-diff --git a/arch/mips/cpu/vr9/Makefile b/arch/mips/cpu/vr9/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/Makefile
 @@ -0,0 +1,49 @@
@@ -56,8 +54,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/arch/mips/cpu/vr9/cache.c b/arch/mips/cpu/vr9/cache.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/cache.c
 @@ -0,0 +1,211 @@
@@ -272,8 +268,6 @@ new file mode 100644
 +	tlb_write_indexed();
 +}
 +
-diff --git a/arch/mips/cpu/vr9/clock.c b/arch/mips/cpu/vr9/clock.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/clock.c
 @@ -0,0 +1,100 @@
@@ -377,8 +371,6 @@ new file mode 100644
 +}
 +
 +
-diff --git a/arch/mips/cpu/vr9/cpu.c b/arch/mips/cpu/vr9/cpu.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/cpu.c
 @@ -0,0 +1,34 @@
@@ -416,8 +408,6 @@ new file mode 100644
 +	  return 0;
 +}
 +
-diff --git a/arch/mips/cpu/vr9/interrupts.c b/arch/mips/cpu/vr9/interrupts.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/interrupts.c
 @@ -0,0 +1,33 @@
@@ -454,8 +444,6 @@ new file mode 100644
 +{
 +	return 0;
 +}
-diff --git a/arch/mips/cpu/vr9/start.S b/arch/mips/cpu/vr9/start.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/start.S
 @@ -0,0 +1,605 @@
@@ -1064,8 +1052,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/vr9/start_bootstrap.S b/arch/mips/cpu/vr9/start_bootstrap.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/start_bootstrap.S
 @@ -0,0 +1,647 @@
@@ -1716,8 +1702,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/vr9/start_nand_spl.S b/arch/mips/cpu/vr9/start_nand_spl.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/start_nand_spl.S
 @@ -0,0 +1,531 @@
@@ -2252,8 +2236,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/vr9/start_uncomp.S b/arch/mips/cpu/vr9/start_uncomp.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/vr9/start_uncomp.S
 @@ -0,0 +1,46 @@
@@ -2303,8 +2285,6 @@ new file mode 100644
 +    j    t9
 +    nop
 +    
-diff --git a/arch/mips/include/asm/vr9.h b/arch/mips/include/asm/vr9.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/vr9.h
 @@ -0,0 +1,8555 @@

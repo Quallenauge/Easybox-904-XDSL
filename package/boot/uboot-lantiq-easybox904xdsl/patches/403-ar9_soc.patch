@@ -2,8 +2,6 @@
 # Parent 4436810f2d37f8083c02838a56e79a95567cc626
 add AR9 SoC
 
-diff --git a/arch/mips/cpu/ar9/Makefile b/arch/mips/cpu/ar9/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/Makefile
 @@ -0,0 +1,49 @@
@@ -56,8 +54,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/arch/mips/cpu/ar9/asc.c b/arch/mips/cpu/ar9/asc.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/asc.c
 @@ -0,0 +1,308 @@
@@ -369,8 +365,6 @@ new file mode 100644
 +{
 +   return 1;
 +}
-diff --git a/arch/mips/cpu/ar9/cache.c b/arch/mips/cpu/ar9/cache.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/cache.c
 @@ -0,0 +1,211 @@
@@ -585,8 +579,6 @@ new file mode 100644
 +	tlb_write_indexed();
 +}
 +
-diff --git a/arch/mips/cpu/ar9/clock.c b/arch/mips/cpu/ar9/clock.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/clock.c
 @@ -0,0 +1,98 @@
@@ -688,8 +680,6 @@ new file mode 100644
 +{
 +	  return get_fpi_clk(); /*ssc clock is the same as fpi clock*/
 +}
-diff --git a/arch/mips/cpu/ar9/config.mk b/arch/mips/cpu/ar9/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/config.mk
 @@ -0,0 +1,39 @@
@@ -732,8 +722,6 @@ new file mode 100644
 +MIPSFLAGS += $(ENDIANNESS)
 +
 +PLATFORM_CPPFLAGS += $(MIPSFLAGS)
-diff --git a/arch/mips/cpu/ar9/cpu.c b/arch/mips/cpu/ar9/cpu.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/cpu.c
 @@ -0,0 +1,36 @@
@@ -773,8 +761,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/arch/mips/cpu/ar9/interrupts.c b/arch/mips/cpu/ar9/interrupts.c
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/interrupts.c
 @@ -0,0 +1,33 @@
@@ -811,8 +797,6 @@ new file mode 100644
 +{
 +	return 0;
 +}
-diff --git a/arch/mips/cpu/ar9/start.S b/arch/mips/cpu/ar9/start.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/start.S
 @@ -0,0 +1,605 @@
@@ -1421,8 +1405,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/ar9/start_bootstrap.S b/arch/mips/cpu/ar9/start_bootstrap.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/start_bootstrap.S
 @@ -0,0 +1,637 @@
@@ -2063,8 +2045,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/ar9/start_nand_spl.S b/arch/mips/cpu/ar9/start_nand_spl.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/start_nand_spl.S
 @@ -0,0 +1,531 @@
@@ -2599,8 +2579,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/arch/mips/cpu/ar9/start_uncomp.S b/arch/mips/cpu/ar9/start_uncomp.S
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/cpu/ar9/start_uncomp.S
 @@ -0,0 +1,46 @@
@@ -2650,8 +2628,6 @@ new file mode 100644
 +    j    t9
 +    nop
 +    
-diff --git a/arch/mips/include/asm/ar9.h b/arch/mips/include/asm/ar9.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/ar9.h
 @@ -0,0 +1,2101 @@

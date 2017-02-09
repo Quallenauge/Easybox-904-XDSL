@@ -2,8 +2,6 @@
 # Parent 845b7ac1267167484ede295b881c4bdc420fdc79
 Add Danube Board
 
-diff --git a/board/danube/Kconfig b/board/danube/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/Kconfig
 @@ -0,0 +1,64 @@
@@ -71,8 +69,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/danube/Makefile b/board/danube/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/Makefile
 @@ -0,0 +1,63 @@
@@ -139,8 +135,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/board/danube/Makefile.lq b/board/danube/Makefile.lq
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/Makefile.lq
 @@ -0,0 +1,77 @@
@@ -221,8 +215,6 @@ new file mode 100644
 +$(LIBS_BOOTSTRAP):
 +		$(MAKE) -C `dirname $@` all
 +		
-diff --git a/board/danube/bootstrap.lds b/board/danube/bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/bootstrap.lds
 @@ -0,0 +1,72 @@
@@ -298,8 +290,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/board/danube/config.mk b/board/danube/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/config.mk
 @@ -0,0 +1,27 @@
@@ -330,8 +320,6 @@ new file mode 100644
 +
 +TEXT_BASE = $(CONFIG_RAM_TEXT_BASE)
 +
-diff --git a/board/danube/danube.c b/board/danube/danube.c
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/danube.c
 @@ -0,0 +1,307 @@
@@ -642,8 +630,6 @@ new file mode 100644
 +}
 +				   
 +
-diff --git a/board/danube/danube_ref_ddr166.conf b/board/danube/danube_ref_ddr166.conf
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/danube_ref_ddr166.conf
 @@ -0,0 +1,134 @@
@@ -781,8 +767,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/danube/ddr_settings_111.h b/board/danube/ddr_settings_111.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_111.h
 @@ -0,0 +1,50 @@
@@ -836,8 +820,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_166.h b/board/danube/ddr_settings_166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_166.h
 @@ -0,0 +1,50 @@
@@ -891,8 +873,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_PROMOSDDR400.h b/board/danube/ddr_settings_PROMOSDDR400.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_PROMOSDDR400.h
 @@ -0,0 +1,50 @@
@@ -946,8 +926,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_Samsung_166.h b/board/danube/ddr_settings_Samsung_166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_Samsung_166.h
 @@ -0,0 +1,51 @@
@@ -1002,8 +980,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_e111.h b/board/danube/ddr_settings_e111.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_e111.h
 @@ -0,0 +1,50 @@
@@ -1057,8 +1033,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_e166.h b/board/danube/ddr_settings_e166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_e166.h
 @@ -0,0 +1,50 @@
@@ -1112,8 +1086,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_etron166.h b/board/danube/ddr_settings_etron166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_etron166.h
 @@ -0,0 +1,50 @@
@@ -1167,8 +1139,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_psc_166.h b/board/danube/ddr_settings_psc_166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_psc_166.h
 @@ -0,0 +1,51 @@
@@ -1223,8 +1193,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_r111.h b/board/danube/ddr_settings_r111.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_r111.h
 @@ -0,0 +1,50 @@
@@ -1278,8 +1246,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/ddr_settings_r166.h b/board/danube/ddr_settings_r166.h
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/ddr_settings_r166.h
 @@ -0,0 +1,50 @@
@@ -1333,8 +1299,6 @@ new file mode 100644
 +#define MC_DC45_VALUE	0x500
 +//#define MC_DC45_VALUE	0x400
 +#define MC_DC46_VALUE	0x0
-diff --git a/board/danube/lowlevel_init.S b/board/danube/lowlevel_init.S
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/lowlevel_init.S
 @@ -0,0 +1,625 @@
@@ -1963,8 +1927,6 @@ new file mode 100644
 +	nop
 +
 +	.end	lowlevel_init
-diff --git a/board/danube/u-boot.lds b/board/danube/u-boot.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/danube/u-boot.lds
 @@ -0,0 +1,70 @@
@@ -2038,8 +2000,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/include/configs/danube.h b/include/configs/danube.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/danube.h
 @@ -0,0 +1,240 @@
@@ -2283,8 +2243,6 @@ new file mode 100644
 +#define CONFIG_TUNING_SP     0x9e1a5f00 
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/configs/danube_cfg.h b/include/configs/danube_cfg.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/danube_cfg.h
 @@ -0,0 +1,786 @@

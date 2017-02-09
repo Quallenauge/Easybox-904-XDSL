@@ -2,8 +2,6 @@
 # Parent 5b919d6207bc4023f05398da47b9d84661dc14d9
 Add VR9 Board
 
-diff --git a/board/vr9/Kconfig b/board/vr9/Kconfig
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/Kconfig
 @@ -0,0 +1,506 @@
@@ -513,8 +511,6 @@ new file mode 100644
 +    bool "ON PALLADIUM"
 +	default n
 +	
-diff --git a/board/vr9/Makefile b/board/vr9/Makefile
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/Makefile
 @@ -0,0 +1,55 @@
@@ -573,8 +569,6 @@ new file mode 100644
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/board/vr9/Makefile.lq b/board/vr9/Makefile.lq
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/Makefile.lq
 @@ -0,0 +1,123 @@
@@ -701,8 +695,6 @@ new file mode 100644
 +$(LIBS_BOOTSTRAP):
 +		$(MAKE) -C `dirname $@` all
 +		
-diff --git a/board/vr9/bootstrap.lds b/board/vr9/bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/bootstrap.lds
 @@ -0,0 +1,72 @@
@@ -778,8 +770,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/board/vr9/config.mk b/board/vr9/config.mk
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/config.mk
 @@ -0,0 +1,27 @@
@@ -810,8 +800,6 @@ new file mode 100644
 +
 +TEXT_BASE = $(CONFIG_RAM_TEXT_BASE)
 +
-diff --git a/board/vr9/ddr1/xrx200_ddr1_167M_lp_settings.h b/board/vr9/ddr1/xrx200_ddr1_167M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr1/xrx200_ddr1_167M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -879,8 +867,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr1/xrx200_ddr1_167M_settings.h b/board/vr9/ddr1/xrx200_ddr1_167M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr1/xrx200_ddr1_167M_settings.h
 @@ -0,0 +1,64 @@
@@ -948,8 +934,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr1/xrx200_ddr1_200M_lp_settings.h b/board/vr9/ddr1/xrx200_ddr1_200M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr1/xrx200_ddr1_200M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1017,8 +1001,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr1/xrx200_ddr1_200M_settings.h b/board/vr9/ddr1/xrx200_ddr1_200M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr1/xrx200_ddr1_200M_settings.h
 @@ -0,0 +1,64 @@
@@ -1086,8 +1068,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr1_167M_lp_settings.h b/board/vr9/ddr2/xrx200_ddr1_167M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr1_167M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1155,8 +1135,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7C00301
 +#define	MC_CCR60_VALUE	0x7C00301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_167M_lp_settings.h b/board/vr9/ddr2/xrx200_ddr2_167M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_167M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1224,8 +1202,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_167M_settings.h b/board/vr9/ddr2/xrx200_ddr2_167M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_167M_settings.h
 @@ -0,0 +1,64 @@
@@ -1293,8 +1269,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_200M_lp_settings.h b/board/vr9/ddr2/xrx200_ddr2_200M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_200M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1362,8 +1336,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_200M_settings.h b/board/vr9/ddr2/xrx200_ddr2_200M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_200M_settings.h
 @@ -0,0 +1,64 @@
@@ -1431,8 +1403,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_250M_lp_settings.h b/board/vr9/ddr2/xrx200_ddr2_250M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_250M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1500,8 +1470,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_250M_settings.h b/board/vr9/ddr2/xrx200_ddr2_250M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_250M_settings.h
 @@ -0,0 +1,64 @@
@@ -1569,8 +1537,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x4
-diff --git a/board/vr9/ddr2/xrx200_ddr2_300M_lp_settings.h b/board/vr9/ddr2/xrx200_ddr2_300M_lp_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_300M_lp_settings.h
 @@ -0,0 +1,64 @@
@@ -1638,8 +1604,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x5
-diff --git a/board/vr9/ddr2/xrx200_ddr2_300M_settings.h b/board/vr9/ddr2/xrx200_ddr2_300M_settings.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/ddr2/xrx200_ddr2_300M_settings.h
 @@ -0,0 +1,64 @@
@@ -1707,8 +1671,6 @@ new file mode 100644
 +#define	MC_CCR59_VALUE	0x7800301
 +#define	MC_CCR60_VALUE	0x7800301
 +#define	MC_CCR61_VALUE	0x5
-diff --git a/board/vr9/dsl_address_define.h b/board/vr9/dsl_address_define.h
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/dsl_address_define.h
 @@ -0,0 +1,4700 @@
@@ -6412,8 +6374,6 @@ new file mode 100644
 +
 +#endif
 +
-diff --git a/board/vr9/lowlevel_init.S b/board/vr9/lowlevel_init.S
-new file mode 100755
 --- /dev/null
 +++ b/board/vr9/lowlevel_init.S
 @@ -0,0 +1,1060 @@
@@ -7477,8 +7437,6 @@ new file mode 100755
 +  nop
 +
 +  .end  lowlevel_init
-diff --git a/board/vr9/nand_spl_board.c b/board/vr9/nand_spl_board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/nand_spl_board.c
 @@ -0,0 +1,359 @@
@@ -7841,8 +7799,6 @@ new file mode 100644
 +   nand_boot();
 +	
 +}
-diff --git a/board/vr9/sfddr_board.c b/board/vr9/sfddr_board.c
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/sfddr_board.c
 @@ -0,0 +1,605 @@
@@ -8451,8 +8407,6 @@ new file mode 100644
 +   
 +	/* NOTREACHED - relocate_code() does not return */
 +}
-diff --git a/board/vr9/sfpreload.c b/board/vr9/sfpreload.c
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/sfpreload.c
 @@ -0,0 +1,89 @@
@@ -8545,8 +8499,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/vr9/sfpreload.lds b/board/vr9/sfpreload.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/sfpreload.lds
 @@ -0,0 +1,47 @@
@@ -8597,8 +8549,6 @@ new file mode 100644
 +  .bss  : { *(.bss) }
 +	
 +}
-diff --git a/board/vr9/start_sfddr.S b/board/vr9/start_sfddr.S
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/start_sfddr.S
 @@ -0,0 +1,527 @@
@@ -9129,8 +9079,6 @@ new file mode 100644
 +	nop
 +        .end dcache_hit_invalidate
 +
-diff --git a/board/vr9/start_sfpreload.S b/board/vr9/start_sfpreload.S
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/start_sfpreload.S
 @@ -0,0 +1,46 @@
@@ -9180,8 +9128,6 @@ new file mode 100644
 +    j    t9
 +    nop
 +    
-diff --git a/board/vr9/u-boot-bootstrap.lds b/board/vr9/u-boot-bootstrap.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/u-boot-bootstrap.lds
 @@ -0,0 +1,71 @@
@@ -9256,8 +9202,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end_bootstrap = .;
 +}
-diff --git a/board/vr9/u-boot.lds b/board/vr9/u-boot.lds
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/u-boot.lds
 @@ -0,0 +1,70 @@
@@ -9331,8 +9275,6 @@ new file mode 100644
 +        .bss  : { *(.bss) }
 +	uboot_end = .;
 +}
-diff --git a/board/vr9/vr9.c b/board/vr9/vr9.c
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/vr9.c
 @@ -0,0 +1,452 @@
@@ -9788,8 +9730,6 @@ new file mode 100644
 +	return 0;
 +}
 +						 
-diff --git a/board/vr9/xrx200_ddr1_197_config.cmm b/board/vr9/xrx200_ddr1_197_config.cmm
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/xrx200_ddr1_197_config.cmm
 @@ -0,0 +1,87 @@
@@ -9880,8 +9820,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/vr9/xrx200_ddr1_197_config.conf b/board/vr9/xrx200_ddr1_197_config.conf
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/xrx200_ddr1_197_config.conf
 @@ -0,0 +1,55 @@
@@ -9940,8 +9878,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/vr9/xrx200_ddr2_197_CAS4_config.cmm b/board/vr9/xrx200_ddr2_197_CAS4_config.cmm
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/xrx200_ddr2_197_CAS4_config.cmm
 @@ -0,0 +1,130 @@
@@ -10075,8 +10011,6 @@ new file mode 100644
 +
 +
 +
-diff --git a/board/vr9/xrx200_ddr2_197_CAS4_config.conf b/board/vr9/xrx200_ddr2_197_CAS4_config.conf
-new file mode 100644
 --- /dev/null
 +++ b/board/vr9/xrx200_ddr2_197_CAS4_config.conf
 @@ -0,0 +1,52 @@
@@ -10132,8 +10066,6 @@ new file mode 100644
 +0xBF4013A0 0x7C00301	
 +0xBF4013D0 0x4	
 +0xBF401070 0x1010100	
-diff --git a/include/configs/vr9.h b/include/configs/vr9.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/vr9.h
 @@ -0,0 +1,274 @@
@@ -10411,8 +10343,6 @@ new file mode 100644
 +
 +
 +#endif	/* __CONFIG_H */
-diff --git a/include/configs/vr9_cfg.h b/include/configs/vr9_cfg.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/vr9_cfg.h
 @@ -0,0 +1,1460 @@
@@ -11876,8 +11806,6 @@ new file mode 100644
 +
 +/*************************************************************************/
 +
-diff --git a/include/vr9_cfg.h b/include/vr9_cfg.h
-new file mode 100644
 --- /dev/null
 +++ b/include/vr9_cfg.h
 @@ -0,0 +1,1460 @@

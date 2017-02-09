@@ -2,8 +2,6 @@
 # Parent 295e953e9be0a1821be2dd5aacf39fd001d1d13d
 Add network driver for AR9
 
-diff --git a/arch/mips/include/asm/amazon_s_dma.h b/arch/mips/include/asm/amazon_s_dma.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/amazon_s_dma.h
 @@ -0,0 +1,187 @@
@@ -194,8 +192,6 @@ new file mode 100644
 +
 +int dma_device_poll(struct dma_device_info* info, int work_to_do, int *work_done);
 +#endif /* AMAZON_DMA_H */
-diff --git a/arch/mips/include/asm/amazon_s_sw.h b/arch/mips/include/asm/amazon_s_sw.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/amazon_s_sw.h
 @@ -0,0 +1,138 @@
@@ -337,7 +333,6 @@ new file mode 100644
 +
 +#define OK 0;
 +
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
 --- a/drivers/net/Makefile
 +++ b/drivers/net/Makefile
 @@ -30,6 +30,7 @@ COBJS-$(CONFIG_PPC4xx_EMAC) += 4xx_enet.
@@ -348,8 +343,6 @@ diff --git a/drivers/net/Makefile b/drivers/net/Makefile
  COBJS-$(CONFIG_BCM570x) += bcm570x.o bcm570x_autoneg.o 5701rls.o
  COBJS-$(CONFIG_BFIN_MAC) += bfin_mac.o
  COBJS-$(CONFIG_CS8900) += cs8900.o
-diff --git a/drivers/net/ar9_sw.c b/drivers/net/ar9_sw.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/net/ar9_sw.c
 @@ -0,0 +1,753 @@

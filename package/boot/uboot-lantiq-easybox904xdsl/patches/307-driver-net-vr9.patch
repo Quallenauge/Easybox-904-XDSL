@@ -2,10 +2,9 @@
 # Parent 79976aa4a6b8a5be2d72839d97eb678409ed5989
 Add network driver for VR9
 
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
 --- a/drivers/net/Makefile
 +++ b/drivers/net/Makefile
-@@ -37,6 +37,7 @@
+@@ -37,6 +37,7 @@ COBJS-$(CONFIG_CS8900) += cs8900.o
  COBJS-$(CONFIG_TULIP) += dc2114x.o
  COBJS-$(CONFIG_DRIVER_DANUBE) += danube_sw.o
  COBJS-$(CONFIG_DRIVER_AMAZON_SE) += amazon_se_sw.o
@@ -13,8 +12,6 @@ diff --git a/drivers/net/Makefile b/drivers/net/Makefile
  COBJS-$(CONFIG_DRIVER_DM9000) += dm9000x.o
  COBJS-$(CONFIG_DNET) += dnet.o
  COBJS-$(CONFIG_E1000) += e1000.o
-diff --git a/drivers/net/vr9_sw.c b/drivers/net/vr9_sw.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/net/vr9_sw.c
 @@ -0,0 +1,955 @@
