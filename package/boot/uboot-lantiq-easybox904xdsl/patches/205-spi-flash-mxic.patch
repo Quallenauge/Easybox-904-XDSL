@@ -2,7 +2,6 @@
 # Parent afc4cf7b60e5c08b0af84547817554bd1c458b41
 spi flash changes (and MXIC spi flash driver)
 
-diff --git a/common/env_sf.c b/common/env_sf.c
 --- a/common/env_sf.c
 +++ b/common/env_sf.c
 @@ -60,58 +60,22 @@ uchar env_get_char_spec(int index)
@@ -65,7 +64,6 @@ diff --git a/common/env_sf.c b/common/env_sf.c
  	return ret;
  }
  
-diff --git a/drivers/mtd/spi/Makefile b/drivers/mtd/spi/Makefile
 --- a/drivers/mtd/spi/Makefile
 +++ b/drivers/mtd/spi/Makefile
 @@ -28,6 +28,7 @@ LIB	:= $(obj)libspi_flash.a
@@ -76,8 +74,6 @@ diff --git a/drivers/mtd/spi/Makefile b/drivers/mtd/spi/Makefile
  COBJS-$(CONFIG_SPI_FLASH_SPANSION)	+= spansion.o
  COBJS-$(CONFIG_SPI_FLASH_SST)	+= sst.o
  COBJS-$(CONFIG_SPI_FLASH_STMICRO)	+= stmicro.o
-diff --git a/drivers/mtd/spi/mxic.c b/drivers/mtd/spi/mxic.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/mtd/spi/mxic.c
 @@ -0,0 +1,420 @@
@@ -501,7 +497,6 @@ new file mode 100644
 +	free(asf);
 +	return NULL;
 +}
-diff --git a/drivers/mtd/spi/spi_flash.c b/drivers/mtd/spi/spi_flash.c
 --- a/drivers/mtd/spi/spi_flash.c
 +++ b/drivers/mtd/spi/spi_flash.c
 @@ -155,6 +155,13 @@ struct spi_flash *spi_flash_probe(unsign

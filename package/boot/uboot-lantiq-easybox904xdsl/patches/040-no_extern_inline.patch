@@ -1,8 +1,6 @@
-diff --git a/arch/mips/include/asm/io.h b/arch/mips/include/asm/io.h
-index 025012a..50779a0 100644
 --- a/arch/mips/include/asm/io.h
 +++ b/arch/mips/include/asm/io.h
-@@ -118,12 +118,12 @@ static inline void set_io_port_base(unsigned long base)
+@@ -118,12 +118,12 @@ static inline void set_io_port_base(unsi
   * Change virtual addresses to physical addresses and vv.
   * These are trivial on the 1:1 Linux/MIPS mapping
   */
@@ -17,7 +15,7 @@ index 025012a..50779a0 100644
  {
  	return (void *)KSEG0ADDR(address);
  }
-@@ -131,12 +131,12 @@ extern inline void * phys_to_virt(unsigned long address)
+@@ -131,12 +131,12 @@ extern inline void * phys_to_virt(unsign
  /*
   * IO bus memory addresses are also 1:1 with the physical address
   */
@@ -56,7 +54,7 @@ index 025012a..50779a0 100644
  
  #define __OUT2(m) \
  __asm__ __volatile__ ("s" #m "\t%0,%1(%2)"
-@@ -252,7 +252,7 @@ __OUT1(s##c_p) __OUT2(m) : : "r" (__ioswab##w(value)), "ir" (port), "r" (mips_io
+@@ -252,7 +252,7 @@ __OUT1(s##c_p) __OUT2(m) : : "r" (__iosw
  	SLOW_DOWN_IO; }
  
  #define __IN1(t,s) \
@@ -65,7 +63,7 @@ index 025012a..50779a0 100644
  
  /*
   * Required nops will be inserted by the assembler
-@@ -267,7 +267,7 @@ __IN1(t,s##_p) __IN2(m) : "=r" (_v) : "i" (0), "r" (mips_io_port_base+port)); SL
+@@ -267,7 +267,7 @@ __IN1(t,s##_p) __IN2(m) : "=r" (_v) : "i
  __IN1(t,s##c_p) __IN2(m) : "=r" (_v) : "ir" (port), "r" (mips_io_port_base)); SLOW_DOWN_IO; return __ioswab##w(_v); }
  
  #define __INS1(s) \
@@ -83,8 +81,6 @@ index 025012a..50779a0 100644
  
  #define __OUTS2(m) \
  if (count) \
-diff --git a/arch/mips/include/asm/system.h b/arch/mips/include/asm/system.h
-index b6d50e2..06fc1b8 100644
 --- a/arch/mips/include/asm/system.h
 +++ b/arch/mips/include/asm/system.h
 @@ -23,7 +23,7 @@
@@ -114,7 +110,7 @@ index b6d50e2..06fc1b8 100644
  {
  #ifdef CONFIG_CPU_HAS_LLSC
  	unsigned long dummy;
-@@ -243,7 +243,7 @@ extern __inline__ unsigned long xchg_u32(volatile int * m, unsigned long val)
+@@ -243,7 +243,7 @@ extern __inline__ unsigned long xchg_u32
  #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
  #define tas(ptr) (xchg((ptr),1))
  

@@ -1,6 +1,6 @@
 --- a/Makefile
 +++ b/Makefile
-@@ -139,9 +139,7 @@ endif
+@@ -135,9 +135,7 @@ unexport CDPATH
  
  # The "tools" are needed early, so put this first
  # Don't include stuff already done in $(LIBS)

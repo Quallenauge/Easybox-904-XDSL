@@ -2,8 +2,6 @@
 # Parent de6570a484e0d62ed16faa54a83312dcc13e49eb
 Add common includes for Lantiq platforms
 
-diff --git a/arch/mips/include/asm/lq_dma.h b/arch/mips/include/asm/lq_dma.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/lq_dma.h
 @@ -0,0 +1,42 @@
@@ -49,8 +47,6 @@ new file mode 100644
 +
 +    volatile u32 DataPtr;
 +} dma_tx_descriptor_t;
-diff --git a/arch/mips/include/asm/pinstrap.h b/arch/mips/include/asm/pinstrap.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/pinstrap.h
 @@ -0,0 +1,12 @@
@@ -66,8 +62,6 @@ new file mode 100644
 +#define PIN_STRAP		0xB0100914
 +#define SDRAM_WIDTH_MASK	0x400000
 +#define SDRAM_WIDTH_SHIFT	22
-diff --git a/arch/mips/include/asm/yamon.h b/arch/mips/include/asm/yamon.h
-new file mode 100644
 --- /dev/null
 +++ b/arch/mips/include/asm/yamon.h
 @@ -0,0 +1,497 @@
@@ -568,8 +562,6 @@ new file mode 100644
 +
 +MSG( hello_infineon, "\n\n\nhello_infineon\n\n");
 +#endif
-diff --git a/include/configs/lq_extra_env.h b/include/configs/lq_extra_env.h
-new file mode 100644
 --- /dev/null
 +++ b/include/configs/lq_extra_env.h
 @@ -0,0 +1,76 @@

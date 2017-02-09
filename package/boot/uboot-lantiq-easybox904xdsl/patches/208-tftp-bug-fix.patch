@@ -2,10 +2,9 @@
 # Parent 81d41ae57ada23229a2af03d7250529abc150f99
 tftp bugfix
 
-diff --git a/net/tftp.c b/net/tftp.c
 --- a/net/tftp.c
 +++ b/net/tftp.c
-@@ -481,12 +481,12 @@
+@@ -481,12 +481,12 @@ TftpHandler (uchar * pkt, unsigned dest,
  					pkt + 2, ntohs(*(ushort *)pkt));
  
  		switch (ntohs(*(ushort *)pkt)) {

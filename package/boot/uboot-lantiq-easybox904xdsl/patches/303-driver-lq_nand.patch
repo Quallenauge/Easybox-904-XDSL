@@ -2,7 +2,6 @@
 # Parent ec9b6c4f189c79d5874d50e6e3ea6fb00b2e2d00
 Add NAND driver
 
-diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
 --- a/drivers/mtd/nand/Makefile
 +++ b/drivers/mtd/nand/Makefile
 @@ -50,6 +50,7 @@ COBJS-$(CONFIG_NAND_S3C64XX) += s3c64xx.
@@ -13,8 +12,6 @@ diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
  endif
  
  COBJS	:= $(COBJS-y)
-diff --git a/drivers/mtd/nand/lq_nand.c b/drivers/mtd/nand/lq_nand.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/mtd/nand/lq_nand.c
 @@ -0,0 +1,1111 @@

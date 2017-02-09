@@ -2,10 +2,9 @@
 # Parent 09e791b17e89cd97507590328e18a1a77a682eea
 Add network driver for AR10
 
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
 --- a/drivers/net/Makefile
 +++ b/drivers/net/Makefile
-@@ -31,6 +31,7 @@
+@@ -31,6 +31,7 @@ COBJS-$(CONFIG_ALTERA_TSE) += altera_tse
  COBJS-$(CONFIG_DRIVER_AT91EMAC) += at91_emac.o
  COBJS-$(CONFIG_DRIVER_AX88180) += ax88180.o
  COBJS-$(CONFIG_DRIVER_AR9) += ar9_sw.o
@@ -13,8 +12,6 @@ diff --git a/drivers/net/Makefile b/drivers/net/Makefile
  COBJS-$(CONFIG_BCM570x) += bcm570x.o bcm570x_autoneg.o 5701rls.o
  COBJS-$(CONFIG_BFIN_MAC) += bfin_mac.o
  COBJS-$(CONFIG_CS8900) += cs8900.o
-diff --git a/drivers/net/ar10_sw.c b/drivers/net/ar10_sw.c
-new file mode 100644
 --- /dev/null
 +++ b/drivers/net/ar10_sw.c
 @@ -0,0 +1,502 @@
