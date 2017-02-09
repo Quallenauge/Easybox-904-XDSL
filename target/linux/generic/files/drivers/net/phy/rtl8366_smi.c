@@ -27,11 +27,6 @@
 
 #include "rtl8366_smi.h"
 
-#define RTL8366_SMI_ACK_RETRY_COUNT         5
-
-#define RTL8366_SMI_HW_STOP_DELAY		25	/* msecs */
-#define RTL8366_SMI_HW_START_DELAY		100	/* msecs */
-
 static inline void rtl8366_smi_clk_delay(struct rtl8366_smi *smi)
 {
 	ndelay(smi->clk_delay);
