@@ -20,6 +20,8 @@
 #define RTL8366_SMI_HW_STOP_DELAY	25	/* msecs */
 #define RTL8366_SMI_HW_START_DELAY	100	/* msecs */
 
+#define rtl8366_smi_clk_delay(smi) ndelay(smi->clk_delay)
+
 struct rtl8366_smi_ops;
 struct rtl8366_vlan_ops;
 struct mii_bus;
