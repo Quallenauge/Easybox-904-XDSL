@@ -27,11 +27,6 @@
 
 #include "rtl8366_smi.h"
 
-static inline void rtl8366_smi_clk_delay(struct rtl8366_smi *smi)
-{
-	ndelay(smi->clk_delay);
-}
-
 static void rtl8366_smi_start(struct rtl8366_smi *smi)
 {
 	unsigned int sda = smi->gpio_sda;
