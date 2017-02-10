@@ -847,6 +847,10 @@ static int rtl8367b_extif_init(struct rtl8366_smi *smi, int id,
 
 	mode = (cfg) ? cfg->mode : RTL8367_EXTIF_MODE_DISABLED;
 
+	/* Map external port ID. V-RB has ext ports: 0,1; RB: 1,2 */
+	if (smi->chip_ver == 0x1000)
+		id++;
+
 	err = rtl8367b_extif_set_mode(smi, id, mode);
 	if (err)
 		return err;
