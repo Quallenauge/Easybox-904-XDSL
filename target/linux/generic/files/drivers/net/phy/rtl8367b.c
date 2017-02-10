@@ -860,6 +860,8 @@ static int rtl8367b_extif_init(struct rtl8366_smi *smi, int id,
 						     cfg->rxdelay);
 		if (err)
 			return err;
+
+		smi->cpu_port = RTL8367B_CPU_PORT_NUM + id;
 	}
 
 	return 0;
@@ -1401,7 +1403,7 @@ static int rtl8367b_switch_init(struct rtl8366_smi *smi)
 	int err;
 
 	dev->name = "RTL8367B";
-	dev->cpu_port = RTL8367B_CPU_PORT_NUM;
+	dev->cpu_port = smi->cpu_port;
 	dev->ports = RTL8367B_NUM_PORTS;
 	dev->vlans = RTL8367B_NUM_VIDS;
 	dev->ops = &rtl8367b_sw_ops;
