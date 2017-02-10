@@ -41,6 +41,7 @@ struct rtl8366_smi {
 	struct mii_bus		*mii_bus;
 	int			mii_irq[PHY_MAX_ADDR];
 	struct switch_dev	sw_dev;
+	unsigned int		chip_ver;
 
 	unsigned int		cpu_port;
 	unsigned int		num_ports;
