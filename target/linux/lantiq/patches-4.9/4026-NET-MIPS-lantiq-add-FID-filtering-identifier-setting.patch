@@ -1,0 +1,54 @@
+--- a/drivers/net/ethernet/lantiq_xrx200.c
++++ b/drivers/net/ethernet/lantiq_xrx200.c
+@@ -568,6 +568,36 @@ static int xrx200sw_get_vlan_vid(struct
+ 	return 0;
+ }
+ 
++static int xrx200sw_set_vlan_fid(struct switch_dev *dev, const struct switch_attr *attr,
++				 struct switch_val *val)
++{
++	int i;
++	struct xrx200_pce_table_entry tev;
++
++	tev.table = XRX200_PCE_ACTVLAN_IDX;
++
++	tev.index = val->port_vlan;
++	xrx200_pce_table_entry_read(&tev);
++	tev.val[0] = val->value.i;
++	xrx200_pce_table_entry_write(&tev);
++
++	return 0;
++}
++
++static int xrx200sw_get_vlan_fid(struct switch_dev *dev, const struct switch_attr *attr,
++				 struct switch_val *val)
++{
++	struct xrx200_pce_table_entry te;
++
++	te.table = XRX200_PCE_ACTVLAN_IDX;
++	te.index = val->port_vlan;
++	xrx200_pce_table_entry_read(&te);
++	val->value.i = te.val[0];
++
++	return 0;
++}
++
++
+ static int xrx200sw_set_vlan_ports(struct switch_dev *dev, struct switch_val *val)
+ {
+ 	struct xrx200_hw *hw = container_of(dev, struct xrx200_hw, swdev);
+@@ -817,6 +847,14 @@ static struct switch_attr xrx200sw_vlan[
+ 	},
+ 	{
+ 		.type = SWITCH_TYPE_INT,
++		.name = "fid",
++		.description = "Filtering Identifier (0-63)",
++		.set = xrx200sw_set_vlan_fid,
++		.get = xrx200sw_get_vlan_fid,
++		.max = 63,
++	},
++	{
++		.type = SWITCH_TYPE_INT,
+ 		.name = "enable",
+ 		.description = "Enable VLAN",
+ 		.set = xrx200sw_set_vlan_enable,
