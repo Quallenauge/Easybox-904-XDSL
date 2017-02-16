@@ -351,7 +351,7 @@ rtl8367b_mib_counters[RTL8367B_NUM_MIB_COUNTERS] = {
 			return err;					\
 	} while (0)
 
-static const struct rtl8367b_initval rtl8367r_vb_initvals_0[] = {
+static const struct rtl8367b_initval rtl8367rb_initvals[] = {
 	{0x1B03, 0x0876}, {0x1200, 0x7FC4}, {0x0301, 0x0026}, {0x1722, 0x0E14},
 	{0x205F, 0x0002}, {0x2059, 0x1A00}, {0x205F, 0x0000}, {0x207F, 0x0002},
 	{0x2077, 0x0000}, {0x2078, 0x0000}, {0x2079, 0x0000}, {0x207A, 0x0000},
@@ -564,7 +564,7 @@ static const struct rtl8367b_initval rtl8367r_vb_initvals_0[] = {
 	{0x13EB, 0x11BB}
 };
 
-static const struct rtl8367b_initval rtl8367r_vb_initvals_1[] = {
+static const struct rtl8367b_initval rtl8367r_vb_initvals[] = {
 	{0x1B03, 0x0876}, {0x1200, 0x7FC4}, {0x1305, 0xC000}, {0x121E, 0x03CA},
 	{0x1233, 0x0352}, {0x1234, 0x0064}, {0x1237, 0x0096}, {0x1238, 0x0078},
 	{0x1239, 0x0084}, {0x123A, 0x0030}, {0x205F, 0x0002}, {0x2059, 0x1A00},
@@ -720,13 +720,13 @@ static int rtl8367b_init_regs(struct rtl8366_smi *smi)
 
 	switch (smi->chip_ver) {
 		case 0x1000:
-			initvals = rtl8367r_vb_initvals_0;
-			count = ARRAY_SIZE(rtl8367r_vb_initvals_0);
+			initvals = rtl8367rb_initvals;
+			count = ARRAY_SIZE(rtl8367rb_initvals);
 			break;
 
 		case 0x1010:
-			initvals = rtl8367r_vb_initvals_1;
-			count = ARRAY_SIZE(rtl8367r_vb_initvals_1);
+			initvals = rtl8367r_vb_initvals;
+			count = ARRAY_SIZE(rtl8367r_vb_initvals);
 			break;
 
 		default:
