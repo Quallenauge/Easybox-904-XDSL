@@ -1151,6 +1151,17 @@ static int rtl8367b_set_mc_index(struct rtl8366_smi *smi, int port, int index)
 	if (port >= RTL8367B_NUM_PORTS || index >= RTL8367B_NUM_VLANS)
 		return -EINVAL;
 
+	// Skip nonexistent ports
+	switch (smi->chip_ver) {
+		case 0x1000:
+			if (port == 5) return 0;
+			break;
+
+		case 0x1010:
+			if (port == 7) return 0;
+			break;
+	}
+
 	return rtl8366_smi_rmwr(smi, RTL8367B_VLAN_PVID_CTRL_REG(port),
 				RTL8367B_VLAN_PVID_CTRL_MASK <<
 					RTL8367B_VLAN_PVID_CTRL_SHIFT(port),
