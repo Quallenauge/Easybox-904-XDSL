@@ -534,9 +534,12 @@ static int rtl8366_set_pvid(struct rtl8366_smi *smi, unsigned port,
 
 		if (!used) {
 			/* Update the entry from the 4K table */
+			dev_info(smi->parent, "get VLAN 4K vid:%d\n", vid);
 			err = smi->ops->get_vlan_4k(smi, vid, &vlan4k);
-			if (err)
+			if (err) {
+				dev_err(smi->parent, "PVID #%d vid:%d\n", err, vid);
 				return err;
+			}
 
 			vlanmc.vid = vid;
 			vlanmc.member = vlan4k.member;
