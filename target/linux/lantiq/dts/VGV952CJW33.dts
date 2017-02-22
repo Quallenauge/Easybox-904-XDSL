@@ -67,10 +67,7 @@
 	sram@1F000000 {
 		vmmc@107000 {
 			status = "okay";
-			gpios = <&gpio 29 GPIO_ACTIVE_LOW    //??? - performed by drv_voip.
-				 &gpio 30 GPIO_ACTIVE_HIGH   //fxs relay! - performed by drv_voip.
-				 &gpio 39 GPIO_ACTIVE_LOW    //??? - performed by drv_voip.
-				 &gpio 37 GPIO_ACTIVE_HIGH>; //reset_slic!
+			gpios = <&gpio 37 GPIO_ACTIVE_HIGH>; //reset_slic!
 		};
 	};
 	
