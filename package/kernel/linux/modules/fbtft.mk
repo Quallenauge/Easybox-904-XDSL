@@ -74,7 +74,8 @@ define KernelPackage/fb-tft
 	$(LINUX_DIR)/drivers/video/backlight/backlight.ko \
 	$(LINUX_DIR)/drivers/staging/fbtft/fbtft.ko \
 	$(LINUX_DIR)/drivers/staging/fbtft/fb_ili9341_eb904.ko
-#  AUTOLOAD:=$(call AutoLoad,06,fbtft_device)
+	
+	AUTOLOAD:=$(call AutoLoad,06,fb_ili9341_eb904 fbtft)
 endef
 
 define KernelPackage/fb-tft/description
