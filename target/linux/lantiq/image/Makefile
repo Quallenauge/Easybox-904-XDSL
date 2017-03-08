@@ -12,7 +12,9 @@ KERNEL_LOADADDR = 0x80002000
 KERNEL_ENTRY = 0x80002000
 
 include $(TOPDIR)/rules.mk
+include eb904.mk
 include $(INCLUDE_DIR)/image.mk
+
 
 ifeq ($(SUBTARGET),xway)
   UBIFS_OPTS := -m 512 -e 15872 -c 1959
@@ -693,13 +695,6 @@ define Device/arcadyan_vgv7519-brn
   SUPPORTED_DEVICES += VGV7519BRN
 endef
 TARGET_DEVICES += arcadyan_vgv7519-brn
-
-define Device/VGV952CJW33
-  IMAGE_SIZE := 7424k
-  DEVICE_TITLE := VGV952CJW33 - Lantiq Easybox 904
-  DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
-endef
-TARGET_DEVICES += VGV952CJW33
 
 endif
 
