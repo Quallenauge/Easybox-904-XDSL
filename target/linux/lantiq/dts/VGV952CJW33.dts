@@ -172,6 +172,10 @@
 				#size-cells = <1>;
 				lantiq,cs = <1>;			// Seems to be needed (EASY80920NAND.dts)
 
+				nand-on-flash-bbt;
+				nand-ecc-strength = <3>;
+				nand-ecc-step-size = <256>;
+
 				partitions {
 					compatible = "fixed-partitions";
 					#address-cells = <1>;
