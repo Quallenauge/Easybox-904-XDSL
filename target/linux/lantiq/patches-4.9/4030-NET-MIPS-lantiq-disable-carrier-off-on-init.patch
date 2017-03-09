@@ -1,8 +1,6 @@
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index f7f3ad4..624109d 100644
 --- a/drivers/net/phy/phy_device.c
 +++ b/drivers/net/phy/phy_device.c
-@@ -911,7 +911,7 @@ int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
+@@ -911,7 +911,7 @@ int phy_attach_direct(struct net_device
  	/* Initial carrier state is off as the phy is about to be
  	 * (re)initialized.
  	 */
