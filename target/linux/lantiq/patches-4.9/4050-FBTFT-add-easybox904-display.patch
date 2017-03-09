@@ -1,7 +1,5 @@
-Index: linux-4.9.8/drivers/staging/fbtft/Kconfig
-===================================================================
---- linux-4.9.8.orig/drivers/staging/fbtft/Kconfig
-+++ linux-4.9.8/drivers/staging/fbtft/Kconfig
+--- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
 @@ -75,6 +75,12 @@ config FB_TFT_ILI9341
  	help
  	  Generic Framebuffer support for ILI9341
@@ -15,10 +13,8 @@ Index: linux-4.9.8/drivers/staging/fbtft/Kconfig
  config FB_TFT_ILI9481
  	tristate "FB driver for the ILI9481 LCD Controller"
  	depends on FB_TFT
-Index: linux-4.9.8/drivers/staging/fbtft/Makefile
-===================================================================
---- linux-4.9.8.orig/drivers/staging/fbtft/Makefile
-+++ linux-4.9.8/drivers/staging/fbtft/Makefile
+--- a/drivers/staging/fbtft/Makefile
++++ b/drivers/staging/fbtft/Makefile
 @@ -35,6 +35,7 @@ obj-$(CONFIG_FB_TFT_UC1701)      += fb_u
  obj-$(CONFIG_FB_TFT_UPD161704)   += fb_upd161704.o
  obj-$(CONFIG_FB_TFT_WATTEROTT)   += fb_watterott.o
@@ -27,10 +23,8 @@ Index: linux-4.9.8/drivers/staging/fbtft/Makefile
  
  # Device modules
  obj-$(CONFIG_FB_TFT_FBTFT_DEVICE) += fbtft_device.o
-Index: linux-4.9.8/drivers/staging/fbtft/fb_ili9341_eb904.c
-===================================================================
 --- /dev/null
-+++ linux-4.9.8/drivers/staging/fbtft/fb_ili9341_eb904.c
++++ b/drivers/staging/fbtft/fb_ili9341_eb904.c
 @@ -0,0 +1,438 @@
 +/*
 + * FB driver for the ILI9341 LCD display controller
@@ -470,10 +464,8 @@ Index: linux-4.9.8/drivers/staging/fbtft/fb_ili9341_eb904.c
 +MODULE_DESCRIPTION("FB driver for the ILI9341 LCD display controller");
 +MODULE_AUTHOR("Christian Vogelgsang");
 +MODULE_LICENSE("GPL");
-Index: linux-4.9.8/drivers/staging/fbtft/fbtft_device.c
-===================================================================
---- linux-4.9.8.orig/drivers/staging/fbtft/fbtft_device.c
-+++ linux-4.9.8/drivers/staging/fbtft/fbtft_device.c
+--- a/drivers/staging/fbtft/fbtft_device.c
++++ b/drivers/staging/fbtft/fbtft_device.c
 @@ -1214,6 +1214,29 @@ static struct fbtft_device_display displ
  			}
  		}
