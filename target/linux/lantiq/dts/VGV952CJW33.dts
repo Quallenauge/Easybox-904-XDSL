@@ -114,6 +114,11 @@
 				reg = <0x1>;
 				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
 			};
+			/*
+			phy5: ethernet-phy@5 {
+				reg = <0x5>;
+			};
+			*/
 			phy11: ethernet-phy@11 {
 				reg = <0x11>;
 				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
@@ -338,6 +343,15 @@
 			phy-mode = "gmii";
 			phy-handle = <&phy11>;
 		};
+		/* rt3883 soc */
+		/*
+		ethernet@5 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <5>;
+			phy-mode = "rgmii";
+			phy-handle = <&phy5>;
+		};
+		*/
 	};
 
 	/* wan port */
