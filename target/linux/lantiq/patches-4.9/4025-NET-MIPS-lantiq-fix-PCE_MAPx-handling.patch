@@ -27,7 +27,7 @@
  };
  
  static struct switch_attr xrx200sw_port[] = {
-@@ -1525,9 +1538,13 @@ static void xrx200_hw_init(struct xrx200
+@@ -1526,9 +1539,13 @@ static void xrx200_hw_init(struct xrx200
  	xrx200_pci_microcode();
  
  	/* Default unknown Broadcat/Multicast/Unicast port maps */
