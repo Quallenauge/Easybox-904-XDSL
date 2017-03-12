@@ -9,13 +9,6 @@ case "$board" in
 VGV952CJW33-E-IR*)
         # Enable VLAN on lantiq switch
         swconfig dev switch0 vlan 1 set ports "0 1 2 3 4 5 6"
-        swconfig dev switch0 port 0 set pvid 1
-        swconfig dev switch0 port 1 set pvid 1
-        swconfig dev switch0 port 2 set pvid 1
-        swconfig dev switch0 port 3 set pvid 1
-        swconfig dev switch0 port 4 set pvid 1
-        swconfig dev switch0 port 5 set pvid 1
-        swconfig dev switch0 port 6 set pvid 1
 
         #Enable VLAN on rtl8637b switch
         swconfig dev switch1 vlan 1 set ports "0 1 2 3 4 5 6"
