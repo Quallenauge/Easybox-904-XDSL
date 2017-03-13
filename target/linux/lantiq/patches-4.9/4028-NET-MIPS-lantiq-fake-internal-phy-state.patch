@@ -1,0 +1,34 @@
+--- a/drivers/net/ethernet/lantiq_xrx200.c
++++ b/drivers/net/ethernet/lantiq_xrx200.c
+@@ -35,6 +35,7 @@
+ #include "lantiq_pce.h"
+ #include "lantiq_xrx200_sw.h"
+ 
++#define FAKE_INTERNAL_PHY_STATE
+ #define SW_POLLING
+ #define SW_ROUTING
+ 
+@@ -1299,6 +1300,8 @@ static int xrx200_mdio_wr(struct mii_bus
+ 
+ static int xrx200_mdio_rd(struct mii_bus *bus, int addr, int reg)
+ {
++	int ret;
++
+ 	if (xrx200_mdio_poll(bus))
+ 		return -1;
+ 
+@@ -1310,7 +1313,13 @@ static int xrx200_mdio_rd(struct mii_bus
+ 	if (xrx200_mdio_poll(bus))
+ 		return -1;
+ 
+-	return ltq_mdio_r32(MDIO_READ);
++#ifdef FAKE_INTERNAL_PHY_STATE
++	ret = ltq_mdio_r32(MDIO_READ);
++	if (reg == MII_BMSR && addr == 0x11){
++		ret |= BMSR_LSTATUS;
++	}
++#endif
++	return ret;
+ }
+ 
+ static int xrx200_mdio_probe(struct net_device *dev, struct xrx200_port *port)
