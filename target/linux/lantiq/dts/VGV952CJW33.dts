@@ -346,6 +346,14 @@
 			reg = <2>;
 			phy-mode = "gmii";
 			phy-handle = <&phy11>;
+			lantiq,fixed;
+		};
+		/* wan port */
+		ethernet@4 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <4>;
+			phy-mode = "gmii";
+			phy-handle = <&phy13>;
 		};
 		/* rt3883 soc */
 		/*
@@ -356,24 +364,6 @@
 			phy-handle = <&phy5>;
 		};
 		*/
-	};
-
-	/* wan port */
-	wan: interface@1 {
-		compatible = "lantiq,xrx200-pdi";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		reg = <1>;
-		mac-address = [ 00 11 22 33 44 56 ];
-		/* Enabling wan mode on this interface causes kernel panics
-		   in case port link isn't up */
-		// lantiq,wan;
-		ethernet@4 {
-			compatible = "lantiq,xrx200-pdi-port";
-			reg = <4>;
-			phy-mode = "gmii";
-			phy-handle = <&phy13>;
-		};
 	};
 };
 
