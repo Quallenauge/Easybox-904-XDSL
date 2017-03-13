@@ -18,13 +18,6 @@ lan_mac=""
 wan_mac=""
 interface_wan=""
 
-# Method which sets up an secondary lan network, used for eth1
-ucidef_set_interface_lan2()	{
-	json_select_object	network
-	_ucidef_set_interface	lan2	"$@"
-	json_select	..
-}
-
 board=$(lantiq_board_name)
 
 case "$board" in
@@ -155,18 +148,12 @@ VGV7510KW22*)
 	;;
 
 VGV952CJW33-E-IR*)
-	lan_mac=$(mtd_get_mac_ascii	ubootconfig	ethaddr)
-	lan2_mac=$(macaddr_add	"$lan_mac"	1)
-	wan_mac=$(macaddr_add	"$lan_mac"	2)
-	
-	ucidef_set_interface_lan2		'eth1'
-	ucidef_set_interface_macaddr	"lan2"	"$lan2_mac"
-
-	ucidef_add_switch	"switch0"	\
-	"0:lan"	"4:lan"	"6@eth0"
-
-	ucidef_add_switch	"switch1"	\
-	"0:lan"	"1:lan" "2:lan" "3:lan"	"6@eth0"
+	lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
+	wan_mac=$(macaddr_add "$lan_mac" 1)
+	ucidef_add_switch "switch0" \
+	"0:lan" "4:wan" "6@eth0"
+	ucidef_add_switch "switch1" \
+	"0:lan" "1:lan" "2:lan" "3:lan" "6@eth0"
 	;;
 
 VGV7519*)
