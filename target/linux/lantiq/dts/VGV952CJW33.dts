@@ -298,10 +298,10 @@
 			pinctrl-0 = <&state_default>;
 
 			state_default: pinmux {
-                                mdio {
-                                        lantiq,groups = "mdio";
-                                        lantiq,function = "mdio";
-                                };
+				mdio {
+					lantiq,groups = "mdio";
+					lantiq,function = "mdio";
+				};
 
 				phy-rst {	// I have no idea wether this makes sense
 					lantiq,pins = "io37", "io44";			// FRITZ3370.dts
@@ -318,16 +318,16 @@
 					lantiq,output = <1>;
 				};
 
-                               exin1 {
-                                        lantiq,groups = "exin1";
-                                        lantiq,function = "exin";
-                                };
+				exin1 {
+					lantiq,groups = "exin1";
+					lantiq,function = "exin";
+				};
 
-                               conf_tp {
-                                       lantiq,pins = "io1"; /* exin1 */
-                                       lantiq,open-drain;
-                                       lantiq,pull = <0>;
-                               };
+				conf_tp {
+					lantiq,pins = "io1"; /* exin1 */
+					lantiq,open-drain;
+					lantiq,pull = <0>;
+				};
 			};
 		};
 	};
