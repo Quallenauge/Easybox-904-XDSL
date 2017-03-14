@@ -19,11 +19,10 @@
 		reg = <0x0 0x8000000>;
 	};
 
-	easybox904-display@0{
+	easybox904-display{
 		compatible = "ilitek,ili9341_eb904";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		reg = <0>;
 		status = "okay";
 		rotate = <270>;
 		bgr;
@@ -38,7 +37,6 @@
 		compatible = "gpio-keys-polled";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		reg = <0>;
 		poll-interval = <100>;
 		rfkill {
 			label = "wps";
@@ -61,11 +59,10 @@
 		};
 	};
 
-	i2c@0 {
+	i2c {
 		compatible = "i2c-gpio";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		reg = <0>;
 		gpios = <&gpio 19 GPIO_ACTIVE_HIGH /* sda */
 			&gpio 14 GPIO_ACTIVE_HIGH /* scl */
 		>;
@@ -101,11 +98,10 @@
 		};
 	};
 
-	mdio: mdio@0 {
+	mdio: mdio {
 			compatible = "lantiq,xrx200-mdio";
 			#address-cells = <1>;
 			#size-cells = <0>;
-			reg = <0>;
 			phy0: ethernet-phy@0 {
 				reg = <0x0>;
 				compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
