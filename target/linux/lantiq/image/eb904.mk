@@ -62,22 +62,30 @@ endef
 ifeq ($(SUBTARGET),xrx200)
 
 # VR9
-define Device/VGV952CJW33
-#  FEATURES += jffs2_nand
-  $(Device/NAND)
+define Device/VGV952CJW33-E-IR
+  BLOCKSIZE := 126k
+  PAGESIZE := 2048
+  SUBPAGESIZE := 2048
+  FILESYSTEMS += ubifs
+  UBIFS_OPTS := -m 2048 -e 126976 -c 2047
+
   IMAGE_SIZE := 32768k
   MAGIC := 0x27051956
-#  FILESYSTEMS += jffs2-nand-2048-128k
-  DEVICE_TITLE := VGV952CJW33 - Lantiq Easybox 904
+  DEVICE_TITLE := VGV952CJW33-E-IR - Lantiq Easybox 904
   DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
-
   KERNEL := kernel-bin | append-dtb | lzma | pad-offset 128k 64 | uImage lzma
-#  IMAGES := fullimage-ubinized.bin fullimage-jffs2.bin
-  IMAGES := fullimage-ubinized.bin
+  IMAGES := fullimage-ubinized.bin rootfs-ubinized.bin sysupgrade.bin
   IMAGE/fullimage-ubinized.bin := append-ubi | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
+  IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
+  IMAGE/rootfs-ubinized.bin := append-rootfs
+
+#  experimental settings
+#  FEATURES += jffs2_nand
+#  FILESYSTEMS += jffs2-nand-2048-128k
+#  IMAGES := fullimage-ubinized.bin fullimage-jffs2.bin
 #  IMAGE/fullimage-jffs2.bin    := append-rootfs | pad-offset 4096 0 | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
 endef
-TARGET_DEVICES += VGV952CJW33
+TARGET_DEVICES += VGV952CJW33-E-IR
 
 endif
 

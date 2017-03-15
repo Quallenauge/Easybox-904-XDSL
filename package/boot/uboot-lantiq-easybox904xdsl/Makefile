@@ -28,16 +28,16 @@ endif
 define Package/$(PKG_NAME)
 	SECTION:=boot
 	CATEGORY:=Boot Loaders
-	TITLE:=Boot-Loader for VGV952CJW33
-	SUBMENU:=u-boot-VGV952CJW33
-	DEPENDS:=@TARGET_ifxmips||TARGET_ifxcpe||TARGET_ltqcpe||TARGET_lantiq_xrx200_DEVICE_VGV952CJW33
+	TITLE:=Boot-Loader for VGV952CJW33-E-IR
+	SUBMENU:=u-boot-VGV952CJW33-E-IR
+	DEPENDS:=@TARGET_ifxmips||TARGET_ifxcpe||TARGET_ltqcpe||TARGET_lantiq_xrx200_DEVICE_VGV952CJW33-E-IR
 	URL:=http://www.denx.de/wiki/UBoot/WebHome
 endef
 
 #define Build/Configure
 #endef
 
-ifdef CONFIG_TARGET_lantiq_xrx200_DEVICE_VGV952CJW33
+ifdef CONFIG_TARGET_lantiq_xrx200_DEVICE_VGV952CJW33-E-IR
 UBOOT_PLATFORM:=vr9
 endif
 

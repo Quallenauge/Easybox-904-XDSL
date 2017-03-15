@@ -10,7 +10,7 @@ INPUT_MODULES_MENU:=Input modules
 define KernelPackage/keyboard-eb904
   SUBMENU:=$(INPUT_MODULES_MENU)
   TITLE:=EasyBox 904 keypad support
-  DEPENDS:=@(TARGET_lantiq_xrx200_DEVICE_VGV952CJW33) +kmod-input-matrixkmap +kmod-i2c-core +kmod-i2c-algo-bit +kmod-i2c-algo-bit +kmod-i2c-gpio-custom
+  DEPENDS:=@(TARGET_lantiq_xrx200_DEVICE_VGV952CJW33-E-IR) +kmod-input-matrixkmap +kmod-i2c-core +kmod-i2c-algo-bit +kmod-i2c-algo-bit +kmod-i2c-gpio-custom
   KCONFIG:= \
 	CONFIG_KEYBOARD_EB904=m \
 	CONFIG_INPUT_KEYBOARD=y
