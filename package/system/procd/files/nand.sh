@@ -126,14 +126,14 @@ nand_upgrade_prepare_ubi() {
 
 	local ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	if [ ! "$ubidev" ]; then
-		ubiattach -m "$mtdnum"
+		ubiattach -m "$mtdnum" -O 2048
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	fi
 
 	if [ ! "$ubidev" ]; then
-		ubiformat /dev/mtd$mtdnum -y
-		ubiattach -m "$mtdnum"
+		ubiformat /dev/mtd$mtdnum -s 2048 -y
+		ubiattach -m "$mtdnum" -O 2048
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 		[ "$has_env" -gt 0 ] && {
