@@ -25,7 +25,6 @@
 		#size-cells = <0>;
 		status = "okay";
 		rotate = <270>;
-		bgr;
 		fps = <30>;
 		buswidth = <8>;
 		reset-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
