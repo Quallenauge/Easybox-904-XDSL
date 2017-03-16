@@ -25,7 +25,7 @@
  obj-$(CONFIG_FB_TFT_FBTFT_DEVICE) += fbtft_device.o
 --- /dev/null
 +++ b/drivers/staging/fbtft/fb_ili9341_eb904.c
-@@ -0,0 +1,438 @@
+@@ -0,0 +1,442 @@
 +/*
 + * FB driver for the ILI9341 LCD display controller
 + *
@@ -89,6 +89,8 @@
 +#define TXBUFLEN	(4 * PAGE_SIZE)
 +#define DEFAULT_GAMMA	"1F 1A 18 0A 0F 06 45 87 32 0A 07 02 07 05 00\n" \
 +			"00 25 27 05 10 09 3A 78 4D 05 18 0D 38 3A 1F"
++#define UBOOT_GAMMA	"0F 1B 17 0C 0D 08 40 A9 28 06 0D 03 10 03 00\n" \
++			"00 24 28 03 12 07 3F 56 57 09 12 0C 2F 3C 0F"
 +
 +void lcd_DelayNs( unsigned long nsec )
 +{
@@ -294,12 +296,17 @@
 +	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55); /* 16bit pixel */
 +	/* ------------frame rate----------------------------------- */
 +	// write_reg(par, 0xB1, 0x00, 0x1B);
-+	write_reg(par, 0xB1, 0x00, 0x16);
++	write_reg(par, 0xB1, 0x00, 0x16); // uboot
 +	/* ------------Gamma---------------------------------------- */
 +	/* write_reg(par, 0xF2, 0x08); */ /* Gamma Function Disable */
 +	write_reg(par, MIPI_DCS_SET_GAMMA_CURVE, 0x01);
 +	/* ------------display-------------------------------------- */
 +	write_reg(par, 0xB7, 0x07); /* entry mode set */
++	/* ------------additional values---------------------------- */
++	write_reg(par, 0x13);       /* normal display mode on */
++	write_reg(par, 0x38);       /* idle mode off */
++	write_reg(par, 0x20);       /* inversion mode off */
++	/* --------------------------------------------------------- */
 +	write_reg(par, 0xB6, 0x0A, 0x82, 0x27, 0x00);
 +	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
 +	mdelay(100);
@@ -346,7 +353,6 @@
 +			  MEM_Y | MEM_X | MEM_V | (par->bgr << MEM_BGR));
 +		break;
 +	}
-+
 +	return 0;
 +}
 +
@@ -359,7 +365,6 @@
 +static int set_gamma(struct fbtft_par *par, unsigned long *curves)
 +{
 +	int i;
-+
 +	for (i = 0; i < par->gamma.num_curves; i++)
 +		write_reg(par, 0xE0 + i,
 +			  CURVE(i, 0), CURVE(i, 1), CURVE(i, 2),
@@ -367,7 +372,6 @@
 +			  CURVE(i, 6), CURVE(i, 7), CURVE(i, 8),
 +			  CURVE(i, 9), CURVE(i, 10), CURVE(i, 11),
 +			  CURVE(i, 12), CURVE(i, 13), CURVE(i, 14));
-+
 +	return 0;
 +}
 +
@@ -444,7 +448,7 @@
 +	.txbuflen = TXBUFLEN,
 +	.gamma_num = 2,
 +	.gamma_len = 15,
-+	.gamma = DEFAULT_GAMMA,
++	.gamma = UBOOT_GAMMA,
 +	.fbtftops = {
 +		.init_display = init_display,
 +		.set_addr_win = set_addr_win,
