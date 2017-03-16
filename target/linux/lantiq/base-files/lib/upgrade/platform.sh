@@ -17,3 +17,16 @@ platform_do_upgrade() {
 		;;
 	esac
 }
+
+platform_nand_pre_upgrade() {
+	local board=$(lantiq_board_name)
+	echo "platform_nand_pre_upgrade()"
+
+	case "$board" in
+	VGV952CJW33-E-IR )
+		# This is a global defined in nand.sh, sets another VID header offset than default.
+		echo "Set header offset"
+		CU_UBI_VID_HEADER_OFFSET="2048"
+		;;
+	esac
+}
