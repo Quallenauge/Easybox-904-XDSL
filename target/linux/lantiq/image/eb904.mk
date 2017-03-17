@@ -27,9 +27,9 @@ define Build/fullimage_eb904_root
 endef
 
 define Build/fullimage_eb904_function
-	IMAGE_LIST="$(2) \
-	$(1)"; \
-	ONEIMAGE="$(2).oneimage"; \
+	IMAGE_LIST="$(1) \
+	$(2)"; \
+	ONEIMAGE="$(1).oneimage"; \
 	PLATFORM=`echo $(SUBTARGET)|cut -d_ -f2-|awk '{ print toupper($$1) }'`; \
 	rm -f $$ONEIMAGE; \
 	echo "IMAGE_LIST: $$IMAGE_LIST"; \
@@ -59,7 +59,7 @@ define Build/fullimage_eb904_function
 	rm -f $$ONEIMAGE.tmp; \
 	chmod 644 $$ONEIMAGE;
 
-	cat $(2).oneimage > $(2);
+	cat $(1).oneimage > $(1);
 endef
 
 define Build/fullimage_eb904_recovery
