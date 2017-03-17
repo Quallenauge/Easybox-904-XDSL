@@ -19,14 +19,17 @@ define Build/uImage_eb904
 	@mv $@.new.padded $@
 endef
 
-define Build/fullimage_eb904
+define Build/fullimage_eb904_root
 	mkimage -A mips -O linux -C lzma -T filesystem -a 0x00 \
 		-e 0x00 -n 'LEDE RootFS' \
-		-d $@ $(IMAGE_ROOTFS).mkimage
+		-d $@ $@.mkimage
+	cat $@.mkimage > $@
+endef
 
-	IMAGE_LIST="$(IMAGE_ROOTFS).mkimage \
-	$(IMAGE_KERNEL)"; \
-	ONEIMAGE=$@; \
+define Build/fullimage_eb904_function
+	IMAGE_LIST="$(2) \
+	$(1)"; \
+	ONEIMAGE="$(2).oneimage"; \
 	PLATFORM=`echo $(SUBTARGET)|cut -d_ -f2-|awk '{ print toupper($$1) }'`; \
 	rm -f $$ONEIMAGE; \
 	echo "IMAGE_LIST: $$IMAGE_LIST"; \
@@ -53,10 +56,17 @@ define Build/fullimage_eb904
 	done; \
 	mkimage -A MIPS -O Linux -C none -T multi -e 0x00 -a 0x00 -n \
 		"$$PLATFORM Fullimage" -d $$ONEIMAGE.tmp $$ONEIMAGE; \
-		rm -f $$ONEIMAGE.tmp; \
-		chmod 644 $$ONEIMAGE;
+	rm -f $$ONEIMAGE.tmp; \
+	chmod 644 $$ONEIMAGE;
 
-	rm $(IMAGE_ROOTFS).mkimage
+	cat $(2).oneimage > $(2);
+endef
+
+define Build/fullimage_eb904_recovery
+	$(call Build/fullimage_eb904_function,$@,$(KDIR)/tmp/$(KERNEL_INITRAMFS_IMAGE))
+endef
+define Build/fullimage_eb904
+	$(call Build/fullimage_eb904_function,$@,$(IMAGE_KERNEL))
 endef
 
 ifeq ($(SUBTARGET),xrx200)
@@ -74,8 +84,9 @@ define Device/VGV952CJW33-E-IR
   DEVICE_TITLE := VGV952CJW33-E-IR - Lantiq Easybox 904
   DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
   KERNEL := kernel-bin | append-dtb | lzma | pad-offset 128k 64 | uImage lzma
-  IMAGES := fullimage-ubinized.bin rootfs-ubinized.bin sysupgrade.bin
-  IMAGE/fullimage-ubinized.bin := append-ubi | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
+  IMAGES := fullimage-recovery.bin sysupgrade.bin rootfs-ubinized.bin
+  IMAGE/fullimage-ubinized.bin := append-ubi | fullimage_eb904_root | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
+  IMAGE/fullimage-recovery.bin := append-uImage-fakeroot-hdr | fullimage_eb904_recovery | check-size $$$$(IMAGE_SIZE)
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   IMAGE/rootfs-ubinized.bin := append-rootfs
 
