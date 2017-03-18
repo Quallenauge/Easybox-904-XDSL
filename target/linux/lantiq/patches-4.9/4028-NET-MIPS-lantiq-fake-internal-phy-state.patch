@@ -5,10 +5,21 @@
  #include "lantiq_xrx200_sw.h"
  
 +#define FAKE_INTERNAL_PHY_STATE
+ #define LINK_INITIAL_UP
  #define SW_POLLING
  #define SW_ROUTING
+@@ -1267,8 +1268,10 @@ static void xrx200_mdio_link(struct net_
+ 				(priv->port[i].link)?("got"):("lost"));
+ 		}
+ 	}
++#ifndef FAKE_INTERNAL_PHY_STATE
+ 	if (changed && !link)
+ 		netif_carrier_off(dev);
++#endif
+ }
  
-@@ -1299,6 +1300,8 @@ static int xrx200_mdio_wr(struct mii_bus
+ static inline int xrx200_mdio_poll(struct mii_bus *bus)
+@@ -1300,6 +1303,8 @@ static int xrx200_mdio_wr(struct mii_bus
  
  static int xrx200_mdio_rd(struct mii_bus *bus, int addr, int reg)
  {
@@ -17,13 +28,13 @@
  	if (xrx200_mdio_poll(bus))
  		return -1;
  
-@@ -1310,7 +1313,13 @@ static int xrx200_mdio_rd(struct mii_bus
+@@ -1311,7 +1316,13 @@ static int xrx200_mdio_rd(struct mii_bus
  	if (xrx200_mdio_poll(bus))
  		return -1;
  
 -	return ltq_mdio_r32(MDIO_READ);
-+#ifdef FAKE_INTERNAL_PHY_STATE
 +	ret = ltq_mdio_r32(MDIO_READ);
++#ifdef FAKE_INTERNAL_PHY_STATE
 +	if (reg == MII_BMSR && addr == 0x11){
 +		ret |= BMSR_LSTATUS;
 +	}
