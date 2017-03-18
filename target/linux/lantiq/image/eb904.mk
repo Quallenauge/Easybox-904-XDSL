@@ -84,7 +84,8 @@ define Device/VGV952CJW33-E-IR
   DEVICE_TITLE := VGV952CJW33-E-IR - Lantiq Easybox 904
   DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
   KERNEL := kernel-bin | append-dtb | lzma | pad-offset 128k 64 | uImage lzma
-  IMAGES := fullimage-recovery.bin sysupgrade.bin rootfs-ubinized.bin
+#  IMAGES := fullimage-recovery.bin
+  IMAGES := sysupgrade.bin rootfs-ubinized.bin
   IMAGE/fullimage-ubinized.bin := append-ubi | fullimage_eb904_root | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
   IMAGE/fullimage-recovery.bin := append-uImage-fakeroot-hdr | fullimage_eb904_recovery | check-size $$$$(IMAGE_SIZE)
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
