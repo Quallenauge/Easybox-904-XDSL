@@ -1,0 +1,74 @@
+--- a/drivers/net/ethernet/lantiq_xrx200.c
++++ b/drivers/net/ethernet/lantiq_xrx200.c
+@@ -188,6 +188,7 @@
+ #define ADVERTIZE_MPD		(1 << 10)
+ 
+ struct xrx200_port {
++	bool static_link;
+ 	u8 num;
+ 	u8 phy_addr;
+ 	u16 flags;
+@@ -468,6 +469,37 @@ static void xrx200sw_fixup_pvids(void)
+ 	}
+ }
+ 
++/*
++* Always set the link to up in case the port was configured as
++* static link. Otherwise the default behavior of phy_device
++* is applied.
++*/
++static int xway_update_link_static_link(struct phy_device *phydev){
++	struct xrx200_port *port = phydev->priv;
++	if (port && port->static_link){
++		phydev->link = 1;
++	}else{
++		// Copied from genphy_update_link()
++		int status;
++
++		/* Do a fake read */
++		status = phy_read(phydev, MII_BMSR);
++		if (status < 0)
++			return status;
++
++		/* Read link and autonegotiation status */
++		status = phy_read(phydev, MII_BMSR);
++		if (status < 0)
++			return status;
++
++		if ((status & BMSR_LSTATUS) == 0)
++			phydev->link = 0;
++		else
++			phydev->link = 1;
++	}
++	return 0;
++}
++
+ // swconfig interface
+ static void xrx200_hw_init(struct xrx200_hw *hw);
+ 
+@@ -1347,6 +1379,16 @@ static int xrx200_mdio_probe(struct net_
+ 	port->phydev = phydev;
+ 	phydev->no_auto_carrier_off = true;
+ 
++	if ( port->static_link ){
++		phydev->autoneg = AUTONEG_DISABLE;
++		phydev->supported &= ~(SUPPORTED_Autoneg);
++		phydev->advertising &= ~(SUPPORTED_Autoneg);
++		if (phydev->drv){
++			phydev->priv = port;
++			phydev->drv->update_link = xway_update_link_static_link;
++		}
++	}
++
+ 	phy_attached_info(phydev);
+ 
+ #ifdef SW_POLLING
+@@ -1642,6 +1684,8 @@ static void xrx200_of_port(struct xrx200
+ 	else
+ 		p->flags = XRX200_PORT_TYPE_PHY;
+ 	priv->num_port++;
++	p->static_link = of_get_property(port, "lantiq,static-link", NULL);
++	pr_info("Using static link <%d> for port <%d>!\n", p->static_link, p->num);
+ 
+ 	p->gpio = of_get_gpio_flags(port, 0, &p->gpio_flags);
+ 	if (gpio_is_valid(p->gpio))

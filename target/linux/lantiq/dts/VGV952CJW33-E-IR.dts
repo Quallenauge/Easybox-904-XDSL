@@ -344,7 +344,7 @@
 			reg = <2>;
 			phy-mode = "gmii";
 			phy-handle = <&phy11>;
-			lantiq,fixed;
+			lantiq,static-link;
 		};
 		/* wan port */
 		ethernet@4 {
