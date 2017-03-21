@@ -343,8 +343,11 @@
 			compatible = "lantiq,xrx200-pdi-port";
 			reg = <2>;
 			phy-mode = "gmii";
-			phy-handle = <&phy11>;
-			lantiq,static-link;
+			// phy-handle = <&phy11>;
+			fixed-link {
+				speed = <1000>;
+				full-duplex;
+			};
 		};
 		/* wan port */
 		ethernet@4 {
