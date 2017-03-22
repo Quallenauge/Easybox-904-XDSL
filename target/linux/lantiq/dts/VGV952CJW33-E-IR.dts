@@ -29,6 +29,7 @@
 		status = "okay";
 		rotate = <270>;
 		fps = <30>;
+		bgr;
 		buswidth = <8>;
 		reset-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
 		led-gpios = <&gpio 28 GPIO_ACTIVE_LOW>;
