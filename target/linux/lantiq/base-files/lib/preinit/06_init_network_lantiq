@@ -3,7 +3,7 @@
 . /lib/functions/lantiq.sh
 
 set_preinit_misc_lantiq() {
-board=$(lantiq_board_name)
+board=$(board_name)
 
 case "$board" in
 VGV952CJW33-E-IR*)
