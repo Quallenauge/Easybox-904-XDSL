@@ -54,6 +54,7 @@ define KernelPackage/fbtft-eb904
 	CONFIG_FB_TFT_SSD1325=n
 
 # Enable for framebuffer console support
+#  KCONFIG+= \
 #	CONFIG_VGA_CONSOLE=n\
 #	CONFIG_VT=y\
 #	CONFIG_VT_CONSOLE=y\
