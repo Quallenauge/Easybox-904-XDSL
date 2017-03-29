@@ -8,12 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=serdisplib
-PKG_VERSION:=2.01
+PKG_VERSION:=2.02
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://downloads.sourceforge.net/project/serdisplib/serdisplib/$(PKG_VERSION)
-PKG_MD5SUM:=4eb17cd70aa963c30a237d426ac24449
+PKG_SOURCE_URL:=https://svn.code.sf.net/p/serdisplib/code/serdisplib/trunk
+#PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_PROTO:=svn
+PKG_SOURCE_VERSION:=HEAD
+
+#PKG_MD5SUM:=4eb17cd70aa963c30a237d426ac24449
 
 include $(INCLUDE_DIR)/package.mk
 
