@@ -8,6 +8,12 @@ board=$(board_name)
 
 case "$board" in
 VGV952CJW33-E-IR*)
+        wlan_dev=$(uci get network.wlan_dev.name)
+        if [ "$wlan_dev" = "eth0.66" ]; then
+           echo "wlan seems to intially setup - don't touch config"
+           return
+        fi
+
 	# Add interface for communicating with the iNIC
 	uci -q batch <<-EOF
 		set network.inic_dev='device'
