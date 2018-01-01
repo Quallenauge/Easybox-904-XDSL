@@ -72,7 +72,7 @@ endef
 ifeq ($(SUBTARGET),xrx200)
 
 # VR9
-define Device/VGV952CJW33-E-IR
+define Device/lantiq_vgv952cjw33-e-ir
   BLOCKSIZE := 126976
   PAGESIZE := 2048
   SUBPAGESIZE := 2048
@@ -82,6 +82,7 @@ define Device/VGV952CJW33-E-IR
   IMAGE_SIZE := 32768k
   MAGIC := 0x27051956
   DEVICE_TITLE := VGV952CJW33-E-IR - Lantiq Easybox 904
+  DEVICE_DTS := VGV952CJW33-E-IR
   DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc
   KERNEL := kernel-bin | append-dtb | lzma | pad-offset 128k 64 | uImage lzma
 #  IMAGES := fullimage-recovery.bin
@@ -97,7 +98,7 @@ define Device/VGV952CJW33-E-IR
 #  IMAGES := fullimage-ubinized.bin fullimage-jffs2.bin
 #  IMAGE/fullimage-jffs2.bin    := append-rootfs | pad-offset 4096 0 | fullimage_eb904 | check-size $$$$(IMAGE_SIZE)
 endef
-TARGET_DEVICES += VGV952CJW33-E-IR
+TARGET_DEVICES += lantiq_vgv952cjw33-e-ir
 
 endif
 

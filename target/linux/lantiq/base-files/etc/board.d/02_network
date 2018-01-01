@@ -204,7 +204,7 @@ arcadyan,vgv7510kw22-nor|arcadyan,vgv7510kw22-brn)
 		"2:lan:2" "3:lan:1" "4:lan:4" "5:lan:3" "0:wan:5" "6t@eth0"
 	;;
 
-VGV952CJW33-E-IR*)
+lantiq,vgv952cjw33-e-ir*)
 	lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
 	wan_mac=$(macaddr_add "$lan_mac" 1)
 	ucidef_add_switch "switch0" \

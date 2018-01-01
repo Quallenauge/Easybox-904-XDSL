@@ -4,7 +4,8 @@
 #include <dt-bindings/input/input.h>
 
 / {
-	model = "VGV952CJW33-E-IR - EasyBox 904 xDSL";
+	model = "EasyBox 904 xDSL";
+	compatible = "lantiq,vgv952cjw33-e-ir", "lantiq,xway", "lantiq,vr9";
 
 	chosen {
 		// Bootargs when no vpe is used

@@ -9,7 +9,7 @@ platform_do_upgrade() {
 	local board=$(board_name)
 
 	case "$board" in
-	bt,homehub-v2b|bt,homehub-v3a|bt,homehub-v5a|zyxel,p-2812hnu-f1|zyxel,p-2812hnu-f3|VGV952CJW33-E-IR)
+	bt,homehub-v2b|bt,homehub-v3a|bt,homehub-v5a|zyxel,p-2812hnu-f1|zyxel,p-2812hnu-f3|lantiq,vgv952cjw33-e-ir)
 		nand_do_upgrade $1
 		;;
 	*)
@@ -23,7 +23,7 @@ platform_nand_pre_upgrade() {
 	echo "platform_nand_pre_upgrade()"
 
 	case "$board" in
-	VGV952CJW33-E-IR )
+	lantiq,vgv952cjw33-e-ir )
 		# This is a global defined in nand.sh, sets another VID header offset than default.
 		echo "Set header offset"
 		CU_UBI_VID_HEADER_OFFSET="2048"
