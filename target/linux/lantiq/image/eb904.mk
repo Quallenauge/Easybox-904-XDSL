@@ -91,6 +91,7 @@ define Device/lantiq_vgv952cjw33-e-ir
   IMAGE/fullimage-recovery.bin := append-uImage-fakeroot-hdr | fullimage_eb904_recovery | check-size $$$$(IMAGE_SIZE)
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
   IMAGE/rootfs-ubinized.bin := append-rootfs
+  SUPPORTED_DEVICES += VGV952CJW33-E-IR
 
 #  experimental settings
 #  FEATURES += jffs2_nand
