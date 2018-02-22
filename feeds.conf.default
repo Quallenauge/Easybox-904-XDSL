@@ -7,3 +7,5 @@ src-git telephony https://git.openwrt.org/feed/telephony.git
 #src-git management https://github.com/openwrt-management/packages.git
 #src-git oldpackages http://git.openwrt.org/packages.git
 #src-link custom /usr/src/openwrt/custom-feed
+# Easybox device feed
+src-git easybox904 https://github.com/Quallenauge/lede-feeds-easybox904.git
