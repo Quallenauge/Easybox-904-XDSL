@@ -1,4 +1,7 @@
 # Put your custom commands here that should be executed once
 # the system init finished. By default this file does nothing.
 
+# Turn off the display at boot time
+echo "1" >/sys/class/backlight/fb_ili9341_eb904/bl_power
+
 exit 0
