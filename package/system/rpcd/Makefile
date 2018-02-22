@@ -29,6 +29,8 @@ include $(INCLUDE_DIR)/cmake.mk
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_BUILD_DIR)/include/rpcd $(1)/usr/include/
+	$(INSTALL_DIR) $(STAGING_DIR)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/include/rpcd $(STAGING_DIR)/usr/include/
 endef
 
 define Package/rpcd/default
