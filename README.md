@@ -1,87 +1,87 @@
-![OpenWrt logo](/logo.svg)
+This is the buildsystem for the OpenWrt Linux distribution.
 
-OpenWrt Project is a Linux operating system targeting embedded devices. Instead
-of trying to create a single, static firmware, OpenWrt provides a fully
-writable filesystem with package management. This frees you from the
-application selection and configuration provided by the vendor and allows you
-to customize the device through the use of packages to suit any application.
-For developers, OpenWrt is the framework to build an application without having
-to build a complete firmware around it; for users this means the ability for
-full customization, to use the device in ways never envisioned.
+Please use "make menuconfig" to choose your preferred
+configuration for the toolchain and firmware.
+
+You need to have installed gcc, binutils, bzip2, flex, python, perl, make,
+find, grep, diff, unzip, gawk, getopt, subversion, libz-dev and libc headers.
+
+Run "./scripts/feeds update -a" to get all the latest package definitions
+defined in feeds.conf / feeds.conf.default respectively
+and "./scripts/feeds install -a" to install symlinks of all of them into
+package/feeds/.
+
+Use "make menuconfig" to configure your image.
+
+Simply running "make" will build your firmware.
+It will download all sources, build the cross-compile toolchain, 
+the kernel and all choosen applications.
+
+To build your own firmware you need to have access to a Linux, BSD or MacOSX system
+(case-sensitive filesystem required). Cygwin will not be supported because of
+the lack of case sensitiveness in the file system.
+
 
 Sunshine!
+	Your OpenWrt Community
+	http://www.openwrt.org
 
-## Development
 
-To build your own firmware you need a GNU/Linux, BSD or MacOSX system (case
-sensitive filesystem required). Cygwin is unsupported because of the lack of a
-case sensitive file system.
+EasyBox 904 Notes
+=================
 
-### Requirements
+The project is intended to use the EasyBox as simple IOT device with only network support.
+It is possible to make use all of the 5 ports of the switch and run some services.
 
-You need the following tools to compile OpenWrt, the package names vary between
-distributions. A complete list with distribution specific packages is found in
-the [Build System Setup](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem)
-documentation.
+There fore it is useful to connect to the board via serial adapter.
+(Of course you need the unlocked uboot, see https://forum.openwrt.org/viewtopic.php?pid=284534#p284534 how to flash).
 
-```
-gcc binutils bzip2 flex python3 perl make find grep diff unzip gawk getopt
-subversion libz-dev libc-dev
-```
+## Compilation
 
-### Quickstart
+### Build Instructions
+    git clone https://github.com/Quallenauge/Easybox-904-XDSL.git Easybox-904-XDSL
+    cd Easybox-904-XDSL
+	./scripts/feeds update && ./scripts/feeds install -a
+    cp vr9_default.config .config
+    make oldconfig
+    make V=s
 
-1. Run `./scripts/feeds update -a` to obtain all the latest package definitions
-   defined in feeds.conf / feeds.conf.default
+The resulting image can be found on
+`bin/targets/lantiq/xrx200/openwrt-lantiq-xrx200-lantiq_vgv952cjw33-e-ir-squashfs-rootfs-ubinized.bin`
 
-2. Run `./scripts/feeds install -a` to install symlinks for all obtained
-   packages into package/feeds/
+## Prebuilts
+There are some snapshots from the current build. Please refer [this link](https://app.box.com/s/hvqg535dnubt4r2ontpmtodpvt6ydf00) for details.
 
-3. Run `make menuconfig` to select your preferred configuration for the
-   toolchain, target system & firmware packages.
+## Installing
+Refer  [Install instructions at the openwrt wiki](https://openwrt.org/toh/astoria/arcadyan_astoria_easybox_904xdsl_r01?s%5B%5D=arcadyan&s%5B%5D=astoria&s%5B%5D=easybox&s%5B%5D=904xdsl#installing_lede) as base.
+Lately it seems, the fullimage.img doesn't work right now, please use the newest one from: [fullimage.img](https://app.box.com/s/tjeobifjb8ohj90m5k2u7g1efgq8308y) .
 
-4. Run `make` to build your firmware. This will download all sources, build the
-   cross-compile toolchain and then cross-compile the GNU/Linux kernel & all chosen
-   applications for your target system.
+## Tips&Tricks
+### UBoot
+A compile able uboot is integrated in the master-lede branch. It is untested!
+A working uboot can be compiled when using this branch: https://github.com/Quallenauge/Easybox-904-XDSL/tree/master.
 
-### Related Repositories
+It is modified to accept all provided passwords in the same way the one at the openwrt post is used.
+As addition the bootnum functionality is disabled to save some uboot settings re-flash cycles at boot.
+Also the network is always switched on, to support boot over tftp per default.
 
-The main repository uses multiple sub-repositories to manage packages of
-different categories. All packages are installed via the OpenWrt package
-manager called `opkg`. If you're looking to develop the web interface or port
-packages to OpenWrt, please find the fitting repository below.
+A prebuilt one can be found [here](https://mega.nz/#!bA1gADqB!TtTdK3ePNdRjYnCfmM4an4JLbbucFJ2KvEe3U3cnTvo).
 
-* [LuCI Web Interface](https://github.com/openwrt/luci): Modern and modular
-  interface to control the device via a web browser.
+### Stock-Rootfs from sdcard
+The uboot environment variables has to be modified in the following way, assuming the rootfs is of type `ext2` and is stored at `sda1`.
 
-* [OpenWrt Packages](https://github.com/openwrt/packages): Community repository
-  of ported packages.
+    setenv addbootargs setenv bootargs \\${bootargs} root=/dev/sda1 rootdelay=7 init=/etc/preinit rootfstype=ext2
+    setenv bootflash nand read.e \\$(loadaddr) \\$(f\_kernel\_addr) \\$(f\_kernel\_size) \\; run addip addmisc addbootargs \\; bootm \\$(loadaddr)
+    setenv bootcmd run bootflash
+    saveenv
 
-* [OpenWrt Routing](https://github.com/openwrt-routing/packages): Packages
-  specifically focused on (mesh) routing.
+### Manual installing a customized kernel
+The kernel is updated via (assume the uImage is in the current path, PLEASE refer to the ToDos at openwrt to avoid bricks
+https://openwrt.org/toh/astoria/arcadyan_astoria_easybox_904xdsl_r01?s[]=arcadyan&s[]=astoria&s[]=easybox&s[]=904xdsl#installing_openwrt
 
-## Support Information
+    flash_eraseall /dev/mtd2
+    nandwrite -p /dev/mtd2 uImage
 
-For a list of supported devices see the [OpenWrt Hardware Database](https://openwrt.org/supported_devices)
 
-### Documentation
-
-* [Quick Start Guide](https://openwrt.org/docs/guide-quick-start/start)
-* [User Guide](https://openwrt.org/docs/guide-user/start)
-* [Developer Documentation](https://openwrt.org/docs/guide-developer/start)
-* [Technical Reference](https://openwrt.org/docs/techref/start)
-
-### Support Community
-
-* [Forum](https://forum.openwrt.org): For usage, projects, discussions and hardware advise.
-* [Support Chat](https://webchat.freenode.net/#openwrt): Channel `#openwrt` on freenode.net.
-
-### Developer Community
-
-* [Bug Reports](https://bugs.openwrt.org): Report bugs in OpenWrt
-* [Dev Mailing List](https://lists.openwrt.org/mailman/listinfo/openwrt-devel): Send patches
-* [Dev Chat](https://webchat.freenode.net/#openwrt-devel): Channel `#openwrt-devel` on freenode.net.
-
-## License
-
-OpenWrt is licensed under GPL-2.0
+The memory card should have a partition which contains the rootfs. The partition should correspond
+to the uboot root setting  (e.g. /dev/sda1).
