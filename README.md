@@ -26,6 +26,8 @@ Sunshine!
 	Your OpenWrt Community
 	http://www.openwrt.org
 
+# Attention for upgrading an older Image
+If you want to upgrade an older image ( <2018-03-11 ) with the current one, please backup the data and perform an recovery via fullimage.img method. If not, you end up in a bootloop, which then also has to be resolved via the fullimage.img method.
 
 EasyBox 904 Notes
 =================
@@ -54,6 +56,7 @@ There are some snapshots from the current build. Please refer [this link](https:
 
 ## Installing
 Refer  [Install instructions at the openwrt wiki](https://openwrt.org/toh/astoria/arcadyan_astoria_easybox_904xdsl_r01?s%5B%5D=arcadyan&s%5B%5D=astoria&s%5B%5D=easybox&s%5B%5D=904xdsl#installing_lede) as base.
+For reference the images will be uploaded here: [Firmware Snapshots](https://app.box.com/s/hvqg535dnubt4r2ontpmtodpvt6ydf00/folder/36913951101 "Firmware Snapshots")
 Lately it seems, the fullimage.img doesn't work right now, please use the newest one from: [fullimage.img](https://app.box.com/s/tjeobifjb8ohj90m5k2u7g1efgq8308y) .
 
 ## Tips&Tricks
