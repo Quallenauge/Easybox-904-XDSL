@@ -73,7 +73,7 @@
 			compatible = "gpio-leds";
 			power_green: power {
 			label = "VGV952CJW33:red:power";
-			gpios = <&gpio 31 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 31 GPIO_ACTIVE_HIGH>;
 			default-state = "keep";
 		};
 	};
