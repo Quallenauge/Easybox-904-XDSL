@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=busybox
-PKG_VERSION:=1.28.4
+PKG_VERSION:=1.29.3
 PKG_RELEASE:=3
 PKG_FLAGS:=essential
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://www.busybox.net/downloads \
 		http://sources.buildroot.net
-PKG_HASH:=e3c14a3699dc7e82fed397392957afc78e37bdf25398ac38ead6e84621b2ae6a
+PKG_HASH:=97648636e579462296478e0218e65e4bc1e9cd69089a3b1aeb810bff7621efb7
 
 PKG_BUILD_DEPENDS:=BUSYBOX_USE_LIBRPC:librpc BUSYBOX_CONFIG_PAM:libpam
 PKG_BUILD_PARALLEL:=1

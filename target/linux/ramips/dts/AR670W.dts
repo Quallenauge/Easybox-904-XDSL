@@ -10,31 +10,38 @@
 	model = "Airlink101 AR670W";
 
 	aliases {
-		led-status = &led_power;
+		led-boot = &led_power;
+		led-failsafe = &led_power;
+		led-running = &led_power;
+		led-upgrade = &led_power;
 	};
 
 	cfi@bdc00000 {
 		compatible = "cfi-flash";
 		reg = <0xbc400000 0x800000>;
 		bank-width = <2>;
-		#address-cells = <1>;
-		#size-cells = <1>;
 
-		u-boot@0 {
-			reg = <0x0 0x30000>;
-			label = "u-boot";
-			read-only;
-		};
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-		factory: factory@30000 {
-			reg = <0x30000 0x10000>;
-			label = "factory";
-			read-only;
-		};
+			partition@0 {
+				reg = <0x0 0x30000>;
+				label = "u-boot";
+				read-only;
+			};
 
-		firmware@40000 {
-			reg = <0x40000 0x3c0000>;
-			label = "firmware";
+			factory: partition@30000 {
+				reg = <0x30000 0x10000>;
+				label = "factory";
+				read-only;
+			};
+
+			partition@40000 {
+				reg = <0x40000 0x3c0000>;
+				label = "firmware";
+			};
 		};
 	};
 
@@ -54,8 +61,6 @@
 
 	gpio-keys-polled {
 		compatible = "gpio-keys-polled";
-		#address-cells = <1>;
-		#size-cells = <0>;
 		poll-interval = <100>;
 
 		wps {
