@@ -50,7 +50,7 @@
 		bgr;
 		buswidth = <8>;
 		reset-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
-		led-gpios = <&gpio 28 GPIO_ACTIVE_LOW>;
+		led-gpios = <&gpio 28 GPIO_ACTIVE_HIGH>;
 		debug = <1>;
 	};
 
@@ -84,10 +84,11 @@
 	};
 
 	gpio-leds {
-			compatible = "gpio-leds";
-			power_green: power {
+		compatible = "gpio-leds";
+
+		power_green: power {
 			label = "VGV952CJW33:red:power";
-			gpios = <&gpio 31 GPIO_ACTIVE_LOW>;
+			gpios = <&gpio 31 GPIO_ACTIVE_HIGH>;
 			default-state = "keep";
 		};
 	};
@@ -97,7 +98,7 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		gpios = <&gpio 19 GPIO_ACTIVE_HIGH /* sda */
-			&gpio 14 GPIO_ACTIVE_HIGH /* scl */
+ 			&gpio 14 GPIO_ACTIVE_HIGH /* scl */
 		>;
 		//i2c-gpio,sda-open-drain;
 		//i2c-gpio,scl-open-drain;
@@ -337,6 +338,7 @@
 			lantiq,open-drain;
 			lantiq,pull = <0>;
 		};
+
 	};
 };
 
