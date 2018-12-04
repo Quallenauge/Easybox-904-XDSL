@@ -1,5 +1,5 @@
---- a/drivers/mtd/nand/nand_bbt.c
-+++ b/drivers/mtd/nand/nand_bbt.c
+--- a/drivers/mtd/nand/raw/nand_bbt.c
++++ b/drivers/mtd/nand/raw/nand_bbt.c
 @@ -76,6 +76,13 @@
  #define BBT_ENTRY_MASK		0x03
  #define BBT_ENTRY_SHIFT		2
