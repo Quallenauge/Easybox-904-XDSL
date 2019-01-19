@@ -151,8 +151,6 @@
 		gpios = <&gpio 19 GPIO_ACTIVE_HIGH /* sda */
 			&gpio 14 GPIO_ACTIVE_HIGH /* scl */
 		>;
-		//i2c-gpio,sda-open-drain;
-		//i2c-gpio,scl-open-drain;
 		i2c-gpio,delay-us = <5>;
 		/* Add touch panel Support */
 		tp: eb904tp@0x14 {
@@ -193,10 +191,6 @@
 
 	rtl8367b {
 		compatible = "realtek,rtl8367b";
-		//gpio-sda = <&gpio0 1 0>;
-		//gpio-sck = <&gpio0 2 0>;
-		//cpu_port = <7>;
-		//realtek,extif0 = <1 0 1 1 1 1 1 1 2>; // default found on other profiles
 		realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
 		mii-bus = <&mdio>;
 	};
@@ -208,11 +202,6 @@
 };
 
 &localbus {
-    //	#address-cells = <2>;					// Just for info. From vr9.dtsi
-    //	#size-cells = <1>;
-    //	ranges = <0 0 0x0       0x3ffffff			// addrsel0	0x3ffffff and 0x4000010 in vr9.dtsi seem to be wrong, because these are size
-    //    	  1 0 0x4000000 0x4000010>;			// addrsel1	parameters. Not really a problem; the drivers we have use their own hardcoded values
-
 	ranges = <0 0 0x0       0x2000000			// addrsel0	Was set up this way by arcadian eb904 U-Boot for nand. Not used by eb904 linux
 		  1 0 0x2000000 0x1000000			// addrsel1	Size 0x1000000 hardcoded in xway_nand.c. Excessive, as first 0x80 is used only
 		  2 0 0x3000000 0x0000800>;			// addrsel2	Size 0x800 hardcoded in display driver. This is the min size supported by ebu
@@ -221,10 +210,9 @@
 		compatible = "lantiq,nand-xway";
 		reg = <1 0x0 0x80>;				// Only adresses 0x0..0x7F needed (but driver ignores size 0x80 and tells ebu to map 0x1000000)
 
-	    //	bank-width = <2>;				// Not used by any driver code
 		#address-cells = <1>;
 		#size-cells = <1>;
-		lantiq,cs = <1>;				// Seems to be needed (EASY80920NAND.dts)
+		lantiq,cs = <1>;
 
 		nand-on-flash-bbt;
 
@@ -315,8 +303,8 @@
 		};
 	};
 
-	display@2 {						// @2 because using ebu BUSCON2/ADDSEL2. Name not 'easybox904-display',
-		compatible = "ilitek,ili9341_eb904";		// see 'Node Names' at https://elinux.org/Device_Tree_Usage
+	display@2 {						// @2 because using ebu BUSCON2/ADDSEL2.
+		compatible = "ilitek,ili9341_eb904";
 		reg = <2 0x0 0x4>;				// Size 0x4 contains 2 byte data and 2 byte command registers
 		status = "okay";
 		rotate = <270>;
@@ -329,27 +317,20 @@
 	};
 };
 
-/*
-*  Following is the very experimental part which is broken and requires much more elaboration
-*/
-
-// From FRITZ3370.dts
 &gpio {
 	pinctrl-names = "default";
 	pinctrl-0 = <&state_default>;
 
 	state_default: pinmux {
-		phy-rst {	// I have no idea wether this makes sense
-			lantiq,pins = "io37", "io44";			// FRITZ3370.dts
-		  //	lantiq,pins = "io42";				// TDW8970.dts
+		phy-rst {
+			lantiq,pins = "io37", "io44";
 			lantiq,pull = <0>;
 			lantiq,open-drain = <0>;
 			lantiq,output = <1>;
-						};
+		};
 
 		pcie-rst {
-			lantiq,pins = "io38";				// FRITZ3370.dts, TDW8970.dts, EASY80920.dtsi, P2812HNUFX.dtsi
-		   //	lantiq,pins = "io21";				// ARV7519RW22.dts
+			lantiq,pins = "io38";
 			lantiq,pull = <0>;
 			lantiq,output = <1>;
 		};
@@ -451,6 +432,3 @@
 		device_type = "pci";
 	};
 };
-
-
-
