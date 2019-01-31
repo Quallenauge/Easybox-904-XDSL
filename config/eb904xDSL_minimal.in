@@ -1,3 +1,6 @@
+### feed
+CONFIG_FEED_easybox904=m
+
 ### common
 CONFIG_TARGET_lantiq=y
 CONFIG_TARGET_lantiq_xrx200=y
