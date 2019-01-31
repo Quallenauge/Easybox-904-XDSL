@@ -1,0 +1,28 @@
+### Prosody
+CONFIG_PACKAGE_prosody-devel=m
+CONFIG_PACKAGE_libiwinfo-lua=m
+CONFIG_PACKAGE_liblua=m
+CONFIG_PACKAGE_liblucihttp-lua=m
+CONFIG_PACKAGE_libubus-lua=m
+CONFIG_PACKAGE_libuci-lua=m
+CONFIG_PACKAGE_lua=m
+CONFIG_PACKAGE_lua-lalarm=m
+CONFIG_PACKAGE_lua-lzlib=m
+CONFIG_PACKAGE_luabitop=m
+CONFIG_PACKAGE_luac=m
+CONFIG_PACKAGE_luadbi-common=m
+CONFIG_PACKAGE_luadbi-sqlite3=m
+CONFIG_PACKAGE_luaexpat=m
+CONFIG_PACKAGE_luafilesystem=m
+CONFIG_PACKAGE_lualanes=m
+CONFIG_PACKAGE_luasec=m
+CONFIG_PACKAGE_luasocket=m
+CONFIG_PACKAGE_luasql-sqlite3=m
+
+### OpenVPN
+CONFIG_PACKAGE_openvpn-easy-rsa=m
+CONFIG_PACKAGE_openvpn-mbedtls=m
+CONFIG_PACKAGE_luci-app-openvpn=m
+
+### App statistics
+CONFIG_PACKAGE_luci-app-statistics=m
