@@ -1,0 +1,25 @@
+Index: linux-4.14.96/drivers/net/ethernet/lantiq_xrx200.c
+===================================================================
+--- linux-4.14.96.orig/drivers/net/ethernet/lantiq_xrx200.c
++++ linux-4.14.96/drivers/net/ethernet/lantiq_xrx200.c
+@@ -40,7 +40,7 @@
+ #define SW_ROUTING
+ 
+ #ifdef SW_ROUTING
+-#define XRX200_MAX_DEV		2
++#define XRX200_MAX_DEV		1
+ #else
+ #define XRX200_MAX_DEV		1
+ #endif
+@@ -1054,8 +1054,9 @@ static int xrx200_poll_rx(struct napi_st
+ 	}
+ 
+ 	if (complete || !rx) {
+-		napi_complete(&ch->napi);
+-		ltq_dma_enable_irq(&ch->dma);
++		if (napi_complete_done(&ch->napi, rx)) {
++			ltq_dma_enable_irq(&ch->dma);
++		}
+ 	}
+ 
+ 	return rx;
