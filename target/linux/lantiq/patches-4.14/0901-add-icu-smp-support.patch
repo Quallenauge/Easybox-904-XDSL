@@ -1,0 +1,288 @@
+--- a/arch/mips/lantiq/irq.c	2019-01-30 02:20:35.739994259 +0100
++++ b/arch/mips/lantiq/irq.c	2019-01-30 04:30:31.152538191 +0100
+@@ -49,8 +49,8 @@
+  */
+ #define LTQ_ICU_EBU_IRQ		22
+ 
+-#define ltq_icu_w32(m, x, y)	ltq_w32((x), ltq_icu_membase[m] + (y))
+-#define ltq_icu_r32(m, x)	ltq_r32(ltq_icu_membase[m] + (x))
++#define ltq_icu_w32(vpe, m, x, y)	ltq_w32((x), ltq_icu_membase[vpe][m] + (y))
++#define ltq_icu_r32(vpe, m, x)		ltq_r32(ltq_icu_membase[vpe][m] + (x))
+ 
+ #define ltq_eiu_w32(x, y)	ltq_w32((x), ltq_eiu_membase + (y))
+ #define ltq_eiu_r32(x)		ltq_r32(ltq_eiu_membase + (x))
+@@ -62,11 +62,50 @@
+ /* we have a cascade of 8 irqs */
+ #define MIPS_CPU_IRQ_CASCADE		8
+ 
++#define MAX_VPES 2
++
++/*
++ * Convenience Macro.  Should be somewhere generic.
++ */
++#define get_current_vpe()   \
++	((read_c0_tcbind() >> TCBIND_CURVPE_SHIFT) & TCBIND_CURVPE)
++
++
++#if 1	// TODO debug? SMP cores can access at the same time
++#if defined(CONFIG_SMP)
++#define LOCK_VPE() \
++	local_irq_save(flags); \
++	mtflags = dmt()
++
++#define UNLOCK_VPE() \
++	emt(mtflags); \
++	local_irq_restore(flags)
++
++#define LOCK_CORE() \
++	local_irq_save(flags); \
++	mtflags = dvpe()
++
++#define UNLOCK_CORE() \
++	evpe(mtflags); \
++	local_irq_restore(flags)
++#else /* CONFIG_SMP*/
++#define LOCK_VPE()
++#define UNLOCK_VPE()
++#endif /* CONFIG_SMP */
++
++#else	// TODO debug future delete
++#define LOCK_VPE()	(void)flags;(void)mtflags
++#define UNLOCK_VPE()
++#define LOCK_CORE()	(void)flags;(void)mtflags
++#define UNLOCK_CORE()
++#endif
++
+ static int exin_avail;
+ static u32 ltq_eiu_irq[MAX_EIU];
+-static void __iomem *ltq_icu_membase[MAX_IM];
++static void __iomem *ltq_icu_membase[MAX_VPES][MAX_IM];
+ static void __iomem *ltq_eiu_membase;
+ static struct irq_domain *ltq_domain;
++static DEFINE_SPINLOCK(ltq_eiu_lock);
+ static int ltq_perfcount_irq;
+ 
+ int ltq_eiu_get_irq(int exin)
+@@ -81,9 +120,14 @@
+ 	u32 ier = LTQ_ICU_IM0_IER;
+ 	int offset = d->hwirq - MIPS_CPU_IRQ_CASCADE;
+ 	int im = offset / INT_NUM_IM_OFFSET;
+-
++	int vpe = get_current_vpe();
++#if defined(CONFIG_SMP)
++	unsigned long flags, mtflags;
++#endif
+ 	offset %= INT_NUM_IM_OFFSET;
+-	ltq_icu_w32(im, ltq_icu_r32(im, ier) & ~BIT(offset), ier);
++	LOCK_VPE();
++	ltq_icu_w32(vpe, im, ltq_icu_r32(vpe, im, ier) & ~BIT(offset), ier);
++	UNLOCK_VPE();
+ }
+ 
+ void ltq_mask_and_ack_irq(struct irq_data *d)
+@@ -92,10 +136,16 @@
+ 	u32 isr = LTQ_ICU_IM0_ISR;
+ 	int offset = d->hwirq - MIPS_CPU_IRQ_CASCADE;
+ 	int im = offset / INT_NUM_IM_OFFSET;
++	int vpe = get_current_vpe();
++#if defined(CONFIG_SMP)
++	unsigned long flags, mtflags;
++#endif
+ 
+ 	offset %= INT_NUM_IM_OFFSET;
+-	ltq_icu_w32(im, ltq_icu_r32(im, ier) & ~BIT(offset), ier);
+-	ltq_icu_w32(im, BIT(offset), isr);
++	LOCK_VPE();
++	ltq_icu_w32(vpe, im, ltq_icu_r32(vpe, im, ier) & ~BIT(offset), ier);
++	ltq_icu_w32(vpe, im, BIT(offset), isr);
++	UNLOCK_VPE();
+ }
+ EXPORT_SYMBOL(ltq_mask_and_ack_irq);
+ 
+@@ -104,24 +154,43 @@
+ 	u32 isr = LTQ_ICU_IM0_ISR;
+ 	int offset = d->hwirq - MIPS_CPU_IRQ_CASCADE;
+ 	int im = offset / INT_NUM_IM_OFFSET;
++	int vpe = get_current_vpe();
++#if defined(CONFIG_SMP)
++	unsigned long flags, mtflags;
++#endif
+ 
+ 	offset %= INT_NUM_IM_OFFSET;
+-	ltq_icu_w32(im, BIT(offset), isr);
++	LOCK_VPE();
++	ltq_icu_w32(vpe, im, BIT(offset), isr);
++	UNLOCK_VPE();
+ }
+ 
+ void ltq_enable_irq(struct irq_data *d)
+ {
+ 	u32 ier = LTQ_ICU_IM0_IER;
++//	u32 isr = LTQ_ICU_IM0_ISR;
+ 	int offset = d->hwirq - MIPS_CPU_IRQ_CASCADE;
+ 	int im = offset / INT_NUM_IM_OFFSET;
++	int vpe = get_current_vpe();
++#if defined(CONFIG_SMP)
++	unsigned long flags, mtflags;
++#endif
+ 
+ 	offset %= INT_NUM_IM_OFFSET;
+-	ltq_icu_w32(im, ltq_icu_r32(im, ier) | BIT(offset), ier);
++	LOCK_VPE();
++
++	// TODO present in the v3.10 kernel, system is OK without it
++	/* Bug fix for fake interrupt */
++	//ltq_icu_w32(vpe, im, BIT(offset), isr);
++
++	ltq_icu_w32(vpe, im, ltq_icu_r32(vpe, im, ier) | BIT(offset), ier);
++	UNLOCK_VPE();
+ }
+ 
+ static int ltq_eiu_settype(struct irq_data *d, unsigned int type)
+ {
+ 	int i;
++	unsigned long flags;
+ 
+ 	for (i = 0; i < exin_avail; i++) {
+ 		if (d->hwirq == ltq_eiu_irq[i]) {
+@@ -158,8 +227,11 @@
+ 			if (edge)
+ 				irq_set_handler(d->hwirq, handle_edge_irq);
+ 
+-			ltq_eiu_w32(ltq_eiu_r32(LTQ_EIU_EXIN_C) |
+-				(val << (i * 4)), LTQ_EIU_EXIN_C);
++			// v3.10 kernel has this atomic for SMP
++			spin_lock_irqsave(&ltq_eiu_lock, flags);
++			ltq_eiu_w32((ltq_eiu_r32(LTQ_EIU_EXIN_C) & (~ (val << (i * 4)))) |
++					(val << (i * 4)), LTQ_EIU_EXIN_C);
++			spin_unlock_irqrestore(&ltq_eiu_lock, flags);
+ 		}
+ 	}
+ 
+@@ -203,6 +275,36 @@
+ 	}
+ }
+ 
++#if defined(CONFIG_MIPS_MT_SMP)
++static int ltq_icu_irq_set_affinity(struct irq_data *d,
++				    const struct cpumask *cpumask, bool force)
++{
++	int cpu;
++	unsigned long flags;
++	unsigned int  mtflags;
++	u32 ier = LTQ_ICU_IM0_IER;
++	int offset = d->hwirq - MIPS_CPU_IRQ_CASCADE;
++	int im = offset / INT_NUM_IM_OFFSET;
++
++	LOCK_CORE();
++
++	offset %= INT_NUM_IM_OFFSET;
++
++	for_each_online_cpu(cpu) {
++		if (!cpumask_test_cpu(cpu, cpumask))
++			ltq_icu_w32(cpu, im, ltq_icu_r32(cpu, im, ier) & ~BIT(offset), ier);
++		else
++			ltq_icu_w32(cpu, im, ltq_icu_r32(cpu, im, ier) | BIT(offset), ier);
++	}
++
++	//v4 kernel requires this, taken from some other SMP board
++	irq_data_update_effective_affinity(d, cpumask);
++
++	UNLOCK_CORE();
++	return IRQ_SET_MASK_OK;
++}
++#endif
++
+ static struct irq_chip ltq_irq_type = {
+ 	.name = "icu",
+ 	.irq_enable = ltq_enable_irq,
+@@ -211,6 +313,9 @@
+ 	.irq_ack = ltq_ack_irq,
+ 	.irq_mask = ltq_disable_irq,
+ 	.irq_mask_ack = ltq_mask_and_ack_irq,
++#if defined(CONFIG_MIPS_MT_SMP)
++	.irq_set_affinity = ltq_icu_irq_set_affinity,
++#endif
+ };
+ 
+ static struct irq_chip ltq_eiu_type = {
+@@ -231,8 +336,10 @@
+ 	int module = irq_desc_get_irq(desc) - 2;
+ 	u32 irq;
+ 	int hwirq;
++	int vpe = get_current_vpe();
+ 
+-	irq = ltq_icu_r32(module, LTQ_ICU_IM0_IOSR);
++	//v3.10 has lock_vpe around this, is it really necessary?
++	irq = ltq_icu_r32(vpe, module, LTQ_ICU_IM0_IOSR);
+ 	if (irq == 0)
+ 		return;
+ 
+@@ -275,29 +382,60 @@
+ int __init icu_of_init(struct device_node *node, struct device_node *parent)
+ {
+ 	struct device_node *eiu_node;
++#if defined(CONFIG_MIPS_MT_SMP)
++	struct device_node *icu1_node;
++#endif
+ 	struct resource res;
+ 	int i, ret;
+ 
+ 	for (i = 0; i < MAX_IM; i++) {
+ 		if (of_address_to_resource(node, i, &res))
+-			panic("Failed to get icu memory range");
++			panic("Failed to get icu0 memory range");
+ 
+ 		if (!request_mem_region(res.start, resource_size(&res),
+ 					res.name))
+-			pr_err("Failed to request icu memory");
++			pr_err("Failed to request icu0 memory");
++
++	if (of_node_cmp(node->name, "icu0") == 0) {
++			ltq_icu_membase[0][i] = ioremap_nocache(res.start,
++				resource_size(&res));
++		}
++		if (!ltq_icu_membase[0][i])
++			panic("Failed to remap icu0 memory");
++	}
++
++#if defined(CONFIG_MIPS_MT_SMP)
++	// TODO add to the icu0 reg array or new node, what if requires a new node, TODO merge with icu0 node?
++
++	icu1_node = of_find_compatible_node(NULL, NULL, "lantiq,icu1");
++	for (i = 0; i < MAX_IM; i++) {
++		if (of_address_to_resource(icu1_node, i, &res))
++			panic("Failed to get icu1 memory range");
+ 
+-		ltq_icu_membase[i] = ioremap_nocache(res.start,
++		if (request_mem_region(res.start, resource_size(&res),
++					res.name) < 0)
++			pr_err("Failed to request icu1 memory");
++
++		if (of_node_cmp(icu1_node->name, "icu1") == 0){
++			ltq_icu_membase[1][i] = ioremap_nocache(res.start,
+ 					resource_size(&res));
+-		if (!ltq_icu_membase[i])
+-			panic("Failed to remap icu memory");
++		}
++
++		if (!ltq_icu_membase[1][i])
++			panic("Failed to remap icu1 memory");
+ 	}
++#endif
+ 
+ 	/* turn off all irqs by default */
+ 	for (i = 0; i < MAX_IM; i++) {
+ 		/* make sure all irqs are turned off by default */
+-		ltq_icu_w32(i, 0, LTQ_ICU_IM0_IER);
++		ltq_icu_w32(0, i, 0, LTQ_ICU_IM0_IER);
+ 		/* clear all possibly pending interrupts */
+-		ltq_icu_w32(i, ~0, LTQ_ICU_IM0_ISR);
++		ltq_icu_w32(0, i, ~0, LTQ_ICU_IM0_ISR);
++#if defined(CONFIG_MIPS_MT_SMP)
++		ltq_icu_w32(1, i, 0, LTQ_ICU_IM0_IER);
++		ltq_icu_w32(1, i, ~0, LTQ_ICU_IM0_ISR);
++#endif
+ 	}
+ 
+ 	mips_cpu_irq_init();

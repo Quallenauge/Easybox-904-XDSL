@@ -1,0 +1,30 @@
+--- a/arch/mips/boot/dts/vr9.dtsi	2019-01-30 01:23:31.159807402 +0100
++++ b/arch/mips/boot/dts/vr9.dtsi	2019-01-30 10:51:43.737591528 +0100
+@@ -34,7 +34,7 @@
+ 		reg = <0x1f800000 0x800000>;
+ 		ranges = <0x0 0x1f800000 0x7fffff>;
+ 
+-		icu0: icu@80200 {
++		icu0: icu0@80200 {
+ 			#interrupt-cells = <1>;
+ 			interrupt-controller;
+ 			compatible = "lantiq,icu";
+@@ -44,6 +44,18 @@
+ 				0x80278 0x28
+ 				0x802a0 0x28>;
+ 		};
++		
++//pc2005 irq for VPE1	
++		icu1: icu1@80300 {
++			#interrupt-cells = <1>;
++//			interrupt-controller;
++			compatible = "lantiq,icu1";
++			reg = <0x80300 0x28
++				0x80328 0x28
++				0x80350 0x28
++				0x80378 0x28
++				0x803a0 0x28>;
++		};
+ 
+ 		watchdog@803f0 {
+ 			compatible = "lantiq,xrx100-wdt", "lantiq,xrx100-wdt";
