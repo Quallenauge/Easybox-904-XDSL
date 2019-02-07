@@ -1,0 +1,14 @@
+--- a/arch/mips/lantiq/xway/dma.c	2019-01-26 09:37:07.000000000 +0100
++++ b/arch/mips/lantiq/xway/dma.c	2019-01-30 05:04:42.750889682 +0100
+@@ -194,6 +194,11 @@
+ 	ltq_dma_w32(p, LTQ_DMA_PS);
+ 	switch (p) {
+ 	case DMA_PORT_ETOP:
++
++		//TODO test without when ethernet driver is stable
++		ltq_dma_w32_mask(0x3c, (DMA_2W_BURST << 4) | (DMA_2W_BURST << 2),
++			LTQ_DMA_PCTRL);
++
+ 		/*
+ 		 * Tell the DMA engine to swap the endianness of data frames and
+ 		 * drop packets if the channel arbitration fails.
