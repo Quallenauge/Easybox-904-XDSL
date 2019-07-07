@@ -97,3 +97,6 @@ CONFIG_PACKAGE_kmod-spi-gpio=y
 
 ### minimal luci
 CONFIG_PACKAGE_luci-ssl-openssl=y
+
+### uboot start observation watchdog
+CONFIG_PACKAGE_uboot-envtools=y
