@@ -84,23 +84,23 @@ Index: linux-4.19.57/drivers/net/ethernet/lantiq_xrx200.c
 +	if(p->phy_if == PHY_INTERFACE_MODE_RGMII) {
 +		if(!of_property_read_u8(port, "tx-delay", &p->tx_delay)){
 +			if(MII_PCDU_DLY_MAX < p->tx_delay) {
-+				pr_info("Invalid tx-delay value:%d!", (u32)p->tx_delay);
++				pr_info("Invalid tx-delay value:%hhu!", p->tx_delay);
 +				p->tx_delay = 1;
 +			}
 +		} else {
 +			p->tx_delay = 1;
 +		}
-+		pr_info("Set tx-delay:%d", (u32)p->tx_delay);
++		pr_info("Set tx-delay:%hhu", p->tx_delay);
 +
 +		if(!of_property_read_u8(port, "rx-delay", &p->rx_delay)) {
 +			if( MII_PCDU_DLY_MAX < p->rx_delay){
-+				pr_info("Invalid rx-delay value:%d!", (u32)p->rx_delay);
++				pr_info("Invalid rx-delay value:%hhu!", p->rx_delay);
 +				p->rx_delay = 0;
 +			}
 +		} else {
 +			p->rx_delay = 0;
 +		}
-+		pr_info("Set rx-delay:%d", (u32)p->rx_delay);
++		pr_info("Set rx-delay:%hhu", (u32)p->rx_delay);
 +	}
  	if (p->phy_addr > 0x10)
  		p->flags = XRX200_PORT_TYPE_MAC;
