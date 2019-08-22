@@ -148,7 +148,10 @@ define Device/lantiq_vgv952cjw33-e-ir
   $(Device/NAND)
   BOARD_NAME := VGV952CJW33-E-IR
   DEVICE_DTS := VGV952CJW33-E-IR
-  DEVICE_TITLE := Easybox 904 / Arcadyan VGV952CJW33-E-IR
+  DEVICE_VENDOR := Arcadyan
+  DEVICE_MODEL := VGV952CJW33-E-IR
+  DEVICE_ALT0_VENDOR := Vodafone
+  DEVICE_ALT0_MODEL := Easybox 904 xDSL
   DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc wpad-basic
   SUPPORTED_DEVICES += VGV952CJW33-E-IR
 # If the rootfs/squashfs should be placed in mtd1: flashing can be done with the reset-button-during-
