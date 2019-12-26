@@ -230,6 +230,15 @@ arcadyan,vgv7519-nor|arcadyan,vgv7519-brn)
 		"0:lan:4" "1:lan:3" "2:lan:2" "4:lan:1" "5:wan:5" "6t@eth0"
 	;;
 
+arcadyan,vgv952cjw33-e-ir-vpe|arcadyan,vgv952cjw33-e-ir-smp)
+	lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
+	wan_mac=$(macaddr_add "$lan_mac" 1)
+	ucidef_add_switch "switch0" \
+		"0:lan" "4:wan" "6@eth0"
+	ucidef_add_switch "switch1" \
+		"0:lan" "1:lan" "2:lan" "3:lan" "6@eth0"
+	;;
+
 buffalo,wbmr-hp-g300h)
 	ucidef_add_switch "switch0" \
 		"0t@eth0" "2:lan" "3:lan" "4:lan" "5:lan"
