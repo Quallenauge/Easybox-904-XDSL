@@ -6,7 +6,7 @@ reset_watchdog_timer_lantiq() {
 board=$(board_name)
 
 case "$board" in
-lantiq,vgv952cjw33-e-ir*)
+arcadyan,vgv952cjw33-e-ir-vpe|arcadyan,vgv952cjw33-e-ir-smp)
         # Add envtools configuration
         if [ -e /etc/uci-defaults/30_uboot-envtools ]; then
                 echo "fw_config is generated now"
