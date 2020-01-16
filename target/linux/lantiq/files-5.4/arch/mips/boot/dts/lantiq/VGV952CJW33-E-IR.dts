@@ -339,11 +339,6 @@
 	pinctrl-0 = <&state_default>;
 
 	state_default: pinmux {
-		mdio {
-			lantiq,groups = "mdio";
-			lantiq,function = "mdio";
-		};
-
 		phy-rst {	// I have no idea wether this makes sense
 			lantiq,pins = "io37", "io44";			// FRITZ3370.dts
 		  //	lantiq,pins = "io42";				// TDW8970.dts
