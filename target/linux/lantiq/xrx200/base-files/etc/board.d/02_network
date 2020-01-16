@@ -29,7 +29,7 @@ lantiq_setup_interfaces()
 		ucidef_add_switch "switch0" \
 			"2:lan:2" "3:lan:1" "4:lan:4" "5:lan:3" "0:wan:5" "6t@eth0"
 		;;
-	lantiq,vgv952cjw33-e-ir*)
+	arcadyan,vgv952cjw33-e-ir-vpe|arcadyan,vgv952cjw33-e-ir-smp)
 		lan_mac=$(mtd_get_mac_ascii ubootconfig ethaddr)
 		wan_mac=$(macaddr_add "$lan_mac" 1)
 		ucidef_add_switch "switch0" \
