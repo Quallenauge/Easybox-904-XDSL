@@ -96,6 +96,36 @@ define Device/arcadyan_vgv7519-nor
 endef
 TARGET_DEVICES += arcadyan_vgv7519-nor
 
+define Device/arcadyan_vgv952cjw33-e-ir
+  $(Device/NAND)
+  SOC := vr9
+  DEVICE_VENDOR := Arcadyan
+  DEVICE_MODEL := VGV952CJW33-E-IR
+  DEVICE_ALT0_VENDOR := Vodafone
+  DEVICE_ALT0_MODEL := Easybox 904xDSL
+  SUPPORTED_DEVICES += VGV952CJW33-E-IR
+  IMAGES := sysupgrade.bin
+  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | uImage lzma | pad-offset 16 0 | append-uImage-dummyrootfs
+endef
+
+define Device/arcadyan_vgv952cjw33-e-ir-vpe
+  $(Device/arcadyan_vgv952cjw33-e-ir)
+  DEVICE_VARIANT := VPE
+  DEVICE_ALT0_VARIANT := vpe
+  DEVICE_PACKAGES := kmod-usb-dwc2 kmod-ltq-tapi kmod-ltq-vmmc wpad-basic
+  SUPPORTED_DEVICES += VGV952CJW33-E-IR
+endef
+TARGET_DEVICES += arcadyan_vgv952cjw33-e-ir-vpe
+
+define Device/arcadyan_vgv952cjw33-e-ir-smp
+  $(Device/arcadyan_vgv952cjw33-e-ir)
+  DEVICE_VARIANT := SMP
+  DEVICE_ALT0_VARIANT := smp
+  DEVICE_PACKAGES := kmod-usb-dwc2 wpad-basic
+  SUPPORTED_DEVICES += VGV952CJW33-E-IR
+endef
+TARGET_DEVICES += arcadyan_vgv952cjw33-e-ir-smp
+
 define Device/avm_fritz3370
   $(Device/AVM)
   $(Device/NAND)

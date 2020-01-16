@@ -4,7 +4,7 @@ CONFIG_FEED_easybox904=m
 ### common
 CONFIG_TARGET_lantiq=y
 CONFIG_TARGET_lantiq_xrx200=y
-CONFIG_TARGET_lantiq_xrx200_DEVICE_lantiq_vgv952cjw33-e-ir=y
+CONFIG_TARGET_lantiq_xrx200_DEVICE_arcadyan_vgv952cjw33-e-ir-smp=y
 
 ### build configuration
 CONFIG_TARGET_ROOTFS_INITRAMFS=y
