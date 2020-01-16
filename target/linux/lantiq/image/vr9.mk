@@ -100,7 +100,7 @@ define Device/arcadyan_vgv952cjw33-e-ir
   DEVICE_ALT0_MODEL := Easybox 904xDSL
   SUPPORTED_DEVICES += VGV952CJW33-E-IR
   IMAGES := sysupgrade.bin
-  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | uImage lzma | pad-offset 16 0 | append-uImage-dummyrootfs
+  KERNEL_INITRAMFS := kernel-bin | append-dtb | lzma | uImage lzma | pad-offset 16 0 | append-uImage-dummyrootfs | append-metadata
 endef
 
 define Device/arcadyan_vgv952cjw33-e-ir-vpe
