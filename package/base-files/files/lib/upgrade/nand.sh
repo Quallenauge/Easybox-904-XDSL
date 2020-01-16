@@ -13,9 +13,6 @@ CI_UBIPART="${CI_UBIPART:-ubi}"
 # 'rootfs' partition on NAND contains the rootfs
 CI_ROOTPART="${CI_ROOTPART:-rootfs}"
 
-# VID header offset is used e.g. to ignore sub pages by setting them to 2048
-CU_UBI_VID_HEADER_OFFSET=""
-
 ubi_mknod() {
 	local dir="$1"
 	local dev="/dev/$(basename $dir)"
@@ -132,26 +129,14 @@ nand_upgrade_prepare_ubi() {
 
 	local ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	if [ ! "$ubidev" ]; then
-		if [ ! -z $CU_UBI_VID_HEADER_OFFSET ]; then
-		    echo "Forcing ubiattach with possible non standard VID header offset of <$CU_UBI_VID_HEADER_OFFSET>"
-		    ubiattach -m "$mtdnum" -O $CU_UBI_VID_HEADER_OFFSET
-		else
-		    ubiattach -m "$mtdnum"
-		fi
+		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	fi
 
 	if [ ! "$ubidev" ]; then
-		if [ ! -z $CU_UBI_VID_HEADER_OFFSET ]; then
-		    echo "Forcing ubiformat with possible non standard VID header offset of <$CU_UBI_VID_HEADER_OFFSET>"
-		    ubiformat /dev/mtd$mtdnum -s $CU_UBI_VID_HEADER_OFFSET -y
-		    echo "Forcing ubiattach with possible non standard VID header offset of <$CU_UBI_VID_HEADER_OFFSET>"
-		    ubiattach -m "$mtdnum" -O $CU_UBI_VID_HEADER_OFFSET
-		else
-		    ubiformat /dev/mtd$mtdnum -y
-		    ubiattach -m "$mtdnum"
-		fi
+		ubiformat /dev/mtd$mtdnum -y
+		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 		[ "$has_env" -gt 0 ] && {
