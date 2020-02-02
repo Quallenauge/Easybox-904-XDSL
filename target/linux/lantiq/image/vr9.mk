@@ -93,7 +93,6 @@ TARGET_DEVICES += arcadyan_vgv7519-nor
 
 define Device/arcadyan_vgv952cjw33-e-ir
   $(Device/NAND)
-  SOC := vr9
   DEVICE_VENDOR := Arcadyan
   DEVICE_MODEL := VGV952CJW33-E-IR
   DEVICE_ALT0_VENDOR := Vodafone
