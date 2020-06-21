@@ -1,7 +1,7 @@
 Index: linux-4.14.96/drivers/net/ethernet/lantiq_xrx200.c
 ===================================================================
---- linux-4.14.96.orig/drivers/net/ethernet/lantiq_xrx200.c
-+++ linux-4.14.96/drivers/net/ethernet/lantiq_xrx200.c
+--- linux-4.14.96.orig/drivers/net/ethernet/lantiq_xrx200_legacy.c
++++ linux-4.14.96/drivers/net/ethernet/lantiq_xrx200_legacy.c
 @@ -40,7 +40,7 @@
  #define SW_ROUTING
  

@@ -1,6 +1,8 @@
---- a/drivers/net/ethernet/lantiq_xrx200.c
-+++ b/drivers/net/ethernet/lantiq_xrx200.c
-@@ -1319,31 +1319,43 @@ static int xrx200_mdio_probe(struct net_
+Index: linux-5.4.46/drivers/net/ethernet/lantiq_xrx200_legacy.c
+===================================================================
+--- linux-5.4.46.orig/drivers/net/ethernet/lantiq_xrx200_legacy.c
++++ linux-5.4.46/drivers/net/ethernet/lantiq_xrx200_legacy.c
+@@ -1378,32 +1378,43 @@ static int xrx200_mdio_probe(struct net_
  	struct phy_device *phydev = NULL;
  	unsigned val;
  
@@ -34,37 +36,39 @@
 -	if (IS_ERR(phydev)) {
 -		netdev_err(dev, "Could not attach to PHY\n");
 -		return PTR_ERR(phydev);
+-	}
 +		if (IS_ERR(phydev)) {
 +			netdev_err(dev, "Could not attach to PHY\n");
 +			return PTR_ERR(phydev);
 +		}
-+
-+		phydev->supported &= (SUPPORTED_10baseT_Half
-+				| SUPPORTED_10baseT_Full
-+				| SUPPORTED_100baseT_Half
-+				| SUPPORTED_100baseT_Full
-+				| SUPPORTED_1000baseT_Half
-+				| SUPPORTED_1000baseT_Full
-+				| SUPPORTED_Autoneg
-+				| SUPPORTED_MII
-+				| SUPPORTED_TP);
-+		phydev->advertising = phydev->supported;
- 	}
  
--	phydev->supported &= (SUPPORTED_10baseT_Half
--			| SUPPORTED_10baseT_Full
--			| SUPPORTED_100baseT_Half
--			| SUPPORTED_100baseT_Full
--			| SUPPORTED_1000baseT_Half
--			| SUPPORTED_1000baseT_Full
--			| SUPPORTED_Autoneg
--			| SUPPORTED_MII
--			| SUPPORTED_TP);
--	phydev->advertising = phydev->supported;
+-	linkmode_zero(phydev->supported);
+-	linkmode_set_bit(ETHTOOL_LINK_MODE_Autoneg_BIT, phydev->supported);
+-	linkmode_set_bit(ETHTOOL_LINK_MODE_TP_BIT, phydev->supported);
+-	linkmode_set_bit(ETHTOOL_LINK_MODE_MII_BIT, phydev->supported);
+-	linkmode_set_bit_array(phy_10_100_features_array,
+-			       ARRAY_SIZE(phy_10_100_features_array),
+-			       phydev->supported);
+-	linkmode_set_bit_array(phy_gbit_features_array,
+-			       ARRAY_SIZE(phy_gbit_features_array),
+-			       phydev->supported);
+-	linkmode_copy(phydev->advertising, phydev->supported);
++		linkmode_zero(phydev->supported);
++		linkmode_set_bit(ETHTOOL_LINK_MODE_Autoneg_BIT, phydev->supported);
++		linkmode_set_bit(ETHTOOL_LINK_MODE_TP_BIT, phydev->supported);
++		linkmode_set_bit(ETHTOOL_LINK_MODE_MII_BIT, phydev->supported);
++		linkmode_set_bit_array(phy_10_100_features_array,
++				       ARRAY_SIZE(phy_10_100_features_array),
++				       phydev->supported);
++		linkmode_set_bit_array(phy_gbit_features_array,
++				       ARRAY_SIZE(phy_gbit_features_array),
++				       phydev->supported);
++		linkmode_copy(phydev->advertising, phydev->supported);
++	}
+ 
  	port->phydev = phydev;
- 	phydev->no_auto_carrier_off = true;
- 
-@@ -1630,6 +1642,17 @@ static void xrx200_of_port(struct xrx200
+ 	phydev->phy_link_change = xrx200_phy_link_change;
+@@ -1691,6 +1702,17 @@ static void xrx200_of_port(struct xrx200
  
  	memset(p, 0, sizeof(struct xrx200_port));
  	p->phy_node = of_parse_phandle(port, "phy-handle", 0);

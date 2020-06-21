@@ -1,7 +1,7 @@
 diff --git a/drivers/net/ethernet/lantiq_xrx200.c b/drivers/net/ethernet/lantiq_xrx200.c
 index a19a127..8b8295b 100644
---- a/drivers/net/ethernet/lantiq_xrx200.c
-+++ b/drivers/net/ethernet/lantiq_xrx200.c
+--- a/drivers/net/ethernet/lantiq_xrx200_legacy.c
++++ b/drivers/net/ethernet/lantiq_xrx200_legacy.c
 @@ -568,6 +568,35 @@ static int xrx200sw_get_vlan_vid(struct switch_dev *dev, const struct switch_att
  	return 0;
  }

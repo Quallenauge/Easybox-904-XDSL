@@ -1,7 +1,7 @@
 Index: linux-4.19.57/drivers/net/ethernet/lantiq_xrx200.c
 ===================================================================
---- linux-4.19.57.orig/drivers/net/ethernet/lantiq_xrx200.c
-+++ linux-4.19.57/drivers/net/ethernet/lantiq_xrx200.c
+--- linux-4.19.57.orig/drivers/net/ethernet/lantiq_xrx200_legacy.c
++++ linux-4.19.57/drivers/net/ethernet/lantiq_xrx200_legacy.c
 @@ -133,6 +133,29 @@
  #define MII_CFG_RATE_AUTO	0x40
  #define MII_CFG_RATE_MASK	0x70
