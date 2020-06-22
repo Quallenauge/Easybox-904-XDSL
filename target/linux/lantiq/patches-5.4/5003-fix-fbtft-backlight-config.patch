@@ -1,0 +1,42 @@
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -188,7 +188,7 @@ static struct fbtft_display display = {
+ 	},
+ };
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ static int update_onboard_backlight(struct backlight_device *bd)
+ {
+ 	struct fbtft_par *par = bl_get_data(bd);
+--- a/drivers/staging/fbtft/fb_watterott.c
++++ b/drivers/staging/fbtft/fb_watterott.c
+@@ -215,7 +215,7 @@ static int verify_gpios(struct fbtft_par
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ static int backlight_chip_update_status(struct backlight_device *bd)
+ {
+ 	struct fbtft_par *par = bl_get_data(bd);
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -137,7 +137,7 @@ static int fbtft_request_gpios_dt(struct
+ }
+ #endif
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ static int fbtft_backlight_update_status(struct backlight_device *bd)
+ {
+ 	struct fbtft_par *par = bl_get_data(bd);
+@@ -857,7 +857,7 @@ int fbtft_register_framebuffer(struct fb
+ 		 fb_info->fix.smem_len >> 10, text1,
+ 		 HZ / fb_info->fbdefio->delay, text2);
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ 	/* Turn on backlight if available */
+ 	if (fb_info->bl_dev) {
+ 		fb_info->bl_dev->props.power = FB_BLANK_UNBLANK;
