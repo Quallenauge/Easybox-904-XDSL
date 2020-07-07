@@ -281,7 +281,7 @@
 		fps = <30>;
 		bgr;
 		buswidth = <8>;
-		reset-gpios = <&gpio 6 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio 6 GPIO_ACTIVE_LOW>;
 		led-gpios = <&gpio 28 GPIO_ACTIVE_HIGH>;
 		debug = <1>;
 	};
