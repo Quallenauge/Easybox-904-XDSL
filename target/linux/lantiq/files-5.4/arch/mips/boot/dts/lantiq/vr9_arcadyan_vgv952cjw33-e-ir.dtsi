@@ -184,6 +184,9 @@
 		#size-cells = <1>;
 		lantiq,cs = <1>;
 
+		pinctrl-0 = <&nand_pins>, <&nand_cs1_pins>;
+		pinctrl-names = "default";
+
 		nand-on-flash-bbt;
 
 		partitions {
