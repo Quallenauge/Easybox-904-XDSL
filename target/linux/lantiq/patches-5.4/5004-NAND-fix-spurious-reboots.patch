@@ -1,0 +1,31 @@
+Index: linux-5.4.52/drivers/mtd/nand/raw/nand_legacy.c
+===================================================================
+--- linux-5.4.52.orig/drivers/mtd/nand/raw/nand_legacy.c
++++ linux-5.4.52/drivers/mtd/nand/raw/nand_legacy.c
+@@ -19,6 +19,8 @@
+ 
+ #include "internals.h"
+ 
++extern spinlock_t ebu_lock;
++
+ /**
+  * nand_read_byte - [DEFAULT] read one byte from the chip
+  * @chip: NAND chip object
+@@ -202,7 +204,7 @@ void nand_wait_ready(struct nand_chip *c
+ 	do {
+ 		if (chip->legacy.dev_ready(chip))
+ 			return;
+-		cond_resched();
++		cond_resched_lock(&ebu_lock);
+ 	} while (time_before(jiffies, timeo));
+ 
+ 	if (!chip->legacy.dev_ready(chip))
+@@ -561,7 +563,7 @@ static int nand_wait(struct nand_chip *c
+ 				if (status & NAND_STATUS_READY)
+ 					break;
+ 			}
+-			cond_resched();
++			cond_resched_lock(&ebu_lock);
+ 		} while (time_before(jiffies, timeo));
+ 	}
+ 
