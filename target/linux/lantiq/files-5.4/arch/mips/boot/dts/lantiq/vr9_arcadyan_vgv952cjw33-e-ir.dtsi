@@ -164,6 +164,12 @@
 		realtek,extif1   = <1 0 1 1 0 0 1 1 2>; // based on vendor uboot-config
 		mii-bus = <&mdio>;
 	};
+
+	biu@1f800000 {
+		watchdog@803f0 {
+			status = "disabled";
+                };
+        };
 };
 
 &vmmc {
