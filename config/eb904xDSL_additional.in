@@ -1,5 +1,6 @@
 ### Prosody
 CONFIG_PACKAGE_prosody-devel=m
+CONFIG_PACKAGE_prosody-devel=m
 CONFIG_PACKAGE_libiwinfo-lua=m
 CONFIG_PACKAGE_liblua=m
 CONFIG_PACKAGE_liblucihttp-lua=m
@@ -15,6 +16,7 @@ CONFIG_PACKAGE_luadbi-sqlite3=m
 CONFIG_PACKAGE_luaexpat=m
 CONFIG_PACKAGE_luafilesystem=m
 CONFIG_PACKAGE_lualanes=m
+CONFIG_PACKAGE_luajit=y
 CONFIG_PACKAGE_luasec=m
 CONFIG_PACKAGE_luasocket=m
 CONFIG_PACKAGE_luasql-sqlite3=m

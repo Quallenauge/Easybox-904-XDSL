@@ -5,6 +5,7 @@ CONFIG_FEED_easybox904=m
 CONFIG_TARGET_lantiq=y
 CONFIG_TARGET_lantiq_xrx200=y
 CONFIG_TARGET_lantiq_xrx200_DEVICE_arcadyan_vgv952cjw33-e-ir-smp=y
+# CONFIG_TARGET_lantiq_xrx200_DEVICE_arcadyan_vgv952cjw33-e-ir-vpe=y
 
 ### build configuration
 CONFIG_TARGET_ROOTFS_INITRAMFS=y
@@ -100,3 +101,6 @@ CONFIG_PACKAGE_luci-ssl-openssl=y
 
 ### uboot start observation watchdog
 CONFIG_PACKAGE_uboot-envtools=y
+
+### Stress
+CONFIG_PACKAGE_stress=y
