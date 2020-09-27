@@ -188,6 +188,8 @@
 		pinctrl-names = "default";
 
 		nand-on-flash-bbt;
+		
+		customized-samsung-K9F4G08U0x;
 
 		partitions {
 		compatible = "fixed-partitions";

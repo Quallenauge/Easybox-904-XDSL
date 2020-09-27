@@ -1,8 +1,7 @@
-Index: linux-5.4.46/drivers/mtd/nand/raw/nand_bbt.c
-===================================================================
---- linux-5.4.46.orig/drivers/mtd/nand/raw/nand_bbt.c
-+++ linux-5.4.46/drivers/mtd/nand/raw/nand_bbt.c
-@@ -73,6 +73,13 @@
+diff -aurN a/drivers/mtd/nand/raw/nand_bbt.c b/drivers/mtd/nand/raw/nand_bbt.c
+--- a/drivers/mtd/nand/raw/nand_bbt.c	2020-07-16 08:16:48.000000000 +0200
++++ b/drivers/mtd/nand/raw/nand_bbt.c	2020-09-21 23:47:13.000000000 +0200
+@@ -73,6 +73,29 @@
  #define BBT_ENTRY_MASK		0x03
  #define BBT_ENTRY_SHIFT		2
  
@@ -11,60 +10,118 @@ Index: linux-5.4.46/drivers/mtd/nand/raw/nand_bbt.c
 + #define	BAD_BLK_OOB_MARK_START	4
 + #define	BAD_BLK_OOB_MARK_END	5
 + #define	BAD_BLK_OOB_MARK_PATT	0xFF
++
++#include <linux/mtd/rawnand.h>
++#include <linux/of.h>
++
++static bool of_get_customized_bbt_from_mtd(struct mtd_info *mtd)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct device_node *dn = nand_get_flash_node(chip);
++	return of_property_read_bool(dn, "customized-samsung-K9F4G08U0x");
++}
++
++static bool of_get_customized_bbt_from_chip(struct nand_chip *chip)
++{
++	struct device_node *dn = nand_get_flash_node(chip);
++	return of_property_read_bool(dn, "customized-samsung-K9F4G08U0x");
++}
 +#endif
 +
  static inline uint8_t bbt_get_entry(struct nand_chip *chip, int block)
  {
  	uint8_t entry = chip->bbt[block >> BBT_ENTRY_SHIFT];
-@@ -106,6 +113,10 @@ static int check_pattern_no_oob(uint8_t
+@@ -104,8 +127,15 @@
+  * Check for a pattern at the given place. Used to search bad block tables and
+  * good / bad block identifiers.
   */
- static int check_pattern(uint8_t *buf, int len, int paglen, struct nand_bbt_descr *td)
- {
-+#if CUSTOMIZED_BBT /*ctc*/
++#if CUSTOMIZED_BBT
++static int check_pattern(struct mtd_info *mtd, uint8_t *buf, int len, int paglen, struct nand_bbt_descr *td)
++{
 +	int i;
 +	uint8_t *p = buf;
++#else
+ static int check_pattern(uint8_t *buf, int len, int paglen, struct nand_bbt_descr *td)
+ {
 +#endif
  	if (td->options & NAND_BBT_NO_OOB)
  		return check_pattern_no_oob(buf, td);
  
-@@ -113,6 +124,13 @@ static int check_pattern(uint8_t *buf, i
+@@ -113,6 +143,14 @@
  	if (memcmp(buf + paglen + td->offs, td->pattern, td->len))
  		return -1;
  
 +#if CUSTOMIZED_BBT /*ctc*/
-+	for (i = BAD_BLK_OOB_MARK_START, p=buf+paglen; i <= BAD_BLK_OOB_MARK_END; i++) {
-+		if (p[i] != BAD_BLK_OOB_MARK_PATT)
-+			return -1;
++	if (of_get_customized_bbt_from_mtd(mtd)) {
++		for (i = BAD_BLK_OOB_MARK_START, p=buf+paglen; i <= BAD_BLK_OOB_MARK_END; i++) {
++			if (p[i] != BAD_BLK_OOB_MARK_PATT)
++				return -1;
++		}
 +	}
 +#endif
-+
  	return 0;
  }
  
-@@ -1283,8 +1301,13 @@ err_free_bbt:
+@@ -562,7 +600,11 @@
+ 
+ 			/* Read first page */
+ 			scan_read(this, buf, offs, mtd->writesize, td);
++#if CUSTOMIZED_BBT
++			if (!check_pattern(mtd, buf, scanlen, mtd->writesize, td)) {
++#else
+ 			if (!check_pattern(buf, scanlen, mtd->writesize, td)) {
++#endif
+ 				td->pages[i] = actblock << blocktopage;
+ 				if (td->options & NAND_BBT_VERSION) {
+ 					offs = bbt_get_ver_offs(this, td);
+@@ -1283,8 +1325,13 @@
  static uint8_t scan_ff_pattern[] = { 0xff, 0xff };
  
  /* Generic flash bbt descriptors */
-+#if CUSTOMIZED_BBT /*ctc*/
-+static uint8_t bbt_pattern[] = {'A', 'R', 'C', 'A' };
-+static uint8_t mirror_pattern[] = {'a', 'c', 'r', 'a' };
-+#else
++//#if CUSTOMIZED_BBT /*ctc*/
++//static uint8_t bbt_pattern[] = {'A', 'R', 'C', 'A' };
++//static uint8_t mirror_pattern[] = {'a', 'c', 'r', 'a' };
++//#else
  static uint8_t bbt_pattern[] = {'B', 'b', 't', '0' };
  static uint8_t mirror_pattern[] = {'1', 't', 'b', 'B' };
-+#endif
++//#endif
  
  static struct nand_bbt_descr bbt_main_descr = {
  	.options = NAND_BBT_LASTBLOCK | NAND_BBT_CREATE | NAND_BBT_WRITE
-@@ -1346,7 +1369,12 @@ static int nand_create_badblock_pattern(
+@@ -1346,7 +1393,16 @@
  	bd = kzalloc(sizeof(*bd), GFP_KERNEL);
  	if (!bd)
  		return -ENOMEM;
 +
 +#if CUSTOMIZED_BBT /*ctc*/
-+	bd->options = 0 & BADBLOCK_SCAN_MASK;
++	if (of_get_customized_bbt_from_chip(this)) {
++		bd->options = 0 & BADBLOCK_SCAN_MASK;
++	} else {
++		bd->options = this->bbt_options & BADBLOCK_SCAN_MASK;
++	}
 +#else
  	bd->options = this->bbt_options & BADBLOCK_SCAN_MASK;
 +#endif
  	bd->offs = this->badblockpos;
  	bd->len = (this->options & NAND_BUSWIDTH_16) ? 2 : 1;
  	bd->pattern = scan_ff_pattern;
+@@ -1365,6 +1421,19 @@
+ int nand_create_bbt(struct nand_chip *this)
+ {
+ 	int ret;
++/* change the generic bad / good block scan pattern if of_get_customized_bbt_from_chip(this) true */
++#if CUSTOMIZED_BBT
++	if(of_get_customized_bbt_from_chip(this)) {
++		bbt_pattern[0] = 'A';
++		bbt_pattern[1] = 'R';
++		bbt_pattern[2] = 'C';
++		bbt_pattern[3] = 'A';
++		mirror_pattern[0] = 'a';
++		mirror_pattern[1] = 'c';
++		mirror_pattern[2] = 'r';
++		mirror_pattern[3] = 'a';
++	}
++#endif
+ 
+ 	/* Is a flash based bad block table requested? */
+ 	if (this->bbt_options & NAND_BBT_USE_FLASH) {
